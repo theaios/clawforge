@@ -1,6 +1,7 @@
 import {useState, useEffect} from "react";
 import { useMissionControl } from "../lib/missionControlContext";
 import { formatOpError, formatOpSuccess } from "../lib/openclawDiagnostics";
+import { getStoredThemeMode, persistThemeMode } from "../lib/themeMode";
 import orchestratorMd from "../data/base-package/orchestrator.md?raw";
 import ceoMd from "../data/base-package/agent-ceo.md?raw";
 import cooMd from "../data/base-package/agent-coo.md?raw";
@@ -164,6 +165,44 @@ const GUARDRAIL_PRESETS = [
   { id: "human_loop", label: "Human-in-the-loop for external comms", desc: "Require approval before sending emails, DMs, or public posts", enabled: false, severity: "medium" },
   { id: "sandbox", label: "Sandbox mode available", desc: "Can be toggled to test agent behavior without live effects", enabled: false, severity: "low" },
 ];
+
+const LIMITS_SCHEMA = [
+  { key: "maxDailySpend", label: "Max daily spend", unit: "USD", desc: "Agent will pause when daily cost reaches this limit" },
+  { key: "maxTokens", label: "Max tokens per request", unit: "tokens", desc: "Maximum output length for any single completion" },
+  { key: "maxApiCallsPerHour", label: "Max API calls per hour", unit: "calls", desc: "Rate limit for external API integrations" },
+  { key: "maxConcurrentTasks", label: "Max concurrent tasks", unit: "tasks", desc: "Number of tasks agent can work simultaneously" },
+  { key: "approvalThreshold", label: "Approval threshold", unit: "USD", desc: "Actions above this cost require human approval" },
+  { key: "sessionTimeout", label: "Session timeout", unit: "minutes", desc: "Max time for a single task execution" },
+];
+
+const DEFAULT_LIMITS = {
+  maxDailySpend: 25,
+  maxTokens: 8192,
+  maxApiCallsPerHour: 500,
+  maxConcurrentTasks: 3,
+  approvalThreshold: 50,
+  sessionTimeout: 30,
+};
+
+function mergeGuardrails(savedGuardrails = []) {
+  const map = new Map(Array.isArray(savedGuardrails) ? savedGuardrails.map((g) => [g.id, g]) : []);
+  return GUARDRAIL_PRESETS.map((preset) => {
+    const saved = map.get(preset.id);
+    if (!saved) return { ...preset };
+    const enabled = preset.severity === "critical" ? true : !!saved.enabled;
+    return { ...preset, ...saved, enabled };
+  });
+}
+
+function sanitizeLimits(savedLimits = {}) {
+  const parsed = { ...DEFAULT_LIMITS };
+  for (const key of Object.keys(parsed)) {
+    const raw = savedLimits?.[key];
+    const value = Number(raw);
+    if (Number.isFinite(value) && value >= 0) parsed[key] = value;
+  }
+  return parsed;
+}
 
 function ScrollbarStyle({ C }) {
   return (
@@ -537,17 +576,8 @@ function StepModelRouting({ routes, onChangeRoutes }) {
   );
 }
 
-function StepGuardrails() {
-  const [guardrails, setGuardrails] = useState(GUARDRAIL_PRESETS);
+function StepGuardrails({ guardrails, onToggleGuardrail }) {
   const severityColors = { critical: C.red, high: C.amber, medium: C.blue, low: C.textMuted };
-
-  const toggleGuardrail = (index) => {
-    setGuardrails((prev) => prev.map((g, i) => {
-      if (i !== index) return g;
-      if (g.severity === 'critical') return g;
-      return { ...g, enabled: !g.enabled };
-    }));
-  };
 
   return (
     <div>
@@ -566,7 +596,7 @@ function StepGuardrails() {
                 <span style={{ fontSize: 8, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: `${severityColors[g.severity]}18`, color: severityColors[g.severity], textTransform: "uppercase" }}>{g.severity}</span>
               </div>
               <div
-                onClick={() => toggleGuardrail(i)}
+                onClick={() => onToggleGuardrail(i)}
                 style={{
                   width: 36, height: 20, borderRadius: 10, padding: 2, cursor: g.severity === "critical" ? "not-allowed" : "pointer",
                   background: g.enabled ? C.green : C.border, transition: "background 0.2s",
@@ -587,26 +617,21 @@ function StepGuardrails() {
   );
 }
 
-function StepLimits({ onRunTest, onSimulateTask }) {
-  const limits = [
-    { label: "Max daily spend", value: "$25.00", unit: "USD", desc: "Agent will pause when daily cost reaches this limit" },
-    { label: "Max tokens per request", value: "8,192", unit: "tokens", desc: "Maximum output length for any single completion" },
-    { label: "Max API calls per hour", value: "500", unit: "calls", desc: "Rate limit for external API integrations" },
-    { label: "Max concurrent tasks", value: "3", unit: "tasks", desc: "Number of tasks agent can work simultaneously" },
-    { label: "Approval threshold", value: "$50.00", unit: "USD", desc: "Actions above this cost require human approval" },
-    { label: "Session timeout", value: "30", unit: "minutes", desc: "Max time for a single task execution" },
-  ];
-
+function StepLimits({ limits, onLimitChange, onRunTest, onSimulateTask }) {
   return (
     <div>
       <p style={{ fontSize: 12, color: C.textSec, marginBottom: 16, lineHeight: "18px" }}>Set operational limits to control cost, performance, and resource usage. These limits protect against runaway behavior.</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        {limits.map((lim, i) => (
-          <div key={i} style={{ padding: "14px", borderRadius: 8, background: C.elevated, border: `1px solid ${C.border}` }}>
+        {LIMITS_SCHEMA.map((lim) => (
+          <div key={lim.key} style={{ padding: "14px", borderRadius: 8, background: C.elevated, border: `1px solid ${C.border}` }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: C.text, marginBottom: 4 }}>{lim.label}</div>
             <div style={{ fontSize: 10, color: C.textMuted, marginBottom: 8 }}>{lim.desc}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <input defaultValue={lim.value} style={{ flex: 1, padding: "7px 10px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.bg, color: C.text, fontSize: 13, fontWeight: 600, outline: "none", fontFamily: "'JetBrains Mono', 'SF Mono', monospace" }} />
+              <input
+                value={limits?.[lim.key] ?? ''}
+                onChange={(e) => onLimitChange(lim.key, e.target.value)}
+                style={{ flex: 1, padding: "7px 10px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.bg, color: C.text, fontSize: 13, fontWeight: 600, outline: "none", fontFamily: "'JetBrains Mono', 'SF Mono', monospace" }}
+              />
               <span style={{ fontSize: 10, color: C.textMuted, flexShrink: 0 }}>{lim.unit}</span>
             </div>
           </div>
@@ -643,7 +668,7 @@ function StepLimits({ onRunTest, onSimulateTask }) {
 export default function AgentConfigurator() {
   const { store, client } = useMissionControl();
   const [isDark, setIsDark] = useState(() => getStoredThemeMode() !== "light");
-  useEffect(() => { localStorage.setItem("cf-theme", isDark ? "dark" : "light"); }, [isDark]);
+  useEffect(() => { persistThemeMode(isDark ? "dark" : "light"); }, [isDark]);
   C = getTheme(isDark);
 
   const [currentStep, setCurrentStep] = useState(() => {
@@ -680,6 +705,8 @@ export default function AgentConfigurator() {
       ? activeDraft.modelRouting
       : MODEL_ROUTES
   ));
+  const [guardrailsDraft, setGuardrailsDraft] = useState(() => mergeGuardrails(activeDraft.guardrails));
+  const [limitsDraft, setLimitsDraft] = useState(() => sanitizeLimits(activeDraft.limits));
   useEffect(() => {
     let t;
     if (collapsedSections.SYSTEM === undefined || collapsedSections.SYSTEM === true) return;
@@ -695,6 +722,23 @@ export default function AgentConfigurator() {
   }, [selectedTemplate]);
 
   useEffect(() => {
+    const draft = store.configurator.drafts[store.configurator.activeDraftId] || {};
+    setSelectedTemplate(draft.templateKey || 'custom');
+    setIdentityDraft({
+      name: draft.identity?.name || 'Partnership Scout',
+      roleTitle: draft.identity?.roleTitle || 'Partnerships & Affiliate Manager',
+      systemPrompt: draft.identity?.systemPrompt || 'You are the Partnership Scout for ClawForge.',
+      reportsTo: draft.identity?.reportsTo || 'Sales CEO',
+      avatarColor: draft.identity?.avatarColor || C.teal,
+    });
+    setScopeDraft(Array.isArray(draft.scopeDraft) && draft.scopeDraft.length ? draft.scopeDraft : DEFAULT_SCOPE_OPTIONS);
+    setToolsDraft(Array.isArray(draft.tools) && draft.tools.length ? draft.tools : ['gmail', 'hubspot', 'calendar', 'gdocs', 'slack']);
+    setModelRoutesDraft(Array.isArray(draft.modelRouting) && draft.modelRouting.length ? draft.modelRouting : MODEL_ROUTES);
+    setGuardrailsDraft(mergeGuardrails(draft.guardrails));
+    setLimitsDraft(sanitizeLimits(draft.limits));
+  }, [store.configurator.activeDraftId]);
+
+  useEffect(() => {
     const nextStep = currentStep + 1;
     const hash = window.location.hash || '#/configurator';
     const [pathPart, queryString = ''] = hash.replace('#', '').split('?');
@@ -705,6 +749,23 @@ export default function AgentConfigurator() {
     params.set('step', String(nextStep));
     window.history.replaceState(null, '', `#${path}?${params.toString()}`);
   }, [currentStep]);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash || '';
+      const [pathPart, queryString = ''] = hash.replace('#', '').split('?');
+      if ((pathPart || '/configurator') !== '/configurator') return;
+      const step = Number(new URLSearchParams(queryString).get('step'));
+      if (!Number.isFinite(step)) return;
+      setCurrentStep((prev) => {
+        const next = Math.max(0, Math.min(STEPS.length - 1, step - 1));
+        return prev === next ? prev : next;
+      });
+    };
+
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   const persistDraft = async (extra = {}) => {
     const draftId = store.configurator.activeDraftId;
@@ -717,6 +778,8 @@ export default function AgentConfigurator() {
       scope: scopeDraft.filter((s) => s.enabled).map((s) => s.label),
       tools: toolsDraft,
       modelRouting: modelRoutesDraft,
+      guardrails: guardrailsDraft,
+      limits: sanitizeLimits(limitsDraft),
       allowLocalFallback: true,
       ...extra,
     });
@@ -728,6 +791,12 @@ export default function AgentConfigurator() {
   };
 
   const runTest = async () => {
+    const saved = await persistDraft();
+    if (!saved.ok) {
+      setOpMessage(formatOpError(saved.error));
+      return;
+    }
+
     const resp = await client.run('oc.agentConfig.test.prompt', {
       draftId: store.configurator.activeDraftId,
       prompt: 'Ping test',
@@ -739,6 +808,12 @@ export default function AgentConfigurator() {
   };
 
   const simulateTask = async () => {
+    const saved = await persistDraft();
+    if (!saved.ok) {
+      setOpMessage(formatOpError(saved.error));
+      return;
+    }
+
     const resp = await client.run('oc.agentConfig.test.prompt', {
       draftId: store.configurator.activeDraftId,
       prompt: 'Simulate task: Draft partnership outreach for a new SaaS integration lead',
@@ -769,8 +844,25 @@ export default function AgentConfigurator() {
     <StepScope key="step-scope" scopes={scopeDraft} onToggleScope={(index) => setScopeDraft((prev) => prev.map((scope, i) => (i === index ? { ...scope, enabled: !scope.enabled } : scope)))} />,
     <StepTools key="step-tools" selected={toolsDraft} onChangeSelected={setToolsDraft} />,
     <StepModelRouting key="step-routing" routes={modelRoutesDraft} onChangeRoutes={setModelRoutesDraft} />,
-    <StepGuardrails key="step-guardrails" />,
-    <StepLimits key="step-limits" onRunTest={runTest} onSimulateTask={simulateTask} />,
+    <StepGuardrails
+      key="step-guardrails"
+      guardrails={guardrailsDraft}
+      onToggleGuardrail={(index) => setGuardrailsDraft((prev) => prev.map((g, i) => {
+        if (i !== index) return g;
+        if (g.severity === 'critical') return g;
+        return { ...g, enabled: !g.enabled };
+      }))}
+    />,
+    <StepLimits
+      key="step-limits"
+      limits={limitsDraft}
+      onLimitChange={(key, value) => setLimitsDraft((prev) => {
+        const cleaned = String(value || '').replace(/[^0-9.]/g, '');
+        return { ...prev, [key]: cleaned === '' ? '' : Number(cleaned) };
+      })}
+      onRunTest={runTest}
+      onSimulateTask={simulateTask}
+    />,
   ];
 
   return (
@@ -827,10 +919,10 @@ export default function AgentConfigurator() {
             <div style={{ marginTop: 20, padding: "12px", borderRadius: 8, background: C.elevated, border: `1px solid ${C.border}` }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                 <span style={{ fontSize: 10, color: C.textMuted, fontWeight: 600 }}>Progress</span>
-                <span style={{ fontSize: 10, color: C.blue, fontWeight: 600 }}>{Math.round(((currentStep) / STEPS.length) * 100)}%</span>
+                <span style={{ fontSize: 10, color: C.blue, fontWeight: 600 }}>{Math.round(((currentStep + 1) / STEPS.length) * 100)}%</span>
               </div>
               <div style={{ height: 4, background: C.border, borderRadius: 2, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${(currentStep / STEPS.length) * 100}%`, background: C.blue, borderRadius: 2, transition: "width 0.3s" }} />
+                <div style={{ height: "100%", width: `${((currentStep + 1) / STEPS.length) * 100}%`, background: C.blue, borderRadius: 2, transition: "width 0.3s" }} />
               </div>
             </div>
           </div>
