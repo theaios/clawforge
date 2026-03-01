@@ -1319,7 +1319,7 @@ export default function ClawForgeKanban() {
 
   const [columns, setColumns] = useState(INITIAL_COLUMNS);
   const [tasks, setTasks] = useState(INITIAL_TASKS);
-  const [activeBoardId, setActiveBoardId] = useState(store.boards.boardId || 'product-launch');
+  const [activeBoardId, setActiveBoardId] = useState(store.boards.boardId || '');
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedColId, setSelectedColId] = useState(null);
   const [dragTaskId, setDragTaskId] = useState(null);
@@ -1355,11 +1355,13 @@ export default function ClawForgeKanban() {
     setSearchQuery(store.boards.filters?.search || '');
 
     const loadBoard = async () => {
-      const directResp = await client.run('oc.board.get', { boardId: activeBoardId });
-      if (directResp?.ok && Array.isArray(directResp.data?.items) && directResp.data.items[0]?.status) {
-        setTasks(buildTasksFromApi(directResp.data.items));
-        setOpMessage(formatOpSuccess('Board loaded', directResp));
-        return;
+      if (activeBoardId && activeBoardId !== 'product-launch') {
+        const directResp = await client.run('oc.board.get', { boardId: activeBoardId });
+        if (directResp?.ok && Array.isArray(directResp.data?.items) && directResp.data.items[0]?.status) {
+          setTasks(buildTasksFromApi(directResp.data.items));
+          setOpMessage(formatOpSuccess('Board loaded', directResp));
+          return;
+        }
       }
 
       const boardsResp = await client.run('oc.board.get', {});

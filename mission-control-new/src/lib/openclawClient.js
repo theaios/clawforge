@@ -36,8 +36,9 @@ const LIVE_ROUTES = {
     { method: 'POST', path: '/api/mission-control/system/degraded' },
   ],
   'oc.board.get': [
-    { method: 'GET', path: '/api/v1/boards/{board_id}/tasks' },
+    // Prefer board list first; tasks route should be used when board_id is explicitly valid.
     { method: 'GET', path: '/api/v1/boards' },
+    { method: 'GET', path: '/api/v1/boards/{board_id}/tasks' },
     { method: 'GET', path: '/api/boards' },
     { method: 'GET', path: '/api/mission-control/boards' },
   ],
