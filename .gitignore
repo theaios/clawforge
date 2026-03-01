@@ -14,3 +14,4 @@ qa_artifacts/
 .DS_Store
 .vscode/
 .idea/
+state/

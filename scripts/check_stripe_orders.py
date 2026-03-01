@@ -24,6 +24,21 @@ STATE_DIR = ROOT / "state"
 STATE_PATH = STATE_DIR / "stripe-order-state.json"
 
 
+def load_env_file(path: Path) -> None:
+    if not path.exists():
+        return
+    for raw in path.read_text().splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        k = k.strip()
+        if not k:
+            continue
+        v = v.strip().strip('"').strip("'")
+        os.environ.setdefault(k, v)
+
+
 def load_state() -> dict:
     if not STATE_PATH.exists():
         return {"last_created": 0}
@@ -49,6 +64,10 @@ def stripe_get(path: str, params: dict, key: str) -> dict:
 
 
 def main() -> int:
+    # Load local env files (non-destructive, do not override existing process env)
+    load_env_file(ROOT / ".env")
+    load_env_file(ROOT / ".secrets" / "runtime.env")
+
     key = os.getenv("STRIPE_SECRET_KEY", "").strip()
     if not key:
         # Graceful no-op when key isn't configured yet.
