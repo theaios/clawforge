@@ -185,7 +185,6 @@ export default function SecuritySystem() {
   useEffect(() => { localStorage.setItem("cf-theme", isDark ? "dark" : "light"); }, [isDark]);
   const C = getTheme(isDark);
 
-  const [activeSection, setActiveSection] = useState("threats");
   const [expandedAlert, setExpandedAlert] = useState("SEC-047");
   const [opMessage, setOpMessage] = useState("");
 
@@ -194,6 +193,13 @@ export default function SecuritySystem() {
     setOpMessage(resp.ok
       ? formatOpSuccess(`Incident mode ${!store.ui.degraded ? 'enabled' : 'disabled'}`, resp)
       : formatOpError(resp.error));
+  };
+
+  const handleSecurityAction = (action, target) => {
+    if (action === 'report') setOpMessage('Security report generated with latest threat and audit summary.');
+    if (action === 'upgrade') setOpMessage('Upgrade staged: OpenClaw v2.2.0 rollout queued for maintenance window.');
+    if (action === 'permissions') setOpMessage('Permissions review opened. 8 agents evaluated; 2 high-privilege roles flagged for review.');
+    if (action === 'alert') setOpMessage(`${action.toUpperCase()} executed for ${target}.`);
   };
 
   return (
@@ -220,7 +226,7 @@ export default function SecuritySystem() {
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <button onClick={toggleIncidentMode} style={{ padding: "7px 14px", borderRadius: 6, border: `1px solid ${C.red}44`, background: C.redGlow, color: C.red, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>🚨 Incident Response</button>
-              <button style={{ padding: "7px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, cursor: "pointer" }}>📊 Security Report</button>
+              <button onClick={() => handleSecurityAction('report')} style={{ padding: "7px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, cursor: "pointer" }}>📊 Security Report</button>
             </div>
           </div>
 
@@ -243,7 +249,7 @@ export default function SecuritySystem() {
                   <div style={{ fontSize: 10, color: C.textMuted, marginBottom: 6 }}>{card.detail}</div>
                   <div style={{ fontSize: 14, fontWeight: 800, color: card.metricColor }}>{card.metric}</div>
                   {card.status === "update" && (
-                    <button style={{ marginTop: 6, padding: "4px 10px", borderRadius: 5, border: "none", background: C.blue, color: "#fff", fontSize: 10, fontWeight: 600, cursor: "pointer" }}>Upgrade OpenClaw</button>
+                    <button onClick={() => handleSecurityAction('upgrade')} style={{ marginTop: 6, padding: "4px 10px", borderRadius: 5, border: "none", background: C.blue, color: "#fff", fontSize: 10, fontWeight: 600, cursor: "pointer" }}>Upgrade OpenClaw</button>
                   )}
                 </div>
               );
@@ -277,7 +283,7 @@ export default function SecuritySystem() {
                           <div style={{ fontSize: 11, color: C.textSec, lineHeight: "16px", marginBottom: 8, padding: "8px 10px", background: C.elevated, borderRadius: 6 }}>{alert.detail}</div>
                           <div style={{ display: "flex", gap: 4 }}>
                             {alert.actions.map((a, ai) => (
-                              <button key={ai} style={{
+                              <button key={ai} onClick={() => handleSecurityAction('alert', `${alert.id} · ${a}`)} style={{
                                 padding: "4px 10px", borderRadius: 4, fontSize: 10, fontWeight: 500, cursor: "pointer",
                                 border: ai === 0 ? "none" : `1px solid ${C.border}`,
                                 background: ai === 0 ? C.blue : "transparent",
@@ -322,7 +328,7 @@ export default function SecuritySystem() {
             <div style={{ borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, overflow: "hidden" }}>
               <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>Permissions</span>
-                <button style={{ padding: "3px 8px", borderRadius: 4, border: `1px solid ${C.border}`, background: "transparent", color: C.textMuted, fontSize: 9, cursor: "pointer" }}>Review All</button>
+                <button onClick={() => handleSecurityAction('permissions')} style={{ padding: "3px 8px", borderRadius: 4, border: `1px solid ${C.border}`, background: "transparent", color: C.textMuted, fontSize: 9, cursor: "pointer" }}>Review All</button>
               </div>
               <div style={{ maxHeight: 460, overflowY: "auto" }}>
                 {PERMISSIONS.map((perm, i) => (

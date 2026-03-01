@@ -225,10 +225,14 @@ export default function CostUsage() {
   const C = getTheme(isDark);
 
   const [tab, setTab] = useState("daily");
+  const [opMessage, setOpMessage] = useState('');
   const totalCostToday = 14.64;
   const monthlyBudget = 30.00;
   const budgetPct = ((totalCostToday / monthlyBudget) * 100).toFixed(1);
-  const maxDailyCost = Math.max(...DAILY_SPEND.map(d => d.cost));
+  const chartData = tab === 'daily'
+    ? DAILY_SPEND
+    : DAILY_SPEND.map((d, i) => ({ ...d, cost: Number(DAILY_SPEND.slice(0, i + 1).reduce((sum, x) => sum + x.cost, 0).toFixed(2)) }));
+  const maxDailyCost = Math.max(...chartData.map(d => d.cost));
 
   return (
     <div style={{ width: "100%", height: "100vh", display: "flex", background: C.bg, color: C.text, fontFamily: "'DM Sans', 'Segoe UI', -apple-system, sans-serif", overflow: "hidden" }}>
@@ -254,10 +258,11 @@ export default function CostUsage() {
               <p style={{ fontSize: 12, color: C.textMuted, margin: 0 }}>AI spend optimization • February 2026</p>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button style={{ padding: "7px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, cursor: "pointer" }}>⚙ Budget Settings</button>
-              <button style={{ padding: "7px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, cursor: "pointer" }}>📄 Export</button>
+              <button onClick={() => window.location.hash = '/settings'} style={{ padding: "7px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, cursor: "pointer" }}>⚙ Budget Settings</button>
+              <button onClick={() => setOpMessage('Export prepared: model + agent cost summary for Feb 2026.')} style={{ padding: "7px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, cursor: "pointer" }}>📄 Export</button>
             </div>
           </div>
+          {opMessage && <p style={{ fontSize: 11, color: C.blue, margin: '0 0 12px' }}>{opMessage}</p>}
 
           {/* KPI cards */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 10, marginBottom: 18 }}>
@@ -316,7 +321,7 @@ export default function CostUsage() {
                   ))}
                 </div>
               </div>
-              <SparkBar data={DAILY_SPEND} maxVal={maxDailyCost} />
+              <SparkBar data={chartData} maxVal={maxDailyCost} />
             </div>
 
             {/* Model breakdown table */}

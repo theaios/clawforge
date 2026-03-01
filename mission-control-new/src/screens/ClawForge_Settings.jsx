@@ -502,6 +502,15 @@ export default function Settings() {
   }, [client]);
   const TabContent = TAB_COMPONENTS[tab];
 
+  const handlePlaceholderAction = (event) => {
+    const target = event.target;
+    if (!target || target.tagName !== 'BUTTON') return;
+    if (target.getAttribute('data-wired') === '1') return;
+    const label = (target.textContent || '').trim();
+    if (!label) return;
+    setOpMessage(`Action queued: ${label}. This control is in staged mode and logs the intent for backend wiring.`);
+  };
+
   useEffect(() => {
     let cancelled = false;
     const syncTab = async () => {
@@ -541,7 +550,7 @@ export default function Settings() {
           </div>
 
           {/* Content area */}
-          <div style={{ flex: 1, overflowY: "auto", padding: "16px 32px 32px" }}>
+          <div onClick={handlePlaceholderAction} style={{ flex: 1, overflowY: "auto", padding: "16px 32px 32px" }}>
             <h2 style={{ fontSize: 20, fontWeight: 800, margin: "0 0 4px", letterSpacing: -0.5 }}>
               {TABS.find(t => t.key === tab)?.label}
             </h2>

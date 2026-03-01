@@ -34,7 +34,7 @@ let C = getTheme(true);
 
 const CATEGORIES = ["All", "Communication", "Cloud & Infra", "Finance", "Marketing", "Development", "Analytics", "AI Models"];
 
-const INTEGRATIONS = [
+const INITIAL_INTEGRATIONS = [
   // Communication
   { name: "Slack", icon: "💬", cat: "Communication", status: "connected", health: "healthy", agents: ["CX CEO", "Operations CEO", "Marketing CEO"], apiCalls: "2,480", lastSync: "2m ago", desc: "Team messaging and agent notifications", config: { workspace: "ClawForge HQ", channels: 8, webhooks: 3 } },
   { name: "Discord", icon: "🎮", cat: "Communication", status: "connected", health: "healthy", agents: ["CX CEO", "Content Writer"], apiCalls: "840", lastSync: "5m ago", desc: "Community hub and client support", config: { server: "ClawForge Community", channels: 4, bots: 1 } },
@@ -182,7 +182,7 @@ function Sidebar({ activePage, isDark, setIsDark, C }) {
 }
 
 
-function ConfigDrawer({ integration, onClose }) {
+function ConfigDrawer({ integration, onClose, C, onAction, actionBusy }) {
   if (!integration) return null;
   const hs = integration.health ? HEALTH_STYLES[integration.health] : null;
   return (
@@ -269,12 +269,12 @@ function ConfigDrawer({ integration, onClose }) {
       <div style={{ padding: "12px 20px", borderTop: `1px solid ${C.border}`, display: "flex", gap: 8 }}>
         {integration.status === "connected" ? (
           <>
-            <button style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>⚙ Configure</button>
-            <button style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>🔄 Re-sync</button>
-            <button style={{ padding: "8px 12px", borderRadius: 6, border: `1px solid ${C.red}33`, background: C.redGlow, color: C.red, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>Disconnect</button>
+            <button onClick={() => onAction('configure', integration)} style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>⚙ Configure</button>
+            <button disabled={actionBusy} onClick={() => onAction('resync', integration)} style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: "pointer", opacity: actionBusy ? 0.7 : 1 }}>🔄 {actionBusy ? 'Syncing…' : 'Re-sync'}</button>
+            <button onClick={() => onAction('disconnect', integration)} style={{ padding: "8px 12px", borderRadius: 6, border: `1px solid ${C.red}33`, background: C.redGlow, color: C.red, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>Disconnect</button>
           </>
         ) : (
-          <button style={{ flex: 1, padding: "10px", borderRadius: 6, border: "none", background: `linear-gradient(135deg, ${C.blue}, ${C.purple})`, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>+ Connect {integration.name}</button>
+          <button onClick={() => onAction('connect', integration)} style={{ flex: 1, padding: "10px", borderRadius: 6, border: "none", background: `linear-gradient(135deg, ${C.blue}, ${C.purple})`, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>+ Connect {integration.name}</button>
         )}
       </div>
     </div>
@@ -289,11 +289,55 @@ export default function IntegrationsHub() {
 
   const [cat, setCat] = useState("All");
   const [selected, setSelected] = useState(null);
+  const [integrations, setIntegrations] = useState(INITIAL_INTEGRATIONS);
+  const [opMessage, setOpMessage] = useState('');
+  const [actionBusy, setActionBusy] = useState(false);
 
-  const connected = INTEGRATIONS.filter(i => i.status === "connected");
-  const available = INTEGRATIONS.filter(i => i.status === "available");
-  const filtered = cat === "All" ? INTEGRATIONS : INTEGRATIONS.filter(i => i.cat === cat);
+  const connected = integrations.filter(i => i.status === "connected");
+  const available = integrations.filter(i => i.status === "available");
+  const filtered = cat === "All" ? integrations : integrations.filter(i => i.cat === cat);
   const degraded = connected.filter(i => i.health === "degraded").length;
+
+  const updateIntegration = (name, patch) => {
+    setIntegrations((prev) => prev.map((i) => i.name === name ? { ...i, ...patch } : i));
+    setSelected((prev) => (prev?.name === name ? { ...prev, ...patch } : prev));
+  };
+
+  const handleAction = async (type, integration) => {
+    if (!integration) return;
+    if (type === 'configure') {
+      setOpMessage(`Opened ${integration.name} configuration panel.`);
+      return;
+    }
+    if (type === 'connect') {
+      updateIntegration(integration.name, { status: 'connected', health: 'healthy', lastSync: 'just now', apiCalls: integration.apiCalls === '—' ? '0' : integration.apiCalls });
+      setOpMessage(`${integration.name} connected successfully.`);
+      return;
+    }
+    if (type === 'disconnect') {
+      updateIntegration(integration.name, { status: 'available', health: null, lastSync: '—', apiCalls: '—' });
+      setOpMessage(`${integration.name} disconnected.`);
+      return;
+    }
+    if (type === 'resync') {
+      setActionBusy(true);
+      await new Promise((r) => setTimeout(r, 500));
+      updateIntegration(integration.name, { lastSync: 'just now', health: 'healthy', alert: null });
+      setActionBusy(false);
+      setOpMessage(`${integration.name} re-sync completed.`);
+      return;
+    }
+    if (type === 'add') {
+      setCat('All');
+      const candidate = integrations.find((i) => i.status === 'available');
+      if (candidate) {
+        setSelected(candidate);
+        setOpMessage(`Pick an available integration and press Connect to enable it.`);
+      } else {
+        setOpMessage('All listed integrations are already connected.');
+      }
+    }
+  };
 
   return (
     <div style={{ width: "100%", height: "100vh", display: "flex", background: C.bg, color: C.text, fontFamily: "'DM Sans', 'Segoe UI', -apple-system, sans-serif", overflow: "hidden" }}>
@@ -321,8 +365,9 @@ export default function IntegrationsHub() {
                 <h2 style={{ fontSize: 20, fontWeight: 800, margin: "0 0 4px", letterSpacing: -0.5 }}>Integrations Hub</h2>
                 <p style={{ fontSize: 12, color: C.textMuted, margin: 0 }}>Manage all connected services and APIs</p>
               </div>
-              <button style={{ padding: "7px 14px", borderRadius: 6, border: "none", background: `linear-gradient(135deg, ${C.blue}, ${C.purple})`, color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>+ Add Integration</button>
+              <button onClick={() => handleAction('add')} style={{ padding: "7px 14px", borderRadius: 6, border: "none", background: `linear-gradient(135deg, ${C.blue}, ${C.purple})`, color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>+ Add Integration</button>
             </div>
+            {opMessage && <p style={{ fontSize: 11, color: C.blue, margin: '4px 0 0' }}>{opMessage}</p>}
 
             {/* Summary strip */}
             <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
@@ -399,7 +444,7 @@ export default function IntegrationsHub() {
                         </div>
                       </div>
                     ) : (
-                      <button onClick={e => { e.stopPropagation(); }} style={{
+                      <button onClick={e => { e.stopPropagation(); handleAction('connect', integ); }} style={{
                         width: "100%", padding: "6px", borderRadius: 5, border: `1px dashed ${C.blue}55`,
                         background: "transparent", color: C.blue, fontSize: 10, fontWeight: 600, cursor: "pointer",
                       }}>+ Connect</button>
@@ -411,7 +456,7 @@ export default function IntegrationsHub() {
           </div>
 
           {/* Config drawer */}
-          {selected && <ConfigDrawer integration={selected} onClose={() => setSelected(null)} />}
+          {selected && <ConfigDrawer integration={selected} onClose={() => setSelected(null)} C={C} onAction={handleAction} actionBusy={actionBusy} />}
         </div>
       </div>
     </div>
