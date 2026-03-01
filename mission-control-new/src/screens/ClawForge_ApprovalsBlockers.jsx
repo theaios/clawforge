@@ -145,8 +145,8 @@ export default function ApprovalsBlockers() {
 
   const unified = useMemo(() => {
     const tagged = []
-    approvals.forEach((t) => tagged.push({ ...t, queue: 'approval', id: `apr-${t.id}` }))
-    blockers.forEach((t) => tagged.push({ ...t, queue: 'blocker', id: `blk-${t.id}` }))
+    approvals.forEach((t) => tagged.push({ ...t, queue: 'approval', sourceTaskId: t.id, id: `apr-${t.id}` }))
+    blockers.forEach((t) => tagged.push({ ...t, queue: 'blocker', sourceTaskId: t.id, id: `blk-${t.id}` }))
     return tagged
   }, [approvals, blockers])
 
@@ -271,6 +271,7 @@ function QueueColumn({ title, icon, queue, accent, items, C, mutateTask, showEmp
 
 function QueueCard({ task, queue, C, mutateTask }) {
   const queueColor = queue === 'blocker' ? C.red : C.blue
+  const taskId = task.sourceTaskId || task.id
   return (
     <div style={{ background: C.panel, border: `1px solid ${C.border}`, borderLeft: `4px solid ${queueColor}`, borderRadius: 10, padding: 12, boxShadow: C.cardShadow }}>
       <div style={{ display: 'flex', alignItems: 'start', gap: 12 }}>
@@ -285,10 +286,10 @@ function QueueCard({ task, queue, C, mutateTask }) {
           {task.blocked && <div style={{ marginTop: 8, fontSize: 12, color: C.red, background: alpha(C.red, 0.1), border: `1px solid ${alpha(C.red, 0.26)}`, borderRadius: 8, padding: '6px 8px', display: 'inline-flex' }}>⚠ {task.blocked}</div>}
         </div>
         <div style={{ display: 'grid', gap: 6, minWidth: 150 }}>
-          {task.approval && <button onClick={() => mutateTask(task.id, (t) => ({ ...t, approval: false }), `✅ Approved: ${task.title}`)} style={btn(C.green, C)}>Approve</button>}
-          {task.approval && <button onClick={() => mutateTask(task.id, (t) => ({ ...t, approval: false, blocked: 'Rejected during approval review' }), `❌ Rejected: ${task.title}`)} style={btn(C.red, C)}>Reject</button>}
-          {task.blocked && <button onClick={() => mutateTask(task.id, (t) => ({ ...t, blocked: null }), `🟢 Unblocked: ${task.title}`)} style={btn(C.green, C)}>Mark unblocked</button>}
-          {!task.blocked && <button onClick={() => mutateTask(task.id, (t) => ({ ...t, blocked: 'Needs revision before approval' }), `🟡 Changes requested: ${task.title}`)} style={btn(C.amber, C)}>Request changes</button>}
+          {task.approval && <button onClick={() => mutateTask(taskId, (t) => ({ ...t, approval: false }), `✅ Approved: ${task.title}`)} style={btn(C.green, C)}>Approve</button>}
+          {task.approval && <button onClick={() => mutateTask(taskId, (t) => ({ ...t, approval: false, blocked: 'Rejected during approval review' }), `❌ Rejected: ${task.title}`)} style={btn(C.red, C)}>Reject</button>}
+          {task.blocked && <button onClick={() => mutateTask(taskId, (t) => ({ ...t, blocked: null }), `🟢 Unblocked: ${task.title}`)} style={btn(C.green, C)}>Mark unblocked</button>}
+          {!task.blocked && <button onClick={() => mutateTask(taskId, (t) => ({ ...t, blocked: 'Needs revision before approval' }), `🟡 Changes requested: ${task.title}`)} style={btn(C.amber, C)}>Request changes</button>}
           <button onClick={() => window.location.hash = '/boards'} style={btn(C.blue, C)}>Open in board</button>
         </div>
       </div>
