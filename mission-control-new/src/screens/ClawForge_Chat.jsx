@@ -859,6 +859,11 @@ function MessageBubble({ msg, prevMsg, onReact, onPin, onRetry }) {
               )}
             </div>
           )}
+          {msg.delivery?.status === "error" && msg.delivery?.error && (
+            <div style={{ marginTop: 4, fontSize: 10, color: C.red, textAlign: isMe ? "right" : "left" }}>
+              {msg.delivery.error}
+            </div>
+          )}
 
           {msg.reactions.length > 0 && (
             <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap", justifyContent: isMe ? "flex-end" : "flex-start" }}>
@@ -1058,6 +1063,7 @@ function ConvItem({ conv, active, onClick, isFavorite, onToggleFavorite, runtime
         {runtimeState?.status && (
           <div style={{ fontSize: 10, color: runtimeState.status === "error" ? C.red : C.blue, marginTop: 2 }}>
             {runtimeState.status}{runtimeState.requestId ? ` · ${runtimeState.requestId}` : ""}
+            {runtimeState.status === "error" && runtimeState.error ? ` · ${runtimeState.error}` : ""}
           </div>
         )}
       </div>
@@ -1109,6 +1115,7 @@ export default function CommsCenter() {
   const textareaRef = useRef(null);
   const openclawClient = useMemo(() => createOpenClawClient(), []);
   const [conversationRuntime, setConversationRuntime] = useState({});
+  const [selectedAgentByConversation, setSelectedAgentByConversation] = useState({});
 
   const isDark = themeMode !== "light";
   C = getTheme(themeMode);
@@ -1156,12 +1163,16 @@ export default function CommsCenter() {
   };
 
   const sendMessage = async (retryMsg = null) => {
+    const conversationId = activeConv?.id;
+    const conversation = activeConv;
     const text = (retryMsg?.content ?? inputValue).trim();
-    if (!text || !activeConv) return;
+    if (!text || !conversationId || !conversation) return;
 
     const sendAt = nowLabel();
     const localMessageId = retryMsg?.id ?? _msgId++;
-    const targets = getConversationAgentTargets(activeConv);
+    const targets = getConversationAgentTargets(conversation);
+    const selectedTarget = selectedAgentByConversation[conversationId];
+    const targetAgentId = targets.includes(selectedTarget) ? selectedTarget : targets[0];
 
     if (!retryMsg) {
       const newMsg = {
@@ -1174,11 +1185,11 @@ export default function CommsCenter() {
         isSystem: false,
         delivery: { status: "sending", requestId: null, error: null },
       };
-      setConversations((prev) => prev.map((c) => (c.id === activeId ? { ...c, messages: [...c.messages, newMsg] } : c)));
+      setConversations((prev) => prev.map((c) => (c.id === conversationId ? { ...c, messages: [...c.messages, newMsg] } : c)));
       setInputValue("");
     } else {
       setConversations((prev) => prev.map((c) => {
-        if (c.id !== activeId) return c;
+        if (c.id !== conversationId) return c;
         return {
           ...c,
           messages: c.messages.map((m) => m.id === retryMsg.id
@@ -1188,24 +1199,24 @@ export default function CommsCenter() {
       }));
     }
 
-    setConversationRuntime((prev) => ({ ...prev, [activeId]: { status: "sending", requestId: null, error: null } }));
+    setConversationRuntime((prev) => ({ ...prev, [conversationId]: { status: "sending", requestId: null, error: null } }));
     textareaRef.current?.focus();
 
-    if (targets.length === 0) {
+    if (targets.length === 0 || !targetAgentId) {
+      const noTargetError = "No agent targets in this conversation.";
       setConversations((prev) => prev.map((c) => {
-        if (c.id !== activeId) return c;
+        if (c.id !== conversationId) return c;
         return {
           ...c,
           messages: c.messages.map((m) => m.id === localMessageId
-            ? { ...m, delivery: { status: "error", requestId: null, error: "No agent targets in this conversation." } }
+            ? { ...m, delivery: { status: "error", requestId: null, error: noTargetError } }
             : m),
         };
       }));
-      setConversationRuntime((prev) => ({ ...prev, [activeId]: { status: "error", requestId: null, error: "No agent targets in this conversation." } }));
+      setConversationRuntime((prev) => ({ ...prev, [conversationId]: { status: "error", requestId: null, error: noTargetError } }));
       return;
     }
 
-    const targetAgentId = targets[0];
     let response;
     try {
       response = await openclawClient.run("oc.agent.message.send", {
@@ -1228,7 +1239,7 @@ export default function CommsCenter() {
       const requestId = response?.error?.requestId || null;
       const errorText = `${response?.error?.userMessage || "Failed to send message"}${response?.error?.debugCode ? ` · ${response.error.debugCode}` : ""}`;
       setConversations((prev) => prev.map((c) => {
-        if (c.id !== activeId) return c;
+        if (c.id !== conversationId) return c;
         return {
           ...c,
           messages: c.messages.map((m) => m.id === localMessageId
@@ -1236,13 +1247,13 @@ export default function CommsCenter() {
             : m),
         };
       }));
-      setConversationRuntime((prev) => ({ ...prev, [activeId]: { status: "error", requestId, error: errorText } }));
+      setConversationRuntime((prev) => ({ ...prev, [conversationId]: { status: "error", requestId, error: errorText } }));
       return;
     }
 
     const requestId = response?.data?.requestId || response?.meta?.requestId || null;
     setConversations((prev) => prev.map((c) => {
-      if (c.id !== activeId) return c;
+      if (c.id !== conversationId) return c;
       return {
         ...c,
         messages: c.messages.map((m) => m.id === localMessageId
@@ -1250,12 +1261,12 @@ export default function CommsCenter() {
           : m),
       };
     }));
-    setConversationRuntime((prev) => ({ ...prev, [activeId]: { status: "processing", requestId, error: null } }));
+    setConversationRuntime((prev) => ({ ...prev, [conversationId]: { status: "processing", requestId, error: null } }));
 
     setTimeout(() => {
       const reply = mkMsg(targetAgentId, `Got it — processing your request. (requestId: ${requestId || "n/a"})`, nowLabel());
       setConversations((prev) => prev.map((c) => {
-        if (c.id !== activeId) return c;
+        if (c.id !== conversationId) return c;
         return {
           ...c,
           messages: c.messages.map((m) => m.id === localMessageId
@@ -1263,7 +1274,7 @@ export default function CommsCenter() {
             : m).concat(reply),
         };
       }));
-      setConversationRuntime((prev) => ({ ...prev, [activeId]: { status: "replied", requestId, error: null } }));
+      setConversationRuntime((prev) => ({ ...prev, [conversationId]: { status: "replied", requestId, error: null } }));
     }, 900);
   };
 
@@ -1401,7 +1412,14 @@ export default function CommsCenter() {
           group={activeConv}
           onClose={() => setModal(null)}
           onSave={handleSaveGroupSettings}
-          onLeave={() => { setConversations(prev => prev.filter(c => c.id !== activeId)); setActiveId(conversations.find(c => c.id !== activeId)?.id); setModal(null); }}
+          onLeave={() => {
+            setConversations((prev) => {
+              const remaining = prev.filter((c) => c.id !== activeId);
+              setActiveId(remaining[0]?.id || null);
+              return remaining;
+            });
+            setModal(null);
+          }}
         />
       )}
 
@@ -1538,6 +1556,11 @@ export default function CommsCenter() {
             <div style={{ fontSize: 15, fontWeight: 700, color: C.text, letterSpacing: -0.2 }}>{headerTitle}</div>
             <div style={{ fontSize: 11, color: C.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{headerSub}</div>
             {headerRuntime && <div style={{ fontSize: 10, color: runtimeState?.status === "error" ? C.red : C.blue, marginTop: 2 }}>{headerRuntime}</div>}
+            {runtimeState?.status === "error" && runtimeState?.error && (
+              <div style={{ fontSize: 10, color: C.red, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {runtimeState.error}
+              </div>
+            )}
           </div>
 
           {/* Header actions */}
@@ -1611,17 +1634,32 @@ export default function CommsCenter() {
                 fontFamily: "inherit", boxSizing: "border-box", maxHeight: 120, overflowY: "auto",
               }}
             />
-            <div style={{ display: "flex", alignItems: "center", padding: "6px 10px", gap: 4 }}>
-              {/* Format / attachment buttons */}
-              {["📎", "🖼️", "@"].map((icon, i) => (
-                <button key={i} style={{
-                  background: "none", border: "none", color: C.textMuted, cursor: "pointer",
-                  fontSize: i < 2 ? 16 : 13, padding: "4px 6px", borderRadius: 5, fontWeight: i === 2 ? 700 : 400,
-                }}
-                  onMouseEnter={e => e.currentTarget.style.color = C.textSec}
-                  onMouseLeave={e => e.currentTarget.style.color = C.textMuted}
-                >{icon}</button>
-              ))}
+            <div style={{ display: "flex", alignItems: "center", padding: "6px 10px", gap: 8 }}>
+              {activeConv?.type === "group" && (() => {
+                const targets = getConversationAgentTargets(activeConv);
+                const selectedTarget = selectedAgentByConversation[activeConv.id] || targets[0] || "";
+                return (
+                  <select
+                    value={selectedTarget}
+                    onChange={(e) => setSelectedAgentByConversation((prev) => ({ ...prev, [activeConv.id]: e.target.value }))}
+                    style={{
+                      maxWidth: 180,
+                      borderRadius: 6,
+                      border: `1px solid ${C.border}`,
+                      background: C.surface,
+                      color: C.textSec,
+                      padding: "4px 8px",
+                      fontSize: 11,
+                      fontWeight: 600,
+                    }}
+                    title="Select target agent"
+                  >
+                    {targets.map((id) => (
+                      <option key={id} value={id}>{getPerson(id).name}</option>
+                    ))}
+                  </select>
+                );
+              })()}
               <div style={{ flex: 1 }} />
               <span style={{ fontSize: 10, color: C.textMuted, marginRight: 8 }}>
                 {inputValue.length > 0 ? `${inputValue.length} chars` : "Enter to send"}
