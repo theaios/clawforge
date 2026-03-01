@@ -11,6 +11,7 @@ const links = [
   { label: 'Web & Delivery', path: '#/web', type: 'delivery' },
   { label: 'Templates Library', path: '#/templates', type: 'delivery' },
   { label: 'Creative Editor (Internal)', path: '#/editor', type: 'internal' },
+  { label: 'Question Cloud Onboarding (Internal)', path: '#/question-cloud', type: 'internal' },
   { label: 'Agent Files (Internal)', path: '#/agent-files', type: 'internal' },
   { label: 'Activity Log & Rollback', path: '#/activity-log', type: 'system' },
 ]

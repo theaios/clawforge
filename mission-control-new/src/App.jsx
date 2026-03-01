@@ -10,6 +10,7 @@ import CostUsage from './screens/ClawForge_CostUsage.jsx'
 import CRMSales from './screens/ClawForge_CRM_Sales.jsx'
 import EmptyStates from './screens/ClawForge_EmptyStates.jsx'
 import Editor from './screens/ClawForge_Editor.jsx'
+import QuestionCloudOnboarding from './screens/ClawForge_QuestionCloudOnboarding.jsx'
 import Finance from './screens/ClawForge_Finance.jsx'
 import Integrations from './screens/ClawForge_Integrations.jsx'
 import InDevelopment from './screens/ClawForge_InDevelopment.jsx'
@@ -101,6 +102,7 @@ const hiddenRoutes = [
   { path: '/modals', label: 'Key Modals', comp: KeyModals },
   { path: '/empty', label: 'Empty States', comp: EmptyStates },
   { path: '/editor', label: 'Creative Editor', comp: Editor },
+  { path: '/question-cloud', label: 'Question Cloud Onboarding', comp: QuestionCloudOnboarding },
   { path: '/activity-log', label: 'Activity Log & Rollback', comp: ActivityRollback },
 ]
 
@@ -144,6 +146,8 @@ const textNavMap = new Map([
   ['templates library', '/templates'],
   ['creative editor', '/editor'],
   ['editor', '/editor'],
+  ['question cloud', '/question-cloud'],
+  ['voice onboarding', '/question-cloud'],
   ['settings', '/settings'],
   ['under development', '/development'],
   ['activity log', '/activity-log'],
