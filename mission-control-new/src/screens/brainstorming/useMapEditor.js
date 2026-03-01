@@ -116,13 +116,28 @@ export function useMapEditor(initialMap) {
     if (!src || !src.parentId) return;
 
     commit((draft) => {
+      const parent = draft.nodesById[src.parentId];
+      if (!parent) return;
+
+      const list = [...(parent.childrenIds || [])];
+      const idx = Math.max(0, list.indexOf(sourceId));
+
+      if (src.type === "branch") {
+        const newId = `branch-n${draft.nextId++}`;
+        const color = BRANCH_COLORS[draft.nextId % BRANCH_COLORS.length];
+        draft.nodesById[newId] = newBranchNode(newId, src.parentId, color, "New branch");
+        draft.branchOrder = [...(draft.branchOrder || []), newId];
+        list.splice(idx + 1, 0, newId);
+        parent.childrenIds = list;
+        setSelectedIds([newId]);
+        return;
+      }
+
       const newId = `node-n${draft.nextId++}`;
       const branchRoot = nodeBranchRoot(draft, sourceId);
       draft.nodesById[newId] = newIdeaNode(newId, src.parentId, branchRoot?.id || src.branchId || "branch-product");
-      const list = [...(draft.nodesById[src.parentId].childrenIds || [])];
-      const idx = Math.max(0, list.indexOf(sourceId));
       list.splice(idx + 1, 0, newId);
-      draft.nodesById[src.parentId].childrenIds = list;
+      parent.childrenIds = list;
       setSelectedIds([newId]);
     });
   };

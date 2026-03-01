@@ -452,15 +452,22 @@ export default function Brainstorming() {
           }
         }
 
-        layout.connectors = layout.connectors.map((c) => {
-          const from = layout.nodes.find((n) => n.id === c.fromId);
-          const to = layout.nodes.find((n) => n.id === c.toId);
-          if (!to) return c;
+        const positionedById = new Map(layout.nodes.map((n) => [n.id, n]));
+        positionedById.set(layout.branch.id, { id: layout.branch.id, x: layout.baseX - BRANCH_W / 2, y: layout.baseY - BRANCH_H / 2, width: BRANCH_W, height: BRANCH_H, type: "branch" });
 
-          const fromRect = c.fromId === layout.branch.id
-            ? { left: layout.baseX - BRANCH_W / 2, top: layout.baseY - BRANCH_H / 2, width: BRANCH_W, height: BRANCH_H }
-            : { left: from?.x ?? layout.baseX, top: from?.y ?? layout.baseY, width: NODE_W, height: NODE_H };
-          const toRect = { left: to.x, top: to.y, width: NODE_W, height: NODE_H };
+        const nodeRectFor = (nodeId) => {
+          if (nodeId === layout.branch.id) {
+            return { left: layout.baseX - BRANCH_W / 2, top: layout.baseY - BRANCH_H / 2, width: BRANCH_W, height: BRANCH_H };
+          }
+          const node = positionedById.get(nodeId);
+          if (!node) return null;
+          return { left: node.x, top: node.y, width: NODE_W, height: NODE_H };
+        };
+
+        layout.connectors = layout.connectors.map((c) => {
+          const fromRect = nodeRectFor(c.fromId);
+          const toRect = nodeRectFor(c.toId);
+          if (!fromRect || !toRect) return c;
 
           const { fromX, fromY, toX, toY, toRight } = sideAnchors(fromRect, toRect);
           let laneX = toRight ? Math.max(fromX, toX) + 34 : Math.min(fromX, toX) - 34;
