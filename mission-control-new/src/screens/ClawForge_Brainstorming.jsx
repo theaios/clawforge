@@ -19,6 +19,20 @@ const CONNECTOR_CLEARANCE = 12;
 const THEME_STORAGE_KEY = "cf-theme";
 const DRAG_MODE = { NODE: "node", SUBTREE: "subtree" };
 
+function sideAnchors(fromRect, toRect) {
+  const fromCenterX = fromRect.left + fromRect.width / 2;
+  const toCenterX = toRect.left + toRect.width / 2;
+  const toRight = toCenterX >= fromCenterX;
+
+  return {
+    fromX: toRight ? fromRect.left + fromRect.width : fromRect.left,
+    fromY: fromRect.top + fromRect.height / 2,
+    toX: toRight ? toRect.left : toRect.left + toRect.width,
+    toY: toRect.top + toRect.height / 2,
+    toRight,
+  };
+}
+
 function rectOverlap(a, b, pad = 8) {
   return !(a.right + pad <= b.left || b.right + pad <= a.left || a.bottom + pad <= b.top || b.bottom + pad <= a.top);
 }
@@ -433,15 +447,17 @@ export default function Brainstorming() {
         }
 
         layout.connectors = layout.connectors.map((c) => {
-          const from = layout.nodes.find((n) => n.id === c.fromId) || { x: layout.baseX - BRANCH_W / 2, y: layout.baseY - BRANCH_H / 2, type: "branch" };
+          const from = layout.nodes.find((n) => n.id === c.fromId);
           const to = layout.nodes.find((n) => n.id === c.toId);
           if (!to) return c;
-          const fromX = c.fromId === layout.branch.id ? (layout.left ? layout.baseX - BRANCH_W / 2 : layout.baseX + BRANCH_W / 2) : (layout.left ? from.x : from.x + NODE_W);
-          const fromY = c.fromId === layout.branch.id ? layout.baseY : from.y + NODE_H / 2;
-          const toX = layout.left ? to.x + NODE_W : to.x;
-          const toY = to.y + NODE_H / 2;
 
-          let laneX = layout.left ? Math.min(fromX, toX) - 34 : Math.max(fromX, toX) + 34;
+          const fromRect = c.fromId === layout.branch.id
+            ? { left: layout.baseX - BRANCH_W / 2, top: layout.baseY - BRANCH_H / 2, width: BRANCH_W, height: BRANCH_H }
+            : { left: from?.x ?? layout.baseX, top: from?.y ?? layout.baseY, width: NODE_W, height: NODE_H };
+          const toRect = { left: to.x, top: to.y, width: NODE_W, height: NODE_H };
+
+          const { fromX, fromY, toX, toY, toRight } = sideAnchors(fromRect, toRect);
+          let laneX = toRight ? Math.max(fromX, toX) + 34 : Math.min(fromX, toX) - 34;
           const rects = allBoxes.filter((b) => ![c.fromId, c.toId].includes(b.id)).map((b) => ({ left: b.x, top: b.y, right: b.x + b.w, bottom: b.y + b.h }));
 
           let guard = 0;
@@ -452,11 +468,11 @@ export default function Brainstorming() {
             const p4 = { x: toX, y: toY };
             const hit = rects.some((r) => segmentIntersectsRect(p1, p2, r, CONNECTOR_CLEARANCE) || segmentIntersectsRect(p2, p3, r, CONNECTOR_CLEARANCE) || segmentIntersectsRect(p3, p4, r, CONNECTOR_CLEARANCE));
             if (!hit) break;
-            laneX += layout.left ? -26 : 26;
+            laneX += toRight ? 26 : -26;
             guard += 1;
           }
 
-          return { ...c, fromX, fromY, toX, toY, laneX };
+          return { ...c, fromX, fromY, toX, toY, laneX, left: !toRight };
         });
       });
     });
@@ -547,14 +563,15 @@ export default function Brainstorming() {
             <div style={{ position: "absolute", inset: 0, opacity: 0.04, backgroundImage: `radial-gradient(${C.textMuted} 1px, transparent 1px)`, backgroundSize: "24px 24px" }} />
             <div style={{ position: "absolute", inset: 0, transform: `translate(${pan.x}px,${pan.y}px) scale(${zoom})`, transformOrigin: "top left", transition: "transform 180ms" }}>
               <svg style={{ position: "absolute", inset: 0, width: "3200px", height: "2000px", pointerEvents: "none" }}>
-                {branchLayouts.map(({ root, rootX, rootY, branches }) => branches.map(({ branch, baseX, baseY, left, connectors }) => {
-                  const centerFromX = rootX + (left ? -66 : 66);
-                  const centerToX = baseX + (left ? BRANCH_W / 2 : -BRANCH_W / 2);
+                {branchLayouts.map(({ root, rootX, rootY, branches }) => branches.map(({ branch, baseX, baseY, connectors }) => {
+                  const rootRect = { left: rootX - ROOT_W / 2, top: rootY - ROOT_H / 2, width: ROOT_W, height: ROOT_H };
+                  const branchRect = { left: baseX - BRANCH_W / 2, top: baseY - BRANCH_H / 2, width: BRANCH_W, height: BRANCH_H };
+                  const { fromX: centerFromX, fromY: centerFromY, toX: centerToX, toY: centerToY } = sideAnchors(rootRect, branchRect);
                   return (
                     <g key={`${root.id}-${branch.id}`}>
-                      <path d={`M ${centerFromX} ${rootY} C ${(centerFromX + centerToX) / 2} ${rootY}, ${(centerFromX + centerToX) / 2} ${baseY}, ${centerToX} ${baseY}`} fill="none" stroke={branch.color} strokeWidth="2.6" opacity="0.52" />
+                      <path d={`M ${centerFromX} ${centerFromY} C ${(centerFromX + centerToX) / 2} ${centerFromY}, ${(centerFromX + centerToX) / 2} ${centerToY}, ${centerToX} ${centerToY}`} fill="none" stroke={branch.color} strokeWidth="2.6" opacity="0.52" />
                       {connectors.map((c) => {
-                        const laneX = c.laneX ?? (left ? Math.min(c.fromX, c.toX) - 32 : Math.max(c.fromX, c.toX) + 32);
+                        const laneX = c.laneX ?? (c.toX >= c.fromX ? Math.max(c.fromX, c.toX) + 32 : Math.min(c.fromX, c.toX) - 32);
                         return <path key={`p-${c.id}`} d={`M ${c.fromX} ${c.fromY} L ${laneX} ${c.fromY} L ${laneX} ${c.toY} L ${c.toX} ${c.toY}`} fill="none" stroke={branch.color} strokeWidth="1.8" opacity="0.4" />;
                       })}
                     </g>
