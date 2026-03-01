@@ -1207,14 +1207,27 @@ export default function CommsCenter() {
     }
 
     const targetAgentId = targets[0];
-    const response = await openclawClient.run("oc.agent.message.send", {
-      agentId: targetAgentId,
-      message: text,
-    });
+    let response;
+    try {
+      response = await openclawClient.run("oc.agent.message.send", {
+        agentId: targetAgentId,
+        message: text,
+        allowLocalFallback: true,
+      });
+    } catch (e) {
+      response = {
+        ok: false,
+        error: {
+          requestId: null,
+          userMessage: e?.message || "Failed to send message",
+          debugCode: "CHAT_SEND_THROW",
+        },
+      };
+    }
 
     if (!response.ok) {
       const requestId = response?.error?.requestId || null;
-      const errorText = response?.error?.userMessage || "Failed to send message";
+      const errorText = `${response?.error?.userMessage || "Failed to send message"}${response?.error?.debugCode ? ` · ${response.error.debugCode}` : ""}`;
       setConversations((prev) => prev.map((c) => {
         if (c.id !== activeId) return c;
         return {
