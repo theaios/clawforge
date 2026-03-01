@@ -1,4 +1,5 @@
 import {useState, useEffect} from "react";
+import { getStoredThemeMode } from "../lib/themeMode";
 
 function getTheme(dark) {
   if (dark) return {
@@ -257,11 +258,11 @@ function CampaignCard({ campaign, isExpanded, onToggle, onSelect }) {
 
           {/* Actions */}
           <div style={{ display: "flex", gap: 8 }}>
-            {campaign.status === "active" && <button style={{ padding: "6px 14px", borderRadius: 6, border: `1px solid ${C.amber}44`, background: C.amberGlow, color: C.amber, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>Pause</button>}
-            {campaign.status === "draft" && <button style={{ padding: "6px 14px", borderRadius: 6, border: "none", background: C.green, color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>Launch</button>}
-            <button style={{ padding: "6px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.textSec, fontSize: 11, cursor: "pointer" }}>Edit</button>
-            <button style={{ padding: "6px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.textSec, fontSize: 11, cursor: "pointer" }}>Duplicate</button>
-            <button style={{ padding: "6px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.textSec, fontSize: 11, cursor: "pointer" }}>Analytics</button>
+            {campaign.status === "active" && <button disabled title="Prototype control — not wired yet" style={{ padding: "6px 14px", borderRadius: 6, border: `1px solid ${C.amber}44`, background: C.amberGlow, color: C.amber, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>Pause</button>}
+            {campaign.status === "draft" && <button disabled title="Prototype control — not wired yet" style={{ padding: "6px 14px", borderRadius: 6, border: "none", background: C.green, color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>Launch</button>}
+            <button disabled title="Prototype control — not wired yet" style={{ padding: "6px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.textSec, fontSize: 11, cursor: "pointer" }}>Edit</button>
+            <button disabled title="Prototype control — not wired yet" style={{ padding: "6px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.textSec, fontSize: 11, cursor: "pointer" }}>Duplicate</button>
+            <button disabled title="Prototype control — not wired yet" style={{ padding: "6px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.textSec, fontSize: 11, cursor: "pointer" }}>Analytics</button>
           </div>
         </div>
       )}
@@ -361,8 +362,11 @@ function Sidebar({ activePage, isDark, setIsDark, C }) {
             <div style={{ fontSize: 9, fontWeight: 700, color: C.textMuted, letterSpacing: 1.2, textTransform: "uppercase", padding: "12px 10px 4px" }}>{s.section}</div>
             {s.items.map((item, ii) => {
               const active = item.key === activePage;
+              const m = { 'start-here': '/start-here', overview: '/overview', boards: '/boards', timeline: '/timeline', brainstorm: '/brainstorm', brainstorming: '/brainstorm', templates: '/templates', agentarmy: '/army', configurator: '/configurator?step=1', files: '/files', crm: '/crm', marketing: '/marketing', finance: '/finance', webdelivery: '/web', security: '/security', integrations: '/integrations', costusage: '/costs', settings: '/settings' };
+              const href = `#${m[item.key] || '/overview'}`;
               return (
-                <div key={ii} style={{
+                <a key={ii} href={href} style={{
+                  textDecoration: "none",
                   display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 6,
                   cursor: "pointer", background: active ? C.blueGlow : "transparent",
                   borderLeft: active ? `2px solid ${C.blue}` : "2px solid transparent", marginBottom: 1,
@@ -370,7 +374,7 @@ function Sidebar({ activePage, isDark, setIsDark, C }) {
                 }}>
                   <span style={{ fontSize: 14, color: active ? C.blue : C.textMuted, width: 20, textAlign: "center" }}>{item.icon}</span>
                   <span style={{ fontSize: 12, fontWeight: active ? 600 : 500, color: active ? (isDark ? "#fff" : C.blue) : C.textSec, flex: 1 }}>{item.label}</span>
-                </div>
+                </a>
               );
             })}
           </div>
@@ -426,8 +430,8 @@ export default function MarketingCommandCenter() {
               <p style={{ fontSize: 12, color: C.textMuted, margin: 0 }}>Managed by Marketing CEO • 30-day launch campaign in progress</p>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button style={{ padding: "7px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, cursor: "pointer" }}>📊 Analytics</button>
-              <button style={{ padding: "7px 14px", borderRadius: 6, border: "none", background: C.purple, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>+ New Campaign</button>
+              <button disabled title="Prototype control — not wired yet" style={{ padding: "7px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, cursor: "pointer" }}>📊 Analytics</button>
+              <button disabled title="Prototype control — not wired yet" style={{ padding: "7px 14px", borderRadius: 6, border: "none", background: C.purple, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>+ New Campaign</button>
             </div>
           </div>
 

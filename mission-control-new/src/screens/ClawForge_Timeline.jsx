@@ -1,4 +1,5 @@
 import {useState, useEffect} from "react";
+import { getStoredThemeMode } from "../lib/themeMode";
 
 function getTheme(dark) {
   if (dark) return {
@@ -294,8 +295,11 @@ function Sidebar({ activePage, isDark, setIsDark, C }) {
             <div style={{ fontSize: 9, fontWeight: 700, color: C.textMuted, letterSpacing: 1.2, textTransform: "uppercase", padding: "12px 10px 4px" }}>{s.section}</div>
             {s.items.map((item, ii) => {
               const active = item.key === activePage;
+              const m = { 'start-here': '/start-here', overview: '/overview', boards: '/boards', timeline: '/timeline', brainstorm: '/brainstorm', brainstorming: '/brainstorm', templates: '/templates', agentarmy: '/army', configurator: '/configurator?step=1', files: '/files', crm: '/crm', marketing: '/marketing', finance: '/finance', webdelivery: '/web', security: '/security', integrations: '/integrations', costusage: '/costs', settings: '/settings' };
+              const href = `#${m[item.key] || '/overview'}`;
               return (
-                <div key={ii} style={{
+                <a key={ii} href={href} style={{
+                  textDecoration: "none",
                   display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 6,
                   cursor: "pointer", background: active ? C.blueGlow : "transparent",
                   borderLeft: active ? `2px solid ${C.blue}` : "2px solid transparent", marginBottom: 1,
@@ -303,7 +307,7 @@ function Sidebar({ activePage, isDark, setIsDark, C }) {
                 }}>
                   <span style={{ fontSize: 14, color: active ? C.blue : C.textMuted, width: 20, textAlign: "center" }}>{item.icon}</span>
                   <span style={{ fontSize: 12, fontWeight: active ? 600 : 500, color: active ? (isDark ? "#fff" : C.blue) : C.textSec, flex: 1 }}>{item.label}</span>
-                </div>
+                </a>
               );
             })}
           </div>
@@ -365,9 +369,9 @@ export default function Timeline() {
               <p style={{ fontSize: 12, color: C.textMuted, margin: 0 }}>{totalTasks} tasks • {doneTasks} complete • {blockedTasks} blocked • Feb 17 – Mar 14, 2026</p>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button style={{ padding: "6px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.textSec, fontSize: 11, cursor: "pointer" }}>🔥 Critical Path</button>
-              <button style={{ padding: "6px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.textSec, fontSize: 11, cursor: "pointer" }}>⛓ Dependencies</button>
-              <button style={{ padding: "6px 12px", borderRadius: 6, border: "none", background: C.blue, color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>+ Add Task</button>
+              <button disabled title="Prototype control — not wired yet" style={{ padding: "6px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.textSec, fontSize: 11, cursor: "pointer" }}>🔥 Critical Path</button>
+              <button disabled title="Prototype control — not wired yet" style={{ padding: "6px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.textSec, fontSize: 11, cursor: "pointer" }}>⛓ Dependencies</button>
+              <button disabled title="Prototype control — not wired yet" style={{ padding: "6px 12px", borderRadius: 6, border: "none", background: C.blue, color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>+ Add Task</button>
             </div>
           </div>
           {/* Summary */}
@@ -511,7 +515,7 @@ export default function Timeline() {
               <div style={{ padding: "4px 10px", borderRadius: 6, background: C.redGlow, border: `1px solid rgba(239,68,68,0.2)`, fontSize: 11, color: C.red, fontWeight: 500 }}>⚠ {selectedTask.blocked}</div>
             )}
             <span style={{ fontSize: 8, fontWeight: 700, padding: "2px 6px", borderRadius: 3, background: PRIORITY_COLORS[selectedTask.priority].bg, color: PRIORITY_COLORS[selectedTask.priority].color }}>{selectedTask.priority}</span>
-            <button style={{ padding: "6px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, cursor: "pointer" }}>Edit</button>
+            <button disabled title="Prototype control — not wired yet" style={{ padding: "6px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, cursor: "pointer" }}>Edit</button>
             <button onClick={() => setSelectedTask(null)} style={{ padding: "6px 10px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textMuted, fontSize: 11, cursor: "pointer" }}>✕</button>
           </div>
         )}

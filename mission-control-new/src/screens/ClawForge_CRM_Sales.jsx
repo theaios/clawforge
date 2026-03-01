@@ -1,4 +1,5 @@
 import {useState, useEffect} from "react";
+import { getStoredThemeMode } from "../lib/themeMode";
 
 function getTheme(dark) {
   if (dark) return {
@@ -231,9 +232,9 @@ function DealDrawer({ deal, onClose }) {
         )}
       </div>
       <div style={{ padding: "12px 20px", borderTop: `1px solid ${C.border}`, display: "flex", gap: 8 }}>
-        <button style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>Log Activity</button>
-        <button style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>Send Email</button>
-        <button style={{ flex: 1, padding: "8px", borderRadius: 6, border: "none", background: C.green, color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>Move Stage →</button>
+        <button disabled title="Prototype control — not wired yet" style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>Log Activity</button>
+        <button disabled title="Prototype control — not wired yet" style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>Send Email</button>
+        <button disabled title="Prototype control — not wired yet" style={{ flex: 1, padding: "8px", borderRadius: 6, border: "none", background: C.green, color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>Move Stage →</button>
       </div>
     </div>
   );
@@ -331,8 +332,11 @@ function Sidebar({ activePage, isDark, setIsDark, C }) {
             <div style={{ fontSize: 9, fontWeight: 700, color: C.textMuted, letterSpacing: 1.2, textTransform: "uppercase", padding: "12px 10px 4px" }}>{s.section}</div>
             {s.items.map((item, ii) => {
               const active = item.key === activePage;
+              const m = { 'start-here': '/start-here', overview: '/overview', boards: '/boards', timeline: '/timeline', brainstorm: '/brainstorm', brainstorming: '/brainstorm', templates: '/templates', agentarmy: '/army', configurator: '/configurator?step=1', files: '/files', crm: '/crm', marketing: '/marketing', finance: '/finance', webdelivery: '/web', security: '/security', integrations: '/integrations', costusage: '/costs', settings: '/settings' };
+              const href = `#${m[item.key] || '/overview'}`;
               return (
-                <div key={ii} style={{
+                <a key={ii} href={href} style={{
+                  textDecoration: "none",
                   display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 6,
                   cursor: "pointer", background: active ? C.blueGlow : "transparent",
                   borderLeft: active ? `2px solid ${C.blue}` : "2px solid transparent", marginBottom: 1,
@@ -340,7 +344,7 @@ function Sidebar({ activePage, isDark, setIsDark, C }) {
                 }}>
                   <span style={{ fontSize: 14, color: active ? C.blue : C.textMuted, width: 20, textAlign: "center" }}>{item.icon}</span>
                   <span style={{ fontSize: 12, fontWeight: active ? 600 : 500, color: active ? (isDark ? "#fff" : C.blue) : C.textSec, flex: 1 }}>{item.label}</span>
-                </div>
+                </a>
               );
             })}
           </div>
@@ -395,7 +399,7 @@ export default function CRMSales() {
                   <button key={v} onClick={() => setViewMode(v)} style={{ padding: "6px 14px", border: "none", cursor: "pointer", fontSize: 11, fontWeight: 500, background: viewMode === v ? C.blueGlow : "transparent", color: viewMode === v ? C.blue : C.textMuted, textTransform: "capitalize" }}>{v}</button>
                 ))}
               </div>
-              <button style={{ padding: "7px 14px", borderRadius: 6, border: "none", background: C.blue, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>+ Add Deal</button>
+              <button disabled title="Prototype control — not wired yet" style={{ padding: "7px 14px", borderRadius: 6, border: "none", background: C.blue, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>+ Add Deal</button>
             </div>
           </div>
           {/* KPI strip */}

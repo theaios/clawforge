@@ -1,4 +1,6 @@
 import {useState, useEffect} from "react";
+import { getStoredThemeMode } from "../lib/themeMode";
+import { buildMainMenuSections } from "../lib/systemNav";
 
 function getTheme(dark) {
   if (dark) return {
@@ -116,26 +118,7 @@ function ThemeToggle({ isDark, setIsDark }) {
 }
 
 function Sidebar({ activePage, isDark, setIsDark, C }) {
-  const NAV = [
-    { section: "MAIN", items: [
-      { icon: "🚀", label: "Start Here", key: "start-here" },
-      { icon: "💬", label: "Chat", key: "chat" },
-      { icon: "▦", label: "Tasks", key: "boards" },
-      { icon: "◉", label: "Approvals", key: "approvals" },
-      { icon: "◐", label: "Brainstorming", key: "brainstorm" },
-      { icon: "⬡", label: "Org Chart", key: "agentarmy" },
-      { icon: "⚙", label: "Add Agent", key: "configurator" },
-      { icon: "🗂", label: "Files", key: "files" },
-    ]},
-    { section: "SYSTEM", items: [
-      { icon: "⛨", label: "Security", key: "security" },
-      { icon: "⊞", label: "Integrations", key: "integrations" },
-      { icon: "📊", label: "Cost & Usage", key: "costusage" },
-      { icon: "⚙️", label: "Settings", key: "settings" },
-      { icon: "🛠", label: "Under Development", key: "development" },
-      { icon: "🧾", label: "Activity Log", key: "activitylog" },
-    ]},
-  ];
+  const NAV = buildMainMenuSections();
   return (
     <div style={{ width: 220, flexShrink: 0, background: C.surface, borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "18px 18px 14px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${C.border}` }}>
@@ -259,8 +242,8 @@ function PreviewDrawer({ template, onClose }) {
       </div>
 
       <div style={{ padding: "14px 20px", borderTop: `1px solid ${C.border}`, display: "flex", gap: 8 }}>
-        <button style={{ flex: 1, padding: "10px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>👁 Full Preview</button>
-        <button style={{
+        <button disabled title="Prototype control — not wired yet" style={{ flex: 1, padding: "10px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>👁 Full Preview</button>
+        <button disabled title="Prototype control — not wired yet" style={{
           flex: 2, padding: "10px", borderRadius: 6, border: "none",
           background: `linear-gradient(135deg, ${template.color}, ${template.color}CC)`,
           color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer",
@@ -309,7 +292,7 @@ export default function TemplatesLibrary() {
                 <h2 style={{ fontSize: 20, fontWeight: 800, margin: "0 0 4px", letterSpacing: -0.5 }}>Templates Library</h2>
                 <p style={{ fontSize: 12, color: C.textMuted, margin: 0 }}>Pre-built configurations to deploy agents, boards, and workflows in minutes</p>
               </div>
-              <button style={{ padding: "7px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, cursor: "pointer" }}>+ Submit Template</button>
+              <button disabled title="Prototype control — not wired yet" style={{ padding: "7px 14px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, cursor: "pointer" }}>+ Submit Template</button>
             </div>
 
             {/* Filters */}
