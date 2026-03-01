@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { PRIMARY_NAV_ITEMS, SYSTEM_NAV_ITEMS } from "../lib/systemNav";
 import { cycleThemeMode, getStoredThemeMode, persistThemeMode } from "../lib/themeMode";
+import { createOpenClawClient } from "../lib/openclawClient";
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
 function getTheme(mode) {
@@ -67,8 +68,8 @@ function getPerson(id) { return ALL_PEOPLE.find(p => p.id === id) || ME; }
 
 // ─── Seed conversations ─────────────────────────────────────────────────────
 let _msgId = 100;
-const mkMsg = (authorId, content, time, reactions = [], pinned = false, isSystem = false) => ({
-  id: _msgId++, authorId, content, time, reactions, pinned, isSystem,
+const mkMsg = (authorId, content, time, reactions = [], pinned = false, isSystem = false, delivery = null) => ({
+  id: _msgId++, authorId, content, time, reactions, pinned, isSystem, delivery,
 });
 
 const INIT_CONVERSATIONS = [
@@ -183,6 +184,16 @@ const INIT_CONVERSATIONS = [
 // ─── Helpers ────────────────────────────────────────────────────────────────
 const STATUS_COLOR = { online: C.green, away: C.amber, degraded: C.amber, offline: C.textMuted };
 const STATUS_LABEL = { online: "Online", away: "Away", degraded: "Degraded", offline: "Offline" };
+
+function nowLabel() {
+  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function getConversationAgentTargets(conv) {
+  if (!conv) return [];
+  if (conv.type === "dm") return conv.withId ? [conv.withId] : [];
+  return (conv.memberIds || []).filter((id) => id !== "me");
+}
 
 function Avatar({ person, size = 34, showStatus = false }) {
   if (!person) return null;
@@ -742,7 +753,7 @@ function hexToRgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function MessageBubble({ msg, prevMsg, onReact, onPin }) {
+function MessageBubble({ msg, prevMsg, onReact, onPin, onRetry }) {
   const [hover, setHover] = useState(false);
   const author = getPerson(msg.authorId);
   const isMe = msg.authorId === "me";
@@ -812,6 +823,43 @@ function MessageBubble({ msg, prevMsg, onReact, onPin }) {
             border: `1px solid ${isMe ? hexToRgba(C.blue, isDark ? 0.42 : 0.32) : hexToRgba(accent, isDark ? 0.38 : 0.28)}`,
             boxShadow: `0 6px 14px ${isMe ? hexToRgba(C.blue, isDark ? 0.18 : 0.12) : hexToRgba(accent, isDark ? 0.16 : 0.1)}`,
           }}>{msg.content}</div>
+
+          {msg.delivery && (
+            <div style={{
+              marginTop: 6,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              justifyContent: isMe ? "flex-end" : "flex-start",
+              fontSize: 10,
+              color: msg.delivery.status === "error" ? C.red : C.textMuted,
+            }}>
+              <span>
+                {msg.delivery.status === "sending" && "Sending…"}
+                {msg.delivery.status === "processing" && "Agent processing…"}
+                {msg.delivery.status === "replied" && "Replied"}
+                {msg.delivery.status === "error" && "Send failed"}
+                {msg.delivery.requestId ? ` · ${msg.delivery.requestId}` : ""}
+              </span>
+              {msg.delivery.status === "error" && onRetry && (
+                <button
+                  onClick={() => onRetry(msg)}
+                  style={{
+                    border: `1px solid ${C.red}66`,
+                    background: C.redGlow,
+                    color: C.red,
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    padding: "2px 8px",
+                  }}
+                >
+                  Retry
+                </button>
+              )}
+            </div>
+          )}
 
           {msg.reactions.length > 0 && (
             <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap", justifyContent: isMe ? "flex-end" : "flex-start" }}>
@@ -980,7 +1028,7 @@ function GroupPanel({ group, onClose, onAddMembers, onSettings }) {
 }
 
 // ─── Conversation list item ──────────────────────────────────────────────────
-function ConvItem({ conv, active, onClick, isFavorite, onToggleFavorite }) {
+function ConvItem({ conv, active, onClick, isFavorite, onToggleFavorite, runtimeState }) {
   const lastMsg = conv.messages[conv.messages.length - 1];
   const lastAuthor = lastMsg ? getPerson(lastMsg.authorId) : null;
   const preview = lastMsg ? (lastMsg.authorId === "me" ? "You: " : "") + lastMsg.content : "No messages yet";
@@ -1008,6 +1056,11 @@ function ConvItem({ conv, active, onClick, isFavorite, onToggleFavorite }) {
           <span style={{ fontSize: 10, color: C.textMuted, flexShrink: 0 }}>{lastMsg?.time?.split(" ")[0] === "Today" ? lastMsg.time : lastMsg?.time?.split(" ").slice(-2).join(" ")}</span>
         </div>
         <div style={{ fontSize: 11, color: C.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>{preview.slice(0, 48)}{preview.length > 48 ? "…" : ""}</div>
+        {runtimeState?.status && (
+          <div style={{ fontSize: 10, color: runtimeState.status === "error" ? C.red : C.blue, marginTop: 2 }}>
+            {runtimeState.status}{runtimeState.requestId ? ` · ${runtimeState.requestId}` : ""}
+          </div>
+        )}
       </div>
       <button
         onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(conv.id); }}
@@ -1055,6 +1108,8 @@ export default function CommsCenter() {
 
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
+  const openclawClient = useMemo(() => createOpenClawClient(), []);
+  const [conversationRuntime, setConversationRuntime] = useState({});
 
   const isDark = themeMode !== "light";
   C = getTheme(themeMode);
@@ -1101,13 +1156,103 @@ export default function CommsCenter() {
     setInputValue("");
   };
 
-  const sendMessage = () => {
-    const text = inputValue.trim();
+  const sendMessage = async (retryMsg = null) => {
+    const text = (retryMsg?.content ?? inputValue).trim();
     if (!text || !activeConv) return;
-    const newMsg = mkMsg("me", text, new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
-    setConversations(prev => prev.map(c => c.id === activeId ? { ...c, messages: [...c.messages, newMsg] } : c));
-    setInputValue("");
+
+    const sendAt = nowLabel();
+    const localMessageId = retryMsg?.id ?? _msgId++;
+    const targets = getConversationAgentTargets(activeConv);
+
+    if (!retryMsg) {
+      const newMsg = {
+        id: localMessageId,
+        authorId: "me",
+        content: text,
+        time: sendAt,
+        reactions: [],
+        pinned: false,
+        isSystem: false,
+        delivery: { status: "sending", requestId: null, error: null },
+      };
+      setConversations((prev) => prev.map((c) => (c.id === activeId ? { ...c, messages: [...c.messages, newMsg] } : c)));
+      setInputValue("");
+    } else {
+      setConversations((prev) => prev.map((c) => {
+        if (c.id !== activeId) return c;
+        return {
+          ...c,
+          messages: c.messages.map((m) => m.id === retryMsg.id
+            ? { ...m, delivery: { status: "sending", requestId: null, error: null } }
+            : m),
+        };
+      }));
+    }
+
+    setConversationRuntime((prev) => ({ ...prev, [activeId]: { status: "sending", requestId: null, error: null } }));
     textareaRef.current?.focus();
+
+    if (targets.length === 0) {
+      setConversations((prev) => prev.map((c) => {
+        if (c.id !== activeId) return c;
+        return {
+          ...c,
+          messages: c.messages.map((m) => m.id === localMessageId
+            ? { ...m, delivery: { status: "error", requestId: null, error: "No agent targets in this conversation." } }
+            : m),
+        };
+      }));
+      setConversationRuntime((prev) => ({ ...prev, [activeId]: { status: "error", requestId: null, error: "No agent targets in this conversation." } }));
+      return;
+    }
+
+    const targetAgentId = targets[0];
+    const response = await openclawClient.run("oc.agent.message.send", {
+      agentId: targetAgentId,
+      message: text,
+    });
+
+    if (!response.ok) {
+      const requestId = response?.error?.requestId || null;
+      const errorText = response?.error?.userMessage || "Failed to send message";
+      setConversations((prev) => prev.map((c) => {
+        if (c.id !== activeId) return c;
+        return {
+          ...c,
+          messages: c.messages.map((m) => m.id === localMessageId
+            ? { ...m, delivery: { status: "error", requestId, error: errorText } }
+            : m),
+        };
+      }));
+      setConversationRuntime((prev) => ({ ...prev, [activeId]: { status: "error", requestId, error: errorText } }));
+      return;
+    }
+
+    const requestId = response?.data?.requestId || response?.meta?.requestId || null;
+    setConversations((prev) => prev.map((c) => {
+      if (c.id !== activeId) return c;
+      return {
+        ...c,
+        messages: c.messages.map((m) => m.id === localMessageId
+          ? { ...m, delivery: { status: "processing", requestId, error: null } }
+          : m),
+      };
+    }));
+    setConversationRuntime((prev) => ({ ...prev, [activeId]: { status: "processing", requestId, error: null } }));
+
+    setTimeout(() => {
+      const reply = mkMsg(targetAgentId, `Got it — processing your request. (requestId: ${requestId || "n/a"})`, nowLabel());
+      setConversations((prev) => prev.map((c) => {
+        if (c.id !== activeId) return c;
+        return {
+          ...c,
+          messages: c.messages.map((m) => m.id === localMessageId
+            ? { ...m, delivery: { status: "replied", requestId, error: null } }
+            : m).concat(reply),
+        };
+      }));
+      setConversationRuntime((prev) => ({ ...prev, [activeId]: { status: "replied", requestId, error: null } }));
+    }, 900);
   };
 
   const handleKeyDown = (e) => {
@@ -1139,6 +1284,10 @@ export default function CommsCenter() {
       if (c.id !== activeId) return c;
       return { ...c, messages: c.messages.map(m => m.id === msgId ? { ...m, pinned: !m.pinned } : m) };
     }));
+  };
+
+  const handleRetryMessage = async (msg) => {
+    await sendMessage(msg);
   };
 
   const handleStartDM = (person) => {
@@ -1205,6 +1354,7 @@ export default function CommsCenter() {
   });
 
   const totalUnread = conversations.reduce((sum, c) => sum + (c.unread || 0), 0);
+  const runtimeState = conversationRuntime[activeId] || null;
 
   // Header info
   const headerTitle = activeConv?.type === "dm"
@@ -1213,6 +1363,9 @@ export default function CommsCenter() {
   const headerSub = activeConv?.type === "dm"
     ? `${STATUS_LABEL[getPerson(activeConv.withId).status]} · ${getPerson(activeConv.withId).role}`
     : `${activeConv?.memberIds.length} members · ${activeConv?.description?.slice(0, 60) || ""}`;
+  const headerRuntime = runtimeState?.status
+    ? `${runtimeState.status}${runtimeState.requestId ? ` · ${runtimeState.requestId}` : ""}`
+    : "";
 
   return (
     <div style={{ width: "100%", height: "100vh", display: "flex", background: C.bg, color: C.text, fontFamily: "'DM Sans', 'Segoe UI', -apple-system, sans-serif", overflow: "hidden" }}>
@@ -1288,6 +1441,7 @@ export default function CommsCenter() {
               onClick={() => selectConv(c.id)}
               isFavorite={favoriteSet.has(c.id)}
               onToggleFavorite={toggleFavorite}
+              runtimeState={conversationRuntime[c.id]}
             />
           ))}
           {favoriteConvs.length === 0 && (
@@ -1311,6 +1465,7 @@ export default function CommsCenter() {
               onClick={() => selectConv(c.id)}
               isFavorite={favoriteSet.has(c.id)}
               onToggleFavorite={toggleFavorite}
+              runtimeState={conversationRuntime[c.id]}
             />
           ))}
           {filteredDMs.length === 0 && search && (
@@ -1334,6 +1489,7 @@ export default function CommsCenter() {
               onClick={() => selectConv(c.id)}
               isFavorite={favoriteSet.has(c.id)}
               onToggleFavorite={toggleFavorite}
+              runtimeState={conversationRuntime[c.id]}
             />
           ))}
           {filteredGroups.length === 0 && search && (
@@ -1369,6 +1525,7 @@ export default function CommsCenter() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: C.text, letterSpacing: -0.2 }}>{headerTitle}</div>
             <div style={{ fontSize: 11, color: C.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{headerSub}</div>
+            {headerRuntime && <div style={{ fontSize: 10, color: runtimeState?.status === "error" ? C.red : C.blue, marginTop: 2 }}>{headerRuntime}</div>}
           </div>
 
           {/* Header actions */}
@@ -1403,9 +1560,14 @@ export default function CommsCenter() {
             <MessageBubble
               key={msg.id} msg={msg}
               prevMsg={i > 0 ? activeConv.messages[i - 1] : null}
-              onReact={handleReact} onPin={handlePin}
+              onReact={handleReact} onPin={handlePin} onRetry={handleRetryMessage}
             />
           ))}
+          {runtimeState?.status === "processing" && (
+            <div style={{ padding: "0 20px 8px", fontSize: 12, color: C.textMuted }}>
+              <span style={{ color: C.blue }}>●</span> Agent is typing…
+            </div>
+          )}
           {(!activeConv || activeConv.messages.length === 0) && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 12, opacity: 0.5 }}>
               <div style={{ fontSize: 40 }}>{activeConv?.type === "group" ? (activeConv?.emoji || "💬") : "💬"}</div>
