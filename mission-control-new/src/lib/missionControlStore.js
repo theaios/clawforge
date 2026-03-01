@@ -27,6 +27,10 @@ export const defaultStore = {
   agents: {
     viewMode: 'grid',
     roster: [],
+    deletedIds: [],
+    statusOverrides: {},
+    configTargetAgentId: null,
+    lastMessageByAgent: {},
   },
   agentFiles: {
     drafts: {},

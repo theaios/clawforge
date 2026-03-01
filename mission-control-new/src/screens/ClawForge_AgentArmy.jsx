@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMissionControl } from "../lib/missionControlContext";
 import { formatOpError, formatOpSuccess } from "../lib/openclawDiagnostics";
 import { cycleThemeMode, getStoredThemeMode, persistThemeMode } from "../lib/themeMode";
+import { readStore } from "../lib/missionControlStore";
 
 function getTheme(mode) {
   if (mode === "trippy") return {
@@ -515,8 +516,8 @@ export default function AgentArmy() {
   const C = getTheme(themeMode);
 
   const [selectedAgent, setSelectedAgent] = useState(null);
-  const [deletedAgentIds, setDeletedAgentIds] = useState(getInitialDeletedAgentIds);
-  const [agentStatusOverrides, setAgentStatusOverrides] = useState({});
+  const [deletedAgentIds, setDeletedAgentIds] = useState(() => store.agents?.deletedIds || getInitialDeletedAgentIds());
+  const [agentStatusOverrides, setAgentStatusOverrides] = useState(() => store.agents?.statusOverrides || {});
   const [opMessage, setOpMessage] = useState('');
   const [connectionInfo, setConnectionInfo] = useState(() => client.getConnectionState());
   const [collapsedSections, setCollapsedSections] = useState({ SYSTEM: true });
@@ -549,10 +550,16 @@ export default function AgentArmy() {
   }, [deletedAgentIds]);
 
   useEffect(() => {
-    const syncConnection = () => setConnectionInfo(client.getConnectionState());
-    window.addEventListener('mc-store-updated', syncConnection);
-    syncConnection();
-    return () => window.removeEventListener('mc-store-updated', syncConnection);
+    const syncFromStore = () => {
+      const snapshot = client.getConnectionState();
+      setConnectionInfo(snapshot);
+      const liveStore = readStore();
+      setDeletedAgentIds(Array.isArray(liveStore?.agents?.deletedIds) ? liveStore.agents.deletedIds : []);
+      setAgentStatusOverrides(liveStore?.agents?.statusOverrides || {});
+    };
+    window.addEventListener('mc-store-updated', syncFromStore);
+    syncFromStore();
+    return () => window.removeEventListener('mc-store-updated', syncFromStore);
   }, [client]);
 
   useEffect(() => {
@@ -586,20 +593,40 @@ export default function AgentArmy() {
     window.location.hash = '/configurator?step=1';
   };
 
-  const handleDeleteAgent = (agent) => {
-    if (!agent?.id) return;
+  const handleDeleteAgent = async (agent) => {
+    if (!agent?.id) {
+      setOpMessage('Delete failed: missing agent id.');
+      return;
+    }
+    const resp = await client.run('oc.agent.delete', { agentId: agent.id });
+    if (!resp.ok) {
+      setOpMessage(formatOpError(resp.error));
+      return;
+    }
     setDeletedAgentIds((prev) => (prev.includes(agent.id) ? prev : [...prev, agent.id]));
-    setOpMessage(`${agent.name} deleted from org chart view.`);
+    setOpMessage(formatOpSuccess(`${agent.name} deleted from org chart view.`, resp));
     setSelectedAgent(null);
   };
 
-  const handleConfigureAgent = (agent) => {
-    if (!agent?.id) return;
+  const handleConfigureAgent = async (agent) => {
+    if (!agent?.id) {
+      setOpMessage('Configure failed: missing agent id.');
+      return;
+    }
+    const resp = await client.run('oc.agent.configure.open', { agentId: agent.id });
+    if (!resp.ok) {
+      setOpMessage(formatOpError(resp.error));
+      return;
+    }
+    setOpMessage(formatOpSuccess(`Opening ${agent.name} in configurator`, resp));
     window.location.hash = `/configurator?step=1&agentId=${encodeURIComponent(agent.id)}`;
   };
 
   const handleToggleAgentStatus = async (agent) => {
-    if (!agent?.id) return;
+    if (!agent?.id) {
+      setOpMessage('State change failed: missing agent id.');
+      return;
+    }
     const nextState = agent.status === 'online' ? 'paused' : 'active';
     const resp = await client.run('oc.agent.state.set', { agentId: agent.id, state: nextState });
     if (resp.ok) {
@@ -613,9 +640,15 @@ export default function AgentArmy() {
   };
 
   const handleMessageAgent = async (agent) => {
-    if (!agent?.id) return;
+    if (!agent?.id) {
+      setOpMessage('Message failed: missing agent id.');
+      return;
+    }
     const message = window.prompt(`Message ${agent.name}:`);
-    if (!message || !message.trim()) return;
+    if (!message || !message.trim()) {
+      setOpMessage('Message cancelled: empty input.');
+      return;
+    }
     const resp = await client.run('oc.agent.message.send', { agentId: agent.id, message: message.trim() });
     if (resp.ok) {
       setOpMessage(formatOpSuccess(`Message sent to ${agent.name}`, resp));

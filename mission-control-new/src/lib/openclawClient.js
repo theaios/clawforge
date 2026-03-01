@@ -54,6 +54,12 @@ const LIVE_ROUTES = {
     { method: 'POST', path: '/api/boards/card/move' },
     { method: 'POST', path: '/api/mission-control/boards/card/move' },
   ],
+  'oc.board.archive.task': [
+    { method: 'DELETE', path: '/api/v1/boards/{board_id}/tasks/{task_id}' },
+  ],
+  'oc.board.restore.task': [
+    { method: 'POST', path: '/api/v1/boards/{board_id}/tasks' },
+  ],
   'oc.agentConfig.draft.save': [
     { method: 'PUT', path: '/api/agent-config/draft' },
     { method: 'PUT', path: '/api/mission-control/agent-config/draft' },
@@ -158,6 +164,16 @@ function interpolateRoute(path, payload = {}) {
     .replace('{agent_id}', encodeURIComponent(agentId || ''));
 }
 
+function toApiPriority(priority) {
+  const map = {
+    P0: 'high',
+    P1: 'high',
+    P2: 'medium',
+    P3: 'low',
+  };
+  return map[priority] || 'medium';
+}
+
 function buildLiveBody(op, routePath, payload, requestId) {
   if (routePath.includes('/api/v1/boards/') && routePath.includes('/tasks/') && op === 'oc.board.card.move') {
     return { status: toApiTaskStatus(payload.toColumnId), requestId };
@@ -168,6 +184,16 @@ function buildLiveBody(op, routePath, payload, requestId) {
   if (routePath.includes('/nudge') && op === 'oc.agent.message.send') {
     return { message: payload.message, requestId };
   }
+  if (routePath.includes('/api/v1/boards/') && routePath.endsWith('/tasks') && op === 'oc.board.restore.task') {
+    const task = payload.task || {};
+    return {
+      title: task.title || payload.title || 'Restored task',
+      description: task.description || payload.description || '',
+      status: toApiTaskStatus(payload.targetColId || payload.toColumnId || task.sourceColId || 'ready'),
+      priority: toApiPriority(task.priority || payload.priority),
+      requestId,
+    };
+  }
   return routePath.includes('/run') ? { op, requestId, payload } : { requestId, ...payload };
 }
 
@@ -177,7 +203,7 @@ async function tryFetch(baseUrl, route, payload, headers, timeoutMs) {
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const init = { method: route.method, headers: { ...headers }, signal: controller.signal };
-    if (route.method !== 'GET') {
+    if (!['GET', 'DELETE'].includes(route.method)) {
       init.body = JSON.stringify(payload);
     }
     const response = await fetch(url, init);
@@ -533,6 +559,8 @@ export function createOpenClawClient() {
       'oc.system.degraded.set',
       'oc.board.get',
       'oc.board.card.move',
+      'oc.board.archive.task',
+      'oc.board.restore.task',
       'oc.agent.state.set',
       'oc.agent.message.send',
       'oc.agentConfig.draft.save',
