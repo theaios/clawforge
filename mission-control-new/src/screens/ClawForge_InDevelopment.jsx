@@ -10,6 +10,7 @@ const links = [
   { label: 'Web & Delivery', path: '#/web' },
   { label: 'Templates Library', path: '#/templates' },
   { label: 'Agent Files (Internal)', path: '#/agent-files' },
+  { label: 'Activity Log & Rollback', path: '#/activity-log' },
 ]
 
 const themes = {

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import AgentArmy from './screens/ClawForge_AgentArmy.jsx'
 import AgentConfigurator from './screens/ClawForge_AgentConfigurator.jsx'
 import AgentFiles from './screens/ClawForge_AgentFiles.jsx'
+import ActivityRollback from './screens/ClawForge_ActivityRollback.jsx'
 import AgentChat from './screens/ClawForge_AgentChat.jsx'
 import Chat from './screens/ClawForge_Chat.jsx'
 import Brainstorming from './screens/ClawForge_Brainstorming.jsx'
@@ -96,6 +97,7 @@ const hiddenRoutes = [
   { path: '/templates', label: 'Templates', comp: TemplatesLibrary },
   { path: '/modals', label: 'Key Modals', comp: KeyModals },
   { path: '/empty', label: 'Empty States', comp: EmptyStates },
+  { path: '/activity-log', label: 'Activity Log & Rollback', comp: ActivityRollback },
 ]
 
 const allRoutes = [...sections.flatMap((s) => s.items), ...hiddenRoutes]
@@ -136,6 +138,8 @@ const textNavMap = new Map([
   ['templates', '/templates'],
   ['settings', '/settings'],
   ['under development', '/development'],
+  ['activity log', '/activity-log'],
+  ['rollback', '/activity-log'],
   ['review now', '/approvals'],
   ['view error', '/boards'],
   ['view timeline', '/timeline'],
