@@ -363,7 +363,7 @@ function AppContent() {
 
   return (
     <div className={`mc-app mc-theme-${themeMode}`} style={{ minHeight: '100vh', background: bg, fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'fixed', top: 12, right: 12, zIndex: 9999 }}>
+      <div style={{ position: 'fixed', left: 14, bottom: 14, zIndex: 9999 }}>
         <ThemeModeToggle mode={themeMode} onChange={setThemeMode} compact />
       </div>
       <OpenClawLiveBanner />
