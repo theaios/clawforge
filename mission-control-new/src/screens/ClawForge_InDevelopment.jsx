@@ -1,25 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getStoredThemeMode } from '../lib/themeMode'
 
-const links = [
-  { path: '#/overview', label: 'Overview' },
-  { path: '#/timeline', label: 'Timeline' },
-  { path: '#/comms', label: 'Comms Center' },
-  { path: '#/approvals', label: 'Approvals & Blockers' },
-  { path: '#/crm', label: 'CRM & Sales' },
-  { path: '#/marketing', label: 'Marketing Cmd' },
-  { path: '#/finance', label: 'Finance' },
-  { path: '#/security', label: 'Security' },
-  { path: '#/integrations', label: 'Integrations' },
-  { path: '#/runs', label: 'Run History' },
-  { path: '#/costs', label: 'Cost & Usage' },
-  { path: '#/settings', label: 'Settings' },
-  { path: '#/web', label: 'Web & Delivery' },
-  { path: '#/templates', label: 'Templates' },
-  { path: '#/agent-files', label: 'Agent Files' },
-  { path: '#/modals', label: 'Key Modals' },
-  { path: '#/empty', label: 'Empty States' },
-]
+const links = []
 
 const themes = {
   dark: { bg: '#0a0c10', surface: '#12151b', border: '#2a303d', text: '#e8eaed', muted: '#9ca3af', link: '#d9dce3' },
@@ -46,26 +28,42 @@ export default function InDevelopment() {
     <div style={{ minHeight: '100vh', background: t.bg, color: t.text, padding: 16, fontFamily: 'Inter, system-ui, sans-serif' }}>
       <h2 style={{ marginTop: 0 }}>Under Development</h2>
       <p style={{ color: t.muted, marginTop: 0 }}>Internal pages moved here so the main menu stays clean.</p>
-      <div style={{ display: 'grid', gap: 8, maxWidth: 520 }}>
-        {links.map((l) => (
-          <a
-            key={l.path}
-            href={l.path}
-            style={{
-              textDecoration: 'none',
-              background: t.surface,
-              border: `1px solid ${t.border}`,
-              borderRadius: 10,
-              padding: '10px 12px',
-              color: t.link,
-              fontSize: 14,
-              fontWeight: 600,
-            }}
-          >
-            {l.label}
-          </a>
-        ))}
-      </div>
+      {links.length === 0 ? (
+        <div
+          style={{
+            background: t.surface,
+            border: `1px solid ${t.border}`,
+            borderRadius: 10,
+            padding: '12px 14px',
+            color: t.muted,
+            fontSize: 14,
+            maxWidth: 520,
+          }}
+        >
+          No in-progress internal pages right now.
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gap: 8, maxWidth: 520 }}>
+          {links.map((l) => (
+            <a
+              key={l.path}
+              href={l.path}
+              style={{
+                textDecoration: 'none',
+                background: t.surface,
+                border: `1px solid ${t.border}`,
+                borderRadius: 10,
+                padding: '10px 12px',
+                color: t.link,
+                fontSize: 14,
+                fontWeight: 600,
+              }}
+            >
+              {l.label}
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
