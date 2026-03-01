@@ -1,6 +1,6 @@
-import {useState, useEffect} from "react";
+import {useState, useEffect, useMemo} from "react";
 import { useMissionControl } from "../lib/missionControlContext";
-import { formatOpError, formatOpSuccess } from "../lib/openclawDiagnostics";
+import { describeConnection, formatOpError, formatOpSuccess } from "../lib/openclawDiagnostics";
 import { PRIMARY_NAV_ITEMS, SYSTEM_NAV_ITEMS } from "../lib/systemNav";
 import { cycleThemeMode, getStoredThemeMode, persistThemeMode } from "../lib/themeMode";
 
@@ -489,6 +489,17 @@ export default function Settings() {
 
   const [tab, setTab] = useState(store.system.settings.tabKey || "profile");
   const [opMessage, setOpMessage] = useState('');
+  const connection = useMemo(() => describeConnection(store), [store]);
+  const runtimeChecks = useMemo(() => {
+    const cfg = client?.config || {};
+    const hasAuth = Boolean(cfg.authMode === 'bearer' ? cfg.hasBearerToken : cfg.authMode === 'x-api-key' ? cfg.hasApiKey : cfg.authMode === 'x-agent-token' ? cfg.hasAgentToken : (cfg.hasBearerToken || cfg.hasApiKey || cfg.hasAgentToken));
+    return [
+      { label: 'Live API Enabled', pass: Boolean(cfg.liveEnabled), detail: cfg.liveEnabled ? 'VITE_OPENCLAW_LIVE_ENABLED=true' : 'Live API disabled in env' },
+      { label: 'Base URL', pass: Boolean(cfg.baseUrl), detail: cfg.baseUrl || 'VITE_OPENCLAW_BASE_URL is missing' },
+      { label: 'Auth Mode', pass: Boolean(cfg.authMode), detail: cfg.authMode || 'unset' },
+      { label: 'Credentials', pass: hasAuth, detail: hasAuth ? 'Token/key detected at runtime' : 'No runtime credentials found for selected auth mode' },
+    ];
+  }, [client]);
   const TabContent = TAB_COMPONENTS[tab];
 
   useEffect(() => {
@@ -543,6 +554,38 @@ export default function Settings() {
               {tab === "advanced" && "Infrastructure, data, and account management"}
             </p>
             {opMessage && <p style={{ fontSize: 11, color: C.blue, margin: "0 0 12px" }}>{opMessage}</p>}
+
+            <div style={{
+              borderRadius: 10,
+              border: `1px solid ${connection.connected ? `${C.green}66` : `${C.amber}66`}`,
+              background: connection.connected ? C.greenGlow : C.amberGlow,
+              padding: "10px 12px",
+              marginBottom: 14,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: connection.connected ? C.green : C.amber }}>
+                    Live API {connection.connected ? 'Connected' : 'Disconnected'}
+                  </div>
+                  <div style={{ fontSize: 11, color: C.textSec, marginTop: 2 }}>
+                    {connection.requestId ? `Last requestId: ${connection.requestId}` : 'No request has completed yet'}
+                    {connection.lastError?.debugCode ? ` · ${connection.lastError.debugCode}` : ''}
+                    {connection.lastError?.status ? ` · HTTP ${connection.lastError.status}` : ''}
+                  </div>
+                </div>
+                <div style={{ fontSize: 10, color: C.textMuted }}>
+                  Runtime checks below are non-blocking and update from current session config.
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 8, marginTop: 10 }}>
+                {runtimeChecks.map((check) => (
+                  <div key={check.label} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 9px", background: C.surface }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: check.pass ? C.green : C.red }}>{check.pass ? '✓' : '⚠'} {check.label}</div>
+                    <div style={{ fontSize: 10, color: C.textMuted, marginTop: 2, lineHeight: '14px' }}>{check.detail}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
             <TabContent />
           </div>
         </div>

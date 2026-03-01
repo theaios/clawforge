@@ -152,13 +152,14 @@ function OpenClawLiveBanner() {
     <div
       style={{
         position: 'fixed',
-        top: 10,
+        bottom: 12,
         right: 12,
         zIndex: 9999,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-end',
         gap: 6,
+        pointerEvents: 'none',
       }}
     >
       <button
@@ -180,6 +181,7 @@ function OpenClawLiveBanner() {
           cursor: 'pointer',
           backdropFilter: 'blur(3px)',
           boxShadow: '0 4px 18px rgba(0,0,0,0.22)',
+          pointerEvents: 'auto',
         }}
       >
         <span style={{ fontSize: 9 }}>●</span>
@@ -198,6 +200,7 @@ function OpenClawLiveBanner() {
             fontSize: 11,
             lineHeight: 1.45,
             fontFamily: 'Inter, system-ui, sans-serif',
+            pointerEvents: 'auto',
           }}
         >
           <div style={{ fontWeight: 700, color: isConnected ? '#34d399' : '#f87171' }}>

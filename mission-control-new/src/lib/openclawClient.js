@@ -270,11 +270,50 @@ async function runLocal(op, payload, requestId) {
         return ok({ requestId, agent: found }, { source: 'local' });
       }
       case 'oc.agent.state.set': {
-        const ix = store.agents.roster.findIndex((a) => a.id === payload.agentId);
-        if (ix < 0) return err('Agent not found', 'AGENT_NOT_FOUND', false, 'refresh', { requestId });
-        store.agents.roster[ix] = { ...store.agents.roster[ix], status: payload.state === 'active' ? 'online' : 'offline' };
+        const { agentId, state } = payload || {};
+        if (!agentId) return err('Missing agentId', 'AGENT_ID_REQUIRED', false, 'refresh', { requestId });
+        const nextStatus = state === 'active' ? 'online' : 'offline';
+        const ix = store.agents.roster.findIndex((a) => a.id === agentId);
+        if (ix >= 0) {
+          store.agents.roster[ix] = { ...store.agents.roster[ix], status: nextStatus };
+        }
+        store.agents.statusOverrides = { ...(store.agents.statusOverrides || {}), [agentId]: nextStatus };
         writeStore(store);
-        return ok({ requestId, agent: store.agents.roster[ix] }, { source: 'local' });
+        return ok({ requestId, agentId, status: nextStatus, agent: ix >= 0 ? store.agents.roster[ix] : null }, { source: 'local' });
+      }
+      case 'oc.agent.message.send': {
+        const { agentId, message } = payload || {};
+        if (!agentId) return err('Missing agentId', 'AGENT_ID_REQUIRED', false, 'refresh', { requestId });
+        if (!String(message || '').trim()) return err('Message cannot be empty', 'AGENT_MESSAGE_EMPTY', false, 'retry', { requestId });
+        store.agents.lastMessageByAgent = {
+          ...(store.agents.lastMessageByAgent || {}),
+          [agentId]: {
+            message: String(message).trim(),
+            sentAt: new Date().toISOString(),
+            requestId,
+          },
+        };
+        writeStore(store);
+        return ok({ requestId, agentId, message: String(message).trim() }, { source: 'local' });
+      }
+      case 'oc.agent.delete': {
+        const { agentId } = payload || {};
+        if (!agentId) return err('Missing agentId', 'AGENT_ID_REQUIRED', false, 'refresh', { requestId });
+        const deleted = new Set(store.agents.deletedIds || []);
+        deleted.add(agentId);
+        store.agents.deletedIds = Array.from(deleted);
+        delete store.agents.statusOverrides?.[agentId];
+        delete store.agents.lastMessageByAgent?.[agentId];
+        store.agents.roster = (store.agents.roster || []).filter((a) => a?.id !== agentId);
+        writeStore(store);
+        return ok({ requestId, agentId, deletedIds: store.agents.deletedIds }, { source: 'local' });
+      }
+      case 'oc.agent.configure.open': {
+        const { agentId } = payload || {};
+        if (!agentId) return err('Missing agentId', 'AGENT_ID_REQUIRED', false, 'refresh', { requestId });
+        store.agents.configTargetAgentId = agentId;
+        writeStore(store);
+        return ok({ requestId, agentId }, { source: 'local' });
       }
       case 'oc.agentFiles.get': {
         return ok({ requestId, drafts: store.agentFiles?.drafts || {} }, { source: 'local' });
@@ -553,5 +592,18 @@ export function createOpenClawClient() {
     return store.ui?.openclaw || { connected: false, lastRequestId: null, checkedAt: null };
   };
 
-  return { run, checkHealth, getConnectionState, config: { ...config, bearerToken: undefined, apiKey: undefined, agentToken: undefined } };
+  return {
+    run,
+    checkHealth,
+    getConnectionState,
+    config: {
+      ...config,
+      hasBearerToken: !!config.bearerToken,
+      hasApiKey: !!config.apiKey,
+      hasAgentToken: !!config.agentToken,
+      bearerToken: undefined,
+      apiKey: undefined,
+      agentToken: undefined,
+    },
+  };
 }
