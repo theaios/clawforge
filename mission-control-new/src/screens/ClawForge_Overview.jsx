@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getApprovalsAndBlockers, readKanbanTasks } from "../lib/missionData";
-import { cycleThemeMode, getStoredThemeMode, persistThemeMode } from "../lib/themeMode";
+import { getStoredThemeMode, persistThemeMode } from "../lib/themeMode";
+import { PRIMARY_NAV_ITEMS, SYSTEM_NAV_ITEMS } from "../lib/systemNav";
 
 function getTheme(mode) {
   if (mode === "trippy") return {
@@ -47,11 +48,11 @@ let C = getTheme(true);
 
 
 const COMMAND_ACTIONS = [
-  { icon: "⬡", label: "New Agent", shortcut: "⌘N", color: C.blue },
-  { icon: "▦", label: "New Board", shortcut: "⌘B", color: C.purple },
-  { icon: "◈", label: "New Channel", shortcut: "⌘C", color: C.teal },
-  { icon: "📊", label: "Run Report", shortcut: "⌘R", color: C.green },
-  { icon: "🚨", label: "Incident", shortcut: "⌘I", color: C.red },
+  { icon: "⬡", label: "New Agent", shortcut: "⌘N", color: C.blue, path: "/configurator?step=1" },
+  { icon: "▦", label: "New Board", shortcut: "⌘B", color: C.purple, unavailable: true },
+  { icon: "◈", label: "New Channel", shortcut: "⌘C", color: C.teal, path: "/comms" },
+  { icon: "📊", label: "Run Report", shortcut: "⌘R", color: C.green, path: "/costs" },
+  { icon: "🚨", label: "Incident", shortcut: "⌘I", color: C.red, path: "/security" },
 ];
 
 const LIVE_FEED = [
@@ -110,102 +111,45 @@ function ScrollbarStyle({ C }) {
   );
 }
 
-function ThemeToggle({ themeMode, setThemeMode, C }) {
-  const labels = {
-    light: { icon: "☀️", label: "Light" },
-    dark: { icon: "🌙", label: "Dark" },
-    trippy: { icon: "🪩", label: "Trippy" },
-  };
-  const current = labels[themeMode] || labels.dark;
-  return (
-    <div
-      onClick={() => setThemeMode(cycleThemeMode(themeMode))}
-      style={{
-        display: "flex", alignItems: "center", gap: 8,
-        padding: "6px 10px", borderRadius: 6, cursor: "pointer",
-        background: C.blueGlow,
-        border: `1px solid ${C.border}`,
-        transition: "all 0.2s ease",
-      }}
-      title="Cycle theme: Light → Dark → Trippy"
-    >
-      <span style={{ fontSize: 13, lineHeight: 1 }}>{current.icon}</span>
-      <span style={{ fontSize: 10, fontWeight: 600, color: C.textSec }}>{current.label}</span>
-    </div>
-  );
-}
-
-function Sidebar({ activePage, themeMode, setThemeMode, C }) {
-  const isDark = themeMode !== "light";
+function Sidebar({ activePage, C, collapsedSections, onToggleSection }) {
+  const currentRoute = (window.location.hash.replace('#', '').split('?')[0] || '/overview');
   const NAV = [
-    { section: "COMMAND", items: [
-      { icon: "🚀", label: "Start Here", key: "start-here" },
-      { icon: "◎", label: "Overview", key: "overview" },
-      { icon: "▦", label: 'Tasks', key: "boards" },
-      { icon: "◷", label: "Timeline", key: "timeline" },
-    ]},
-    { section: "CREATIVE", items: [
-      { icon: "💡", label: "Brainstorming", key: "brainstorming" },
-      { icon: "◫", label: "Templates", key: "templates" },
-    ]},
-    { section: "AGENTS", items: [
-      { icon: "⬡", label: "Org Chart", key: "agentarmy" },
-      { icon: "⚙", label: "Add Agent", key: "configurator" },
-      { icon: "🗂", label: "Files", key: "files" },
-    ]},
-    { section: "BUSINESS", items: [
-      { icon: "◇", label: "CRM & Sales", key: "crm" },
-      { icon: "◆", label: "Marketing", key: "marketing" },
-      { icon: "◈", label: "Finance", key: "finance" },
-    ]},
-    { section: "DELIVER", items: [
-      { icon: "🌐", label: "Web Delivery", key: "webdelivery" },
-    ]},
-    { section: "SYSTEM", items: [
-      { icon: "⛨", label: "Security", key: "security" },
-      { icon: "⊞", label: "Integrations", key: "integrations" },
-      { icon: "📊", label: "Cost & Usage", key: "costusage" },
-      { icon: "⚙️", label: "Settings", key: "settings" },
-    ]},
+    { section: 'MAIN', items: PRIMARY_NAV_ITEMS },
+    { section: 'SYSTEM', items: SYSTEM_NAV_ITEMS },
   ];
+
   return (
-    <div style={{ width: 220, flexShrink: 0, background: C.surface, borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column" }}>
-      <div style={{ padding: "18px 18px 14px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ width: 30, height: 30, borderRadius: 8, background: `linear-gradient(135deg, ${C.orange}, #c2410c)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff" }}>⚡</div>
+    <div style={{ width: 220, flexShrink: 0, background: C.surface, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '18px 18px 14px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ width: 30, height: 30, borderRadius: 8, background: `linear-gradient(135deg, ${C.orange}, #c2410c)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#fff' }}>⚡</div>
         <div>
           <div style={{ fontSize: 14, fontWeight: 800, color: C.text, letterSpacing: -0.3 }}>ClawForge</div>
-          <div style={{ fontSize: 9, color: C.textMuted, fontWeight: 500, letterSpacing: 1, textTransform: "uppercase" }}>Mission Control</div>
+          <div style={{ fontSize: 9, color: C.textMuted, fontWeight: 500, letterSpacing: 1, textTransform: 'uppercase' }}>Mission Control</div>
         </div>
       </div>
-      <div style={{ flex: 1, overflowY: "auto", padding: "8px" }}>
-        {NAV.map((s, si) => (
-          <div key={si} style={{ marginBottom: 4 }}>
-            <div style={{ fontSize: 9, fontWeight: 700, color: C.textMuted, letterSpacing: 1.2, textTransform: "uppercase", padding: "12px 10px 4px" }}>{s.section}</div>
-            {s.items.map((item, ii) => {
-              const active = item.key === activePage;
-              return (
-                <div key={ii} style={{
-                  display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 6,
-                  cursor: "pointer", background: active ? C.blueGlow : "transparent",
-                  borderLeft: active ? `2px solid ${C.blue}` : "2px solid transparent", marginBottom: 1,
-                  transition: "all 0.15s ease",
-                }}>
-                  <span style={{ fontSize: 14, color: active ? C.blue : C.textMuted, width: 20, textAlign: "center" }}>{item.icon}</span>
-                  <span style={{ fontSize: 12, fontWeight: active ? 600 : 500, color: active ? (isDark ? "#fff" : C.blue) : C.textSec, flex: 1 }}>{item.label}</span>
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-      <div style={{ padding: "10px 12px", borderTop: `1px solid ${C.border}` }}>
-      </div>
-      <div style={{ padding: "12px 16px", borderTop: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg, ${C.blue}, ${C.purple})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>JC</div>
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 600, color: C.text }}>Joseph</div>
-          <div style={{ fontSize: 9, color: C.textMuted }}>Orchestrator</div>
-        </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+        {NAV.map((s) => {
+          const collapsed = !!collapsedSections[s.section];
+          return (
+            <div key={s.section} style={{ marginBottom: 4 }}>
+              <button onClick={() => onToggleSection(s.section)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 9, fontWeight: 700, color: C.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', padding: '12px 10px 6px' }}>
+                <span>{s.section}</span>
+                <span style={{ minWidth: 18, height: 18, borderRadius: 5, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${C.border}`, background: C.elevated, fontSize: 13, fontWeight: 800, lineHeight: 1, color: C.textSec }}>{collapsed ? '+' : '−'}</span>
+              </button>
+              {!collapsed && s.items.map((item) => {
+                const targetPath = item.path || '/boards';
+                const active = item.key === activePage || currentRoute === targetPath.split('?')[0];
+                return (
+                  <a key={item.key} href={`#${targetPath}`} onClick={(e) => { e.preventDefault(); window.location.hash = targetPath; }} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, padding: '7px 10px', borderRadius: 6, cursor: 'pointer', background: active ? C.blueGlow : 'transparent', borderLeft: active ? `2px solid ${C.blue}` : '2px solid transparent', marginBottom: 1 }}>
+                    <span style={{ fontSize: 14, color: active ? C.blue : C.textMuted, width: 20, textAlign: 'center' }}>{item.icon}</span>
+                    <span style={{ fontSize: 12, fontWeight: active ? 600 : 500, color: active ? C.text : C.textSec, flex: 1 }}>{item.label}</span>
+                  </a>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -218,6 +162,7 @@ export default function Overview() {
   const isDark = themeMode !== "light";
   const C = getTheme(themeMode);
   const [tasks, setTasks] = useState(() => readKanbanTasks());
+  const [collapsedSections, setCollapsedSections] = useState({ SYSTEM: true });
 
   useEffect(() => {
     const syncTheme = () => setThemeMode(getStoredThemeMode());
@@ -241,12 +186,19 @@ export default function Overview() {
     };
   }, []);
 
+  useEffect(() => {
+    let t;
+    if (collapsedSections.SYSTEM === undefined || collapsedSections.SYSTEM === true) return;
+    t = setTimeout(() => setCollapsedSections((p) => ({ ...p, SYSTEM: true })), 12000);
+    return () => t && clearTimeout(t);
+  }, [collapsedSections.SYSTEM]);
+
   const { approvals, blockers, all } = useMemo(() => getApprovalsAndBlockers(tasks), [tasks]);
 
   return (
     <div style={{ width: "100%", height: "100vh", display: "flex", background: C.bg, color: C.text, fontFamily: "'DM Sans', 'Segoe UI', -apple-system, sans-serif", overflow: "hidden" }}>
       <ScrollbarStyle C={C} />
-      <Sidebar activePage="overview" themeMode={themeMode} setThemeMode={setThemeMode} C={C} />
+      <Sidebar activePage="overview" C={C} collapsedSections={collapsedSections} onToggleSection={(section) => setCollapsedSections((prev) => ({ ...prev, [section]: !prev[section] }))} />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         {/* Top bar */}
         <div style={{ height: 52, flexShrink: 0, display: "flex", alignItems: "center", padding: "0 20px", gap: 16, borderBottom: `1px solid ${C.border}`, background: C.surface }}>
@@ -269,8 +221,15 @@ export default function Overview() {
             <p style={{ fontSize: 12, color: C.textMuted, margin: "0 0 14px" }}>Tuesday, Feb 25, 2026 • 12 agents deployed • 47% launch progress</p>
             <div style={{ display: "flex", gap: 8 }}>
               {COMMAND_ACTIONS.map((a, i) => (
-                <button key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, border: `1px solid ${C.border}`, background: C.surface, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>
+                <button
+                  key={i}
+                  onClick={() => { if (a.path) window.location.hash = a.path; }}
+                  disabled={!!a.unavailable}
+                  title={a.unavailable ? 'Not implemented yet' : undefined}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: C.surface, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: a.unavailable ? 'not-allowed' : 'pointer', opacity: a.unavailable ? 0.6 : 1 }}
+                >
                   <span style={{ color: a.color }}>{a.icon}</span> {a.label}
+                  {a.unavailable && <span style={{ fontSize: 9, color: C.textMuted, marginLeft: 2 }}>(Soon)</span>}
                   <span style={{ fontSize: 9, color: C.textMuted, marginLeft: 4 }}>{a.shortcut}</span>
                 </button>
               ))}
@@ -409,16 +368,16 @@ export default function Overview() {
               <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 10 }}>⚡ Action Items</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {[
-                  { icon: "🔴", text: "Build #347 failed — TypeScript error needs fix", action: "View Error", color: C.red },
-                  { icon: "🟡", text: "Security Sentinel running at degraded performance", action: "Check Status", color: C.amber },
-                  { icon: "🟡", text: "QuickBooks token refresh delayed — may need reconnection", action: "Reconnect", color: C.amber },
-                  { icon: "🔵", text: "5 approvals pending your review (2 high-risk)", action: "Review Now", color: C.blue },
-                  { icon: "🟢", text: "Website live target in 3 days — Stripe checkout on critical path", action: "View Timeline", color: C.green },
+                  { icon: '🔴', text: 'Build #347 failed — TypeScript error needs fix', action: 'View Error', color: C.red, path: '/boards' },
+                  { icon: '🟡', text: 'Security Sentinel running at degraded performance', action: 'Check Status', color: C.amber, path: '/army' },
+                  { icon: '🟡', text: 'QuickBooks token refresh delayed — may need reconnection', action: 'Reconnect', color: C.amber, path: '/integrations' },
+                  { icon: '🔵', text: '5 approvals pending your review (2 high-risk)', action: 'Review Now', color: C.blue, path: '/approvals' },
+                  { icon: '🟢', text: 'Website live target in 3 days — Stripe checkout on critical path', action: 'View Timeline', color: C.green, path: '/timeline' },
                 ].map((a, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 10px", borderRadius: 6, background: C.elevated, border: `1px solid ${C.border}` }}>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 10px', borderRadius: 6, background: C.elevated, border: `1px solid ${C.border}` }}>
                     <span style={{ fontSize: 12 }}>{a.icon}</span>
                     <span style={{ fontSize: 11, color: C.textSec, flex: 1 }}>{a.text}</span>
-                    <button style={{ padding: "3px 10px", borderRadius: 4, border: `1px solid ${a.color}33`, background: `${a.color}15`, color: a.color, fontSize: 9, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>{a.action}</button>
+                    <button onClick={() => { if (a.path) window.location.hash = a.path; }} style={{ padding: '3px 10px', borderRadius: 4, border: `1px solid ${a.color}33`, background: `${a.color}15`, color: a.color, fontSize: 9, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>{a.action}</button>
                   </div>
                 ))}
               </div>
