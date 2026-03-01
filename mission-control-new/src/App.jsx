@@ -9,6 +9,7 @@ import Brainstorming from './screens/ClawForge_Brainstorming.jsx'
 import CostUsage from './screens/ClawForge_CostUsage.jsx'
 import CRMSales from './screens/ClawForge_CRM_Sales.jsx'
 import EmptyStates from './screens/ClawForge_EmptyStates.jsx'
+import Editor from './screens/ClawForge_Editor.jsx'
 import Finance from './screens/ClawForge_Finance.jsx'
 import Integrations from './screens/ClawForge_Integrations.jsx'
 import InDevelopment from './screens/ClawForge_InDevelopment.jsx'
@@ -99,6 +100,7 @@ const hiddenRoutes = [
   { path: '/templates', label: 'Templates', comp: TemplatesLibrary },
   { path: '/modals', label: 'Key Modals', comp: KeyModals },
   { path: '/empty', label: 'Empty States', comp: EmptyStates },
+  { path: '/editor', label: 'Creative Editor', comp: Editor },
   { path: '/activity-log', label: 'Activity Log & Rollback', comp: ActivityRollback },
 ]
 
@@ -138,6 +140,8 @@ const textNavMap = new Map([
   ['cost & usage', '/costs'],
   ['web & delivery', '/web'],
   ['templates', '/templates'],
+  ['creative editor', '/editor'],
+  ['editor', '/editor'],
   ['settings', '/settings'],
   ['under development', '/development'],
   ['activity log', '/activity-log'],

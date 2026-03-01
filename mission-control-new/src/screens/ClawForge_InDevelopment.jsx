@@ -9,6 +9,7 @@ const links = [
   { label: 'Finance', path: '#/finance' },
   { label: 'Web & Delivery', path: '#/web' },
   { label: 'Templates Library', path: '#/templates' },
+  { label: 'Creative Editor (Internal)', path: '#/editor' },
   { label: 'Agent Files (Internal)', path: '#/agent-files' },
   { label: 'Activity Log & Rollback', path: '#/activity-log' },
 ]
