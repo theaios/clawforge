@@ -1471,6 +1471,7 @@ export default function ClawForgeKanban() {
     errorLabel = 'Move failed',
     celebrateOnDone = false,
     allowLocalFallback = true,
+    rollbackOnFail = false,
   } = {}) => {
     const sourceColId = findTaskColumn(taskId);
     if (!sourceColId) return;
@@ -1513,8 +1514,14 @@ export default function ClawForgeKanban() {
       });
 
       if (!resp?.ok) {
-        if (rollbackState) setTasks(rollbackState);
-        setOpMessage(formatOpError(resp?.error, errorLabel));
+        if (rollbackOnFail && rollbackState) {
+          setTasks(rollbackState);
+          setOpMessage(formatOpError(resp?.error, errorLabel));
+          return;
+        }
+        setOpMessage(`${successLabel} (saved locally; sync pending)`);
+        const movedToDone = sourceColId !== 'done' && targetColId === 'done';
+        if (celebrateOnDone && movedToDone) triggerCelebration(movedTaskTitle);
         return;
       }
 
@@ -1522,8 +1529,14 @@ export default function ClawForgeKanban() {
       const movedToDone = sourceColId !== 'done' && targetColId === 'done';
       if (celebrateOnDone && movedToDone) triggerCelebration(movedTaskTitle);
     } catch (e) {
-      if (rollbackState) setTasks(rollbackState);
-      setOpMessage(`${errorLabel} (${e?.message || 'unknown error'})`);
+      if (rollbackOnFail && rollbackState) {
+        setTasks(rollbackState);
+        setOpMessage(`${errorLabel} (${e?.message || 'unknown error'})`);
+        return;
+      }
+      setOpMessage(`${successLabel} (saved locally; sync pending)`);
+      const movedToDone = sourceColId !== 'done' && targetColId === 'done';
+      if (celebrateOnDone && movedToDone) triggerCelebration(movedTaskTitle);
     }
   }, [findTaskColumn, client, activeBoardId, applyColumnSemantics, triggerCelebration]);
 
