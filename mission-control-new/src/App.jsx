@@ -121,8 +121,8 @@ const textNavMap = new Map([
   ['agent files', '/agent-files'],
   ['agent chat', '/agent-chat'],
   ['chat', '/chat'],
-  ['configurator', '/configurator'],
-  ['agent configurator', '/configurator'],
+  ['configurator', '/configurator?step=1'],
+  ['agent configurator', '/configurator?step=1'],
   ['crm & sales', '/crm'],
   ['marketing', '/marketing'],
   ['marketing cmd', '/marketing'],
@@ -246,6 +246,19 @@ function AppContent() {
       window.removeEventListener('storage', syncTheme)
     }
   }, [])
+
+  useEffect(() => {
+    if (route !== '/configurator') return
+    const hash = window.location.hash || '#/configurator'
+    const [pathPart, queryString = ''] = hash.replace('#', '').split('?')
+    const path = pathPart || '/configurator'
+    if (path !== '/configurator') return
+    const params = new URLSearchParams(queryString)
+    if (!params.get('step')) {
+      params.set('step', '1')
+      window.history.replaceState(null, '', `#${path}?${params.toString()}`)
+    }
+  }, [route])
 
   useEffect(() => {
     const navEntries = [...textNavMap.entries()].sort((a, b) => b[0].length - a[0].length)

@@ -368,21 +368,18 @@ function StepIdentity({ identity, onChange, selectedTemplate, onTemplateChange }
   );
 }
 
-function StepScope() {
-  const [scopes, setScopes] = useState([
-    { label: "Read CRM data", desc: "Access contacts, deals, and pipeline", enabled: true },
-    { label: "Write CRM data", desc: "Create/update contacts and deals", enabled: true },
-    { label: "Send outbound emails", desc: "Draft and send partnership emails", enabled: true },
-    { label: "Access financial data", desc: "View billing and revenue data", enabled: false },
-    { label: "Modify infrastructure", desc: "Change server or deploy configs", enabled: false },
-    { label: "Post on social media", desc: "Publish to company social accounts", enabled: false },
-    { label: "Schedule meetings", desc: "Book via Google Calendar", enabled: true },
-    { label: "Access customer data", desc: "View customer records and history", enabled: false },
-  ]);
+const DEFAULT_SCOPE_OPTIONS = [
+  { label: "Read CRM data", desc: "Access contacts, deals, and pipeline", enabled: true },
+  { label: "Write CRM data", desc: "Create/update contacts and deals", enabled: true },
+  { label: "Send outbound emails", desc: "Draft and send partnership emails", enabled: true },
+  { label: "Access financial data", desc: "View billing and revenue data", enabled: false },
+  { label: "Modify infrastructure", desc: "Change server or deploy configs", enabled: false },
+  { label: "Post on social media", desc: "Publish to company social accounts", enabled: false },
+  { label: "Schedule meetings", desc: "Book via Google Calendar", enabled: true },
+  { label: "Access customer data", desc: "View customer records and history", enabled: false },
+];
 
-  const toggleScope = (index) => {
-    setScopes((prev) => prev.map((scope, i) => (i === index ? { ...scope, enabled: !scope.enabled } : scope)));
-  };
+function StepScope({ scopes, onToggleScope }) {
 
   return (
     <div>
@@ -391,7 +388,7 @@ function StepScope() {
         {scopes.map((s, i) => (
           <div
             key={i}
-            onClick={() => toggleScope(i)}
+            onClick={() => onToggleScope(i)}
             style={{
               padding: "12px 14px", borderRadius: 8,
               background: s.enabled ? C.blueGlow : C.elevated,
@@ -420,8 +417,7 @@ function StepScope() {
   );
 }
 
-function StepTools() {
-  const [selected, setSelected] = useState(["gmail", "hubspot", "calendar", "gdocs", "slack"]);
+function StepTools({ selected, onChangeSelected }) {
   const categories = [...new Set(AVAILABLE_TOOLS.map(t => t.category))];
   const riskColors = { low: C.green, medium: C.amber, high: C.red };
 
@@ -435,7 +431,7 @@ function StepTools() {
           return (
             <span key={id} style={{ fontSize: 10, fontWeight: 500, padding: "3px 8px", borderRadius: 5, background: C.blueGlow, color: C.blue, border: `1px solid rgba(59,130,246,0.3)`, display: "flex", alignItems: "center", gap: 4 }}>
               {tool.name}
-              <span style={{ cursor: "pointer", fontSize: 8 }} onClick={() => setSelected(selected.filter(s => s !== id))}>✕</span>
+              <span style={{ cursor: "pointer", fontSize: 8 }} onClick={() => onChangeSelected(selected.filter(s => s !== id))}>✕</span>
             </span>
           );
         })}
@@ -447,7 +443,7 @@ function StepTools() {
             {AVAILABLE_TOOLS.filter(t => t.category === cat).map(tool => {
               const isSel = selected.includes(tool.id);
               return (
-                <div key={tool.id} onClick={() => isSel ? setSelected(selected.filter(s => s !== tool.id)) : setSelected([...selected, tool.id])} style={{
+                <div key={tool.id} onClick={() => isSel ? onChangeSelected(selected.filter(s => s !== tool.id)) : onChangeSelected([...selected, tool.id])} style={{
                   padding: "10px 12px", borderRadius: 8, cursor: "pointer",
                   background: isSel ? C.blueGlow : C.elevated,
                   border: `1px solid ${isSel ? "rgba(59,130,246,0.3)" : C.border}`,
@@ -468,25 +464,23 @@ function StepTools() {
   );
 }
 
-function StepModelRouting() {
-  const [routes, setRoutes] = useState(MODEL_ROUTES);
-
+function StepModelRouting({ routes, onChangeRoutes }) {
   const deleteRoute = (index) => {
-    setRoutes((prev) => prev.filter((_, i) => i !== index));
+    onChangeRoutes((prev) => prev.filter((_, i) => i !== index));
   };
 
   const updateRouteTaskType = (index, taskType) => {
-    setRoutes((prev) => prev.map((route, i) => (i === index ? { ...route, taskType } : route)));
+    onChangeRoutes((prev) => prev.map((route, i) => (i === index ? { ...route, taskType } : route)));
   };
 
   const updateRouteModel = (index, model) => {
     const stats = MODEL_OPTIONS[model] || { costPer1k: "$0.010", latency: "~1.5s", quality: 85 };
-    setRoutes((prev) => prev.map((route, i) => (i === index ? { ...route, model, ...stats } : route)));
+    onChangeRoutes((prev) => prev.map((route, i) => (i === index ? { ...route, model, ...stats } : route)));
   };
 
   const addRoute = () => {
     const model = "Claude Sonnet";
-    setRoutes((prev) => ([
+    onChangeRoutes((prev) => ([
       ...prev,
       {
         taskType: "General tasks",
@@ -672,6 +666,20 @@ export default function AgentConfigurator() {
     reportsTo: activeDraft.identity?.reportsTo || 'Sales CEO',
     avatarColor: activeDraft.identity?.avatarColor || C.teal,
   }));
+  const [scopeDraft, setScopeDraft] = useState(() => {
+    const saved = activeDraft.scopeDraft;
+    return Array.isArray(saved) && saved.length ? saved : DEFAULT_SCOPE_OPTIONS;
+  });
+  const [toolsDraft, setToolsDraft] = useState(() => (
+    Array.isArray(activeDraft.tools) && activeDraft.tools.length
+      ? activeDraft.tools
+      : ['gmail', 'hubspot', 'calendar', 'gdocs', 'slack']
+  ));
+  const [modelRoutesDraft, setModelRoutesDraft] = useState(() => (
+    Array.isArray(activeDraft.modelRouting) && activeDraft.modelRouting.length
+      ? activeDraft.modelRouting
+      : MODEL_ROUTES
+  ));
   useEffect(() => {
     let t;
     if (collapsedSections.SYSTEM === undefined || collapsedSections.SYSTEM === true) return;
@@ -686,6 +694,17 @@ export default function AgentConfigurator() {
     setIdentityDraft((prev) => ({ ...prev, ...template.identity }));
   }, [selectedTemplate]);
 
+  useEffect(() => {
+    const nextStep = currentStep + 1;
+    const hash = window.location.hash || '#/configurator';
+    const [pathPart, queryString = ''] = hash.replace('#', '').split('?');
+    const path = pathPart || '/configurator';
+    const params = new URLSearchParams(queryString);
+    if (path !== '/configurator') return;
+    if (Number(params.get('step')) === nextStep) return;
+    params.set('step', String(nextStep));
+    window.history.replaceState(null, '', `#${path}?${params.toString()}`);
+  }, [currentStep]);
 
   const persistDraft = async (extra = {}) => {
     const draftId = store.configurator.activeDraftId;
@@ -694,6 +713,10 @@ export default function AgentConfigurator() {
       stepIndex: currentStep,
       templateKey: selectedTemplate,
       identity: identityDraft,
+      scopeDraft,
+      scope: scopeDraft.filter((s) => s.enabled).map((s) => s.label),
+      tools: toolsDraft,
+      modelRouting: modelRoutesDraft,
       allowLocalFallback: true,
       ...extra,
     });
@@ -743,9 +766,9 @@ export default function AgentConfigurator() {
 
   const stepPanels = [
     <StepIdentity key="step-identity" identity={identityDraft} selectedTemplate={selectedTemplate} onTemplateChange={setSelectedTemplate} onChange={(patch) => setIdentityDraft((prev) => ({ ...prev, ...patch }))} />,
-    <StepScope key="step-scope" />,
-    <StepTools key="step-tools" />,
-    <StepModelRouting key="step-routing" />,
+    <StepScope key="step-scope" scopes={scopeDraft} onToggleScope={(index) => setScopeDraft((prev) => prev.map((scope, i) => (i === index ? { ...scope, enabled: !scope.enabled } : scope)))} />,
+    <StepTools key="step-tools" selected={toolsDraft} onChangeSelected={setToolsDraft} />,
+    <StepModelRouting key="step-routing" routes={modelRoutesDraft} onChangeRoutes={setModelRoutesDraft} />,
     <StepGuardrails key="step-guardrails" />,
     <StepLimits key="step-limits" onRunTest={runTest} onSimulateTask={simulateTask} />,
   ];
