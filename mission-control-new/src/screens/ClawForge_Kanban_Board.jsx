@@ -1470,6 +1470,7 @@ export default function ClawForgeKanban() {
     successLabel = 'Card moved',
     errorLabel = 'Move failed',
     celebrateOnDone = false,
+    allowLocalFallback = true,
   } = {}) => {
     const sourceColId = findTaskColumn(taskId);
     if (!sourceColId) return;
@@ -1508,6 +1509,7 @@ export default function ClawForgeKanban() {
         fromColumnId: sourceColId,
         toColumnId: targetColId,
         toIndex: Number.isFinite(dropIndex) ? Math.max(0, dropIndex) : 0,
+        allowLocalFallback,
       });
 
       if (!resp?.ok) {
