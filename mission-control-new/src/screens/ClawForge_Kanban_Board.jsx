@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useMissionControl } from "../lib/missionControlContext";
 import { formatOpError, formatOpSuccess } from "../lib/openclawDiagnostics";
 import { cycleThemeMode, getStoredThemeMode, persistThemeMode } from "../lib/themeMode";
+import { buildMainMenuSections } from "../lib/systemNav";
 
 function getTheme(mode) {
   if (mode === "trippy") return {
@@ -1156,26 +1157,7 @@ function ThemeToggle({ themeMode, setThemeMode }) {
 
 function Sidebar({ activePage, themeMode, setThemeMode, C, collapsedSections, onToggleSection }) {
   const isDark = themeMode !== "light";
-  const NAV = [
-    { section: "MAIN", items: [
-      { icon: "🚀", label: "Start Here", key: "start-here" },
-      { icon: "💬", label: "Chat", key: "chat" },
-      { icon: "▦", label: "Tasks", key: "boards" },
-      { icon: "◉", label: "Approvals", key: "approvals" },
-      { icon: "◐", label: "Brainstorming", key: "brainstorm" },
-      { icon: "⬡", label: "Org Chart", key: "agentarmy" },
-      { icon: "⚙", label: "Add Agent", key: "configurator" },
-      { icon: "🗂", label: "Files", key: "files" },
-    ]},
-    { section: "SYSTEM", items: [
-      { icon: "⛨", label: "Security", key: "security" },
-      { icon: "⊞", label: "Integrations", key: "integrations" },
-      { icon: "📊", label: "Cost & Usage", key: "costusage" },
-      { icon: "⚙️", label: "Settings", key: "settings" },
-      { icon: "🛠", label: "Under Development", key: "development" },
-      { icon: "🧾", label: "Activity Log", key: "activitylog" },
-    ]},
-  ];
+  const NAV = buildMainMenuSections();
   return (
     <div style={{ width: 220, flexShrink: 0, background: C.surface, borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "18px 18px 14px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${C.border}` }}>

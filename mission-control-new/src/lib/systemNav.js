@@ -17,3 +17,16 @@ export const PRIMARY_NAV_ITEMS = [
   { icon: "⚙", label: "Add Agent", key: "configurator", path: "/configurator?step=1" },
   { icon: "🗂", label: "Files", key: "files", path: "/files" },
 ];
+
+export function buildMainMenuSections({
+  mainItems = PRIMARY_NAV_ITEMS,
+  systemItems = SYSTEM_NAV_ITEMS,
+  includeSystem = true,
+  extraSections = [],
+} = {}) {
+  return [
+    { section: "MAIN", items: mainItems },
+    ...(includeSystem ? [{ section: "SYSTEM", items: systemItems }] : []),
+    ...extraSections,
+  ];
+}

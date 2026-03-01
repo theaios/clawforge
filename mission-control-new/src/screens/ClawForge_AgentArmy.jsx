@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useMissionControl } from "../lib/missionControlContext";
 import { formatOpError, formatOpSuccess } from "../lib/openclawDiagnostics";
-import { cycleThemeMode, getStoredThemeMode, persistThemeMode } from "../lib/themeMode";
+import { getStoredThemeMode, persistThemeMode } from "../lib/themeMode";
 import { readStore } from "../lib/missionControlStore";
+import { buildMainMenuSections } from "../lib/systemNav";
 
 function getTheme(mode) {
   if (mode === "trippy") return {
@@ -341,62 +342,9 @@ function ScrollbarStyle({ C }) {
   );
 }
 
-function ThemeToggle({ themeMode, setThemeMode, C }) {
+function Sidebar({ activePage, themeMode, C, collapsedSections, onToggleSection }) {
   const isDark = themeMode !== "light";
-  const current = themeMode === "trippy" ? { icon: "🪩", label: "Trippy" } : themeMode === "light" ? { icon: "☀️", label: "Light" } : { icon: "🌙", label: "Dark" };
-  return (
-    <div
-      onClick={() => setThemeMode(cycleThemeMode(themeMode))}
-      style={{
-        display: "flex", alignItems: "center", gap: 8,
-        padding: "6px 10px", borderRadius: 6, cursor: "pointer",
-        background: isDark ? "rgba(59,130,246,0.08)" : "rgba(37,99,235,0.06)",
-        border: "1px solid transparent",
-        transition: "all 0.2s ease",
-      }}
-    >
-      <span style={{ fontSize: 13, lineHeight: 1 }}>{current.icon}</span>
-      <span style={{ fontSize: 10, fontWeight: 500, color: isDark ? "#8B919E" : "#5C6370" }}>
-        {current.label}
-      </span>
-      <div style={{
-        width: 30, height: 16, borderRadius: 8, position: "relative",
-        background: isDark ? "#3B82F6" : "#CBD5E1",
-        transition: "background 0.2s ease", flexShrink: 0,
-      }}>
-        <div style={{
-          width: 12, height: 12, borderRadius: "50%",
-          background: "#fff", position: "absolute", top: 2,
-          left: isDark ? 16 : 2, transition: "left 0.2s ease",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-        }} />
-      </div>
-    </div>
-  );
-}
-
-function Sidebar({ activePage, themeMode, setThemeMode, C, collapsedSections, onToggleSection }) {
-  const isDark = themeMode !== "light";
-  const NAV = [
-    { section: "MAIN", items: [
-      { icon: "🚀", label: "Start Here", key: "start-here" },
-      { icon: "💬", label: "Chat", key: "chat" },
-      { icon: "▦", label: "Tasks", key: "boards" },
-      { icon: "◉", label: "Approvals", key: "approvals" },
-      { icon: "◐", label: "Brainstorming", key: "brainstorm" },
-      { icon: "⬡", label: "Org Chart", key: "agentarmy" },
-      { icon: "⚙", label: "Add Agent", key: "configurator" },
-      { icon: "🗂", label: "Files", key: "files" },
-    ]},
-    { section: "SYSTEM", items: [
-      { icon: "⛨", label: "Security", key: "security" },
-      { icon: "⊞", label: "Integrations", key: "integrations" },
-      { icon: "📊", label: "Cost & Usage", key: "costusage" },
-      { icon: "⚙️", label: "Settings", key: "settings" },
-      { icon: "🛠", label: "Under Development", key: "development" },
-      { icon: "🧾", label: "Activity Log", key: "activitylog" },
-    ]},
-  ];
+  const NAV = buildMainMenuSections();
   return (
     <div style={{ width: 220, flexShrink: 0, background: C.surface, borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "18px 18px 14px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${C.border}` }}>
@@ -465,9 +413,6 @@ function Sidebar({ activePage, themeMode, setThemeMode, C, collapsedSections, on
             </div>
           );
         })}
-      </div>
-      <div style={{ padding: "10px 12px", borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "center" }}>
-        <ThemeToggle themeMode={themeMode} setThemeMode={setThemeMode} C={C} />
       </div>
       <div style={{ padding: "12px 16px", borderTop: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg, ${C.blue}, ${C.purple})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>JC</div>
@@ -718,7 +663,7 @@ export default function AgentArmy() {
   return (
     <div style={{ width: "100%", height: "100vh", display: "flex", background: C.bg, color: C.text, fontFamily: "'DM Sans', 'Segoe UI', -apple-system, sans-serif", overflow: "hidden" }}>
       <ScrollbarStyle C={C} />
-      <Sidebar activePage="agentarmy" themeMode={themeMode} setThemeMode={setThemeMode} C={C} collapsedSections={collapsedSections} onToggleSection={(section) => setCollapsedSections((p) => ({ ...p, [section]: !p[section] }))} />
+      <Sidebar activePage="agentarmy" themeMode={themeMode} C={C} collapsedSections={collapsedSections} onToggleSection={(section) => setCollapsedSections((p) => ({ ...p, [section]: !p[section] }))} />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <div style={{ height: 52, flexShrink: 0, display: "flex", alignItems: "center", padding: "0 20px", gap: 16, borderBottom: `1px solid ${C.border}`, background: C.surface }}>
           <span style={{ fontSize: 12, color: C.textMuted }}>Agents</span><span style={{ color: C.textMuted }}>/</span><span style={{ fontSize: 12, color: C.text, fontWeight: 600 }}>Org Chart</span>

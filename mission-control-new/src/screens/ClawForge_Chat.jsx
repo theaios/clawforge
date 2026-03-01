@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { PRIMARY_NAV_ITEMS, SYSTEM_NAV_ITEMS } from "../lib/systemNav";
+import { PRIMARY_NAV_ITEMS, SYSTEM_NAV_ITEMS, buildMainMenuSections } from "../lib/systemNav";
 import { cycleThemeMode, getStoredThemeMode, persistThemeMode } from "../lib/themeMode";
 import { createOpenClawClient } from "../lib/openclawClient";
 
@@ -275,19 +275,13 @@ function ThemeToggle({ themeMode, setThemeMode }) {
 function AppSidebar({ themeMode, setThemeMode, collapsedSections, onToggleSection }) {
   const isDark = themeMode !== "light";
   const currentRoute = (window.location.hash.replace('#', '').split('?')[0] || '/chat');
-  const NAV = [
-    { section: "MAIN", items: [
-      { icon: "🚀", label: "Start Here", key: "start-here" },
-      { icon: "💬", label: "Chat", key: "chat" },
-      { icon: "▦", label: "Tasks", key: "boards" },
-      { icon: "◉", label: "Approvals", key: "approvals" },
-      { icon: "◐", label: "Brainstorming", key: "brainstorm" },
-      { icon: "⬡", label: "Org Chart", key: "agentarmy" },
-      { icon: "⚙", label: "Add Agent", key: "configurator" },
-      { icon: "🗂", label: "Files", key: "files" },
-    ] },
-    { section: "SYSTEM", items: SYSTEM_NAV_ITEMS },
-  ];
+  const NAV = buildMainMenuSections({
+    mainItems: [
+      { icon: "🚀", label: "Start Here", key: "start-here", path: "/start-here" },
+      ...PRIMARY_NAV_ITEMS.filter((i) => i.key !== "start-here"),
+    ],
+    systemItems: SYSTEM_NAV_ITEMS,
+  });
 
   const routeMap = {
     'start-here': '/start-here',

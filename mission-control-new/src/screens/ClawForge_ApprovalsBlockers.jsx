@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { flattenTasks, getApprovalsAndBlockers, readKanbanTasks, writeKanbanTasks } from '../lib/missionData'
+import { buildMainMenuSections } from "../lib/systemNav";
 
 const COMMS_EVENT = 'mc:comms-push'
 
@@ -37,26 +38,7 @@ function priorityColor(priority, C) {
 }
 
 function MainMenuSidebar({ activePage, collapsedSections, onToggleSection, C, isDark }) {
-  const NAV = [
-    { section: 'MAIN', items: [
-      { icon: '🚀', label: 'Start Here', key: 'start-here' },
-      { icon: '💬', label: 'Chat', key: 'chat' },
-      { icon: '▦', label: 'Tasks', key: 'boards' },
-      { icon: '◉', label: 'Approvals', key: 'approvals' },
-      { icon: '◐', label: 'Brainstorming', key: 'brainstorm' },
-      { icon: '⬡', label: 'Org Chart', key: 'agentarmy' },
-      { icon: '⚙', label: 'Add Agent', key: 'configurator' },
-      { icon: '🗂', label: 'Files', key: 'files' },
-    ]},
-    { section: 'SYSTEM', items: [
-      { icon: '⛨', label: 'Security', key: 'security' },
-      { icon: '⊞', label: 'Integrations', key: 'integrations' },
-      { icon: '📊', label: 'Cost & Usage', key: 'costusage' },
-      { icon: '⚙️', label: 'Settings', key: 'settings' },
-      { icon: '🛠', label: 'Under Development', key: 'development' },
-      { icon: '🧾', label: 'Activity Log', key: 'activitylog' },
-    ]},
-  ]
+  const NAV = buildMainMenuSections()
 
   const routeMap = {
     chat: '/chat', brainstorm: '/brainstorm', brainstorming: '/brainstorm', tasks: '/boards', boards: '/boards',

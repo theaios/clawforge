@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getStoredThemeMode } from "../lib/themeMode";
-import { PRIMARY_NAV_ITEMS, SYSTEM_NAV_ITEMS } from "../lib/systemNav";
+import { PRIMARY_NAV_ITEMS, SYSTEM_NAV_ITEMS, buildMainMenuSections } from "../lib/systemNav";
 import { START_HERE_STORAGE_KEY, upsertKnowledgePageFromStartHere, getKnowledgeLinkInfo, markdownFromBlocks } from "../lib/startHereKnowledgeSync";
 import { readStore, writeStore } from "../lib/missionControlStore";
 
@@ -252,10 +252,10 @@ const DEFAULT_KNOWLEDGE = `# Company Knowledge Base
 function Sidebar() {
   const [collapsedSections, setCollapsedSections] = useState({ SYSTEM: true });
   const currentRoute = (window.location.hash.replace('#', '').split('?')[0] || '/start-here');
-  const NAV = [
-    { section: 'MAIN', items: [{ icon: '🚀', label: 'Start Here', key: 'start-here', path: '/start-here' }, ...PRIMARY_NAV_ITEMS.filter((i) => i.key !== 'start-here')] },
-    { section: 'SYSTEM', items: SYSTEM_NAV_ITEMS },
-  ];
+  const NAV = buildMainMenuSections({
+    mainItems: [{ icon: '🚀', label: 'Start Here', key: 'start-here', path: '/start-here' }, ...PRIMARY_NAV_ITEMS.filter((i) => i.key !== 'start-here')],
+    systemItems: SYSTEM_NAV_ITEMS,
+  });
 
   return (
     <div style={{ width: 220, flexShrink: 0, background: C.surface, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column' }}>
