@@ -46,6 +46,27 @@ function getTheme(mode) {
 
 let C = getTheme(true);
 
+const START_HERE_STORAGE_KEY = "clawforge.startHere.state.v1";
+
+const DEFAULT_MEMORY_SETTINGS = {
+  perAgent: true,
+  crossAgent: false,
+  longTerm: true,
+  autoSummarize: true,
+  userFacing: false,
+};
+
+function readPersistedStartHere() {
+  try {
+    const raw = localStorage.getItem(START_HERE_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 // ── Nav sections (matching other ClawForge screens) ────────────────────────────
 const NAV = [
   { section: "COMMAND",     items: [{ icon: "◎", label: "Overview" }, { icon: "▦", label: "Boards" }, { icon: "◷", label: "Timeline" }] },
@@ -602,7 +623,7 @@ function ProtocolSection({ value, onChange }) {
 }
 
 // ── Section: Knowledge Base ────────────────────────────────────────────────────
-function KnowledgeSection({ value, onChange }) {
+function KnowledgeSection({ value, onChange, structuredFields, onStructuredFieldChange }) {
   const [saved, setSaved] = useState(false);
   const [activeField, setActiveField] = useState(null);
   const save = () => { setSaved(true); setTimeout(() => setSaved(false), 2500); };
@@ -643,8 +664,12 @@ function KnowledgeSection({ value, onChange }) {
             {fields.map(f => (
               <div key={f.id}>
                 <Label>{f.label}</Label>
-                <textarea placeholder={f.placeholder}
-                  onFocus={() => setActiveField(f.id)} onBlur={() => setActiveField(null)}
+                <textarea
+                  value={structuredFields[f.id] || ""}
+                  onChange={(e) => onStructuredFieldChange(f.id, e.target.value)}
+                  placeholder={f.placeholder}
+                  onFocus={() => setActiveField(f.id)}
+                  onBlur={() => setActiveField(null)}
                   style={{ width: "100%", minHeight: 88, padding: "10px 13px", borderRadius: 8, border: `1px solid ${activeField === f.id ? C.blue : C.border}`, background: C.elevated, color: C.text, fontSize: 12.5, fontFamily: "inherit", lineHeight: 1.6, outline: "none", resize: "vertical", boxSizing: "border-box", transition: "border-color .15s" }}
                 />
               </div>
@@ -667,14 +692,8 @@ function KnowledgeSection({ value, onChange }) {
 }
 
 // ── Section: Memory ────────────────────────────────────────────────────────────
-function MemorySection() {
-  const [settings, setSettings] = useState({
-    perAgent: true, crossAgent: false, longTerm: true, autoSummarize: true, userFacing: false,
-  });
-  const [saved, setSaved] = useState(false);
-
-  const toggle = k => setSettings(s => ({ ...s, [k]: !s[k] }));
-  const save = () => { setSaved(true); setTimeout(() => setSaved(false), 2500); };
+function MemorySection({ settings, onChange, onSave, saved }) {
+  const toggle = (k) => onChange((s) => ({ ...s, [k]: !s[k] }));
 
   const MEMORY_TYPES = [
     { id: "episodic",   icon: "🗂️", title: "Episodic Memory",   desc: "Agents remember the sequence of tasks and interactions within a session. Resets between sessions unless summarised.", color: C.blue },
@@ -734,7 +753,7 @@ function MemorySection() {
               <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>Control what gets remembered and shared across agents</div>
             </div>
           </div>
-          <SaveBtn saved={saved} onClick={save} />
+          <SaveBtn saved={saved} onClick={onSave} />
         </div>
         <div style={{ padding: "20px 22px" }}>
           {[
@@ -761,7 +780,7 @@ function MemorySection() {
 }
 
 // ── Section: System Summary ────────────────────────────────────────────────────
-function SummarySection({ data }) {
+function SummarySection({ data, progressPct, completedSteps, totalSteps }) {
   const caps = (data.capabilities || []).map(id => CAPABILITIES.find(c => c.id === id)).filter(Boolean);
   const goals = (data.goals || []).map(id => GOALS.find(g => g.id === id)).filter(Boolean);
   const allAgents = [...new Set(caps.flatMap(c => c.agents))];
@@ -786,6 +805,16 @@ function SummarySection({ data }) {
           </div>
         )}
       </div>
+
+      <SectionCard title="Onboarding Progress" subtitle="Track completion before launch" icon="📶">
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: progressPct === 100 ? C.green : C.blue }}>{progressPct}%</div>
+          <div style={{ fontSize: 12, color: C.textSec }}>{completedSteps}/{totalSteps} setup milestones complete</div>
+        </div>
+        <div style={{ width: "100%", height: 8, borderRadius: 999, background: C.elevated, overflow: "hidden" }}>
+          <div style={{ width: `${progressPct}%`, height: "100%", background: progressPct === 100 ? C.green : C.blue, transition: "width .3s" }} />
+        </div>
+      </SectionCard>
 
       {/* Company card */}
       {data.companyName && (
@@ -852,8 +881,8 @@ function SummarySection({ data }) {
           <div style={{ fontSize: 20, fontWeight: 800, color: C.text, marginBottom: 8 }}>🚀 Ready to launch your AI team?</div>
           <div style={{ fontSize: 13, color: C.textSec, marginBottom: 20 }}>Your workspace is configured. Head to the Overview to see your agents in action.</div>
           <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
-            <button style={{ padding: "11px 28px", borderRadius: 9, border: "none", background: C.blue, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Go to Overview →</button>
-            <button style={{ padding: "11px 22px", borderRadius: 9, border: `1px solid ${C.border}`, background: "transparent", color: C.textSec, fontSize: 13, cursor: "pointer" }}>View Agent Army</button>
+            <button onClick={() => { window.location.hash = '/overview'; }} style={{ padding: "11px 28px", borderRadius: 9, border: "none", background: C.blue, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Go to Overview →</button>
+            <button onClick={() => { window.location.hash = '/army'; }} style={{ padding: "11px 22px", borderRadius: 9, border: `1px solid ${C.border}`, background: "transparent", color: C.textSec, fontSize: 13, cursor: "pointer" }}>View Agent Army</button>
           </div>
         </div>
       )}
@@ -878,36 +907,74 @@ export default function StartHere() {
     };
   }, []);
 
-  const [activeTab, setActiveTab] = useState("discovery");
-  const [doneTabs, setDoneTabs] = useState([]);
+  const persisted = typeof window !== "undefined" ? readPersistedStartHere() : null;
 
-  const [discovery, setDiscovery] = useState({
+  const [activeTab, setActiveTab] = useState(persisted?.activeTab || "discovery");
+
+  const [discovery, setDiscovery] = useState(persisted?.discovery || {
     companyName: "", founderName: "", industry: [], description: "", goals: [], capabilities: [],
   });
-  const [protocol,  setProtocol]  = useState(DEFAULT_PROTOCOL);
-  const [knowledge, setKnowledge] = useState(DEFAULT_KNOWLEDGE);
+  const [protocol, setProtocol] = useState(persisted?.protocol || DEFAULT_PROTOCOL);
+  const [knowledge, setKnowledge] = useState(persisted?.knowledge || DEFAULT_KNOWLEDGE);
+  const [knowledgeFields, setKnowledgeFields] = useState(persisted?.knowledgeFields || {
+    voice: "", audience: "", value: "", offer: "", comp: "", links: "",
+  });
+  const [memorySettings, setMemorySettings] = useState(persisted?.memorySettings || DEFAULT_MEMORY_SETTINGS);
+  const [savedAll, setSavedAll] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState(persisted?.lastSavedAt || null);
 
-  const updateDiscovery = (key, val) => setDiscovery(d => ({ ...d, [key]: val }));
-
-  const markDone = tab => { if (!doneTabs.includes(tab)) setDoneTabs(d => [...d, tab]); };
+  const updateDiscovery = (key, val) => setDiscovery((d) => ({ ...d, [key]: val }));
+  const updateKnowledgeField = (key, val) => setKnowledgeFields((prev) => ({ ...prev, [key]: val }));
 
   const TABS = [
     { id: "discovery", icon: "🏢", label: "Your Business" },
-    { id: "protocol",  icon: "📜", label: "Shared Protocol" },
+    { id: "protocol", icon: "📜", label: "Shared Protocol" },
     { id: "knowledge", icon: "🧠", label: "Knowledge Base" },
-    { id: "memory",    icon: "💾", label: "Memory & Learning" },
-    { id: "summary",   icon: "✅", label: "Summary & Launch" },
+    { id: "memory", icon: "💾", label: "Memory & Learning" },
+    { id: "summary", icon: "✅", label: "Summary & Launch" },
   ];
 
-  const progressCount = [
-    discovery.companyName?.length > 0,
-    (Array.isArray(discovery.industry) ? discovery.industry.length > 0 : !!discovery.industry),
-    discovery.capabilities?.length > 0,
-    discovery.goals?.length > 0,
-    protocol !== DEFAULT_PROTOCOL,
-    knowledge !== DEFAULT_KNOWLEDGE,
-  ].filter(Boolean).length;
-  const progressPct = Math.round((progressCount / 6) * 100);
+  const setupChecks = {
+    company: discovery.companyName?.trim().length > 0,
+    industry: (Array.isArray(discovery.industry) ? discovery.industry.length > 0 : !!discovery.industry),
+    capabilities: discovery.capabilities?.length > 0,
+    goals: discovery.goals?.length > 0,
+    protocol: protocol !== DEFAULT_PROTOCOL,
+    knowledge: knowledge !== DEFAULT_KNOWLEDGE || Object.values(knowledgeFields).some((v) => (v || "").trim().length > 0),
+    memory: Object.keys(DEFAULT_MEMORY_SETTINGS).some((k) => memorySettings[k] !== DEFAULT_MEMORY_SETTINGS[k]),
+  };
+
+  const tabCompletion = {
+    discovery: setupChecks.company && setupChecks.industry && setupChecks.capabilities && setupChecks.goals,
+    protocol: setupChecks.protocol,
+    knowledge: setupChecks.knowledge,
+    memory: setupChecks.memory,
+    summary: setupChecks.company && setupChecks.industry && setupChecks.capabilities,
+  };
+
+  const completedSteps = Object.values(tabCompletion).filter(Boolean).length;
+  const totalSteps = Object.keys(tabCompletion).length;
+  const progressPct = Math.round((completedSteps / totalSteps) * 100);
+
+  useEffect(() => {
+    const payload = {
+      activeTab,
+      discovery,
+      protocol,
+      knowledge,
+      knowledgeFields,
+      memorySettings,
+      lastSavedAt,
+    };
+    localStorage.setItem(START_HERE_STORAGE_KEY, JSON.stringify(payload));
+  }, [activeTab, discovery, protocol, knowledge, knowledgeFields, memorySettings, lastSavedAt]);
+
+  const saveAll = () => {
+    const now = new Date().toISOString();
+    setLastSavedAt(now);
+    setSavedAll(true);
+    setTimeout(() => setSavedAll(false), 2200);
+  };
 
   return (
     <div style={{ width: "100%", height: "100vh", display: "flex", background: C.bg, fontFamily: "'DM Sans','Segoe UI',-apple-system,sans-serif", overflow: "hidden", color: C.text }}>
@@ -931,9 +998,12 @@ export default function StartHere() {
             <div style={{ width: 140, height: 6, borderRadius: 99, background: C.elevated, overflow: "hidden" }}>
               <div style={{ height: "100%", borderRadius: 99, background: progressPct === 100 ? C.green : C.blue, width: `${progressPct}%`, transition: "width .4s" }} />
             </div>
+            <div style={{ fontSize: 11, color: savedAll ? C.green : C.textMuted }}>
+              {savedAll ? "Saved" : lastSavedAt ? `Last saved ${new Date(lastSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : "Not saved yet"}
+            </div>
           </div>
-          <button style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: C.blue, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-            Save All
+          <button onClick={saveAll} style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: savedAll ? C.green : C.blue, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+            {savedAll ? "✓ Saved" : "Save All"}
           </button>
         </div>
 
@@ -943,8 +1013,14 @@ export default function StartHere() {
           <div style={{ width: 220, flexShrink: 0, background: C.surface, borderRight: `1px solid ${C.border}`, padding: "20px 12px", overflowY: "auto" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: .8, marginBottom: 12, paddingLeft: 4 }}>Setup Steps</div>
             {TABS.map(t => (
-              <SectionTab key={t.id} id={t.id} icon={t.icon} label={t.label} active={activeTab === t.id} done={doneTabs.includes(t.id)}
-                onClick={id => { setActiveTab(id); if (activeTab !== id) markDone(activeTab); }}
+              <SectionTab
+                key={t.id}
+                id={t.id}
+                icon={t.icon}
+                label={t.label}
+                active={activeTab === t.id}
+                done={!!tabCompletion[t.id]}
+                onClick={setActiveTab}
               />
             ))}
 
@@ -961,16 +1037,36 @@ export default function StartHere() {
           <div style={{ flex: 1, overflowY: "auto", padding: "28px 32px" }}>
             <div style={{ maxWidth: 860, margin: "0 auto" }}>
               {activeTab === "discovery" && <DiscoverySection data={discovery} onChange={updateDiscovery} />}
-              {activeTab === "protocol"  && <ProtocolSection  value={protocol}  onChange={setProtocol} />}
-              {activeTab === "knowledge" && <KnowledgeSection value={knowledge} onChange={setKnowledge} />}
-              {activeTab === "memory"    && <MemorySection />}
-              {activeTab === "summary"   && <SummarySection data={discovery} />}
+              {activeTab === "protocol" && <ProtocolSection value={protocol} onChange={setProtocol} />}
+              {activeTab === "knowledge" && (
+                <KnowledgeSection
+                  value={knowledge}
+                  onChange={setKnowledge}
+                  structuredFields={knowledgeFields}
+                  onStructuredFieldChange={updateKnowledgeField}
+                />
+              )}
+              {activeTab === "memory" && (
+                <MemorySection
+                  settings={memorySettings}
+                  onChange={setMemorySettings}
+                  onSave={saveAll}
+                  saved={savedAll}
+                />
+              )}
+              {activeTab === "summary" && (
+                <SummarySection
+                  data={discovery}
+                  progressPct={progressPct}
+                  completedSteps={completedSteps}
+                  totalSteps={totalSteps}
+                />
+              )}
 
               {/* Next button */}
               {activeTab !== "summary" && (
                 <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8, paddingBottom: 40 }}>
                   <button onClick={() => {
-                    markDone(activeTab);
                     const idx = TABS.findIndex(t => t.id === activeTab);
                     if (idx < TABS.length - 1) setActiveTab(TABS[idx + 1].id);
                   }} style={{ padding: "11px 28px", borderRadius: 9, border: "none", background: C.blue, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
