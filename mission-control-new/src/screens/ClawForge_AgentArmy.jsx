@@ -210,9 +210,10 @@ function OrgNode({ agent, isSelected, onClick, isCEO, C }) {
   );
 }
 
-function AgentDetailPanel({ agent, onClose, onDelete, onConfigure, onMessage, onToggleStatus, C }) {
+function AgentDetailPanel({ agent, onClose, onDelete, onConfigure, onMessage, onToggleStatus, pendingAction, C }) {
   if (!agent) return null;
   const st = STATUS_MAP[agent.status];
+  const isBusy = !!pendingAction;
   return (
     <div style={{
       width: "min(780px, 92vw)",
@@ -313,14 +314,14 @@ function AgentDetailPanel({ agent, onClose, onDelete, onConfigure, onMessage, on
       </div>
       {!agent.isHuman && (
         <div style={{ padding: "12px 20px", borderTop: `1px solid ${C.border}`, display: "flex", gap: 8 }}>
-          <button onClick={() => onConfigure?.(agent)} style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>Configure</button>
-          <button onClick={() => onMessage?.(agent)} style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>Message</button>
+          <button disabled={isBusy} onClick={() => onConfigure?.(agent)} style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: isBusy ? "not-allowed" : "pointer", opacity: isBusy ? 0.6 : 1 }}>{pendingAction === 'configure' ? 'Opening…' : 'Configure'}</button>
+          <button disabled={isBusy} onClick={() => onMessage?.(agent)} style={{ flex: 1, padding: "8px", borderRadius: 6, border: `1px solid ${C.border}`, background: C.elevated, color: C.textSec, fontSize: 11, fontWeight: 500, cursor: isBusy ? "not-allowed" : "pointer", opacity: isBusy ? 0.6 : 1 }}>{pendingAction === 'message' ? 'Sending…' : 'Message'}</button>
           {agent.status === "online" ? (
-            <button onClick={() => onToggleStatus?.(agent)} style={{ flex: 1, padding: "8px", borderRadius: 6, border: "none", background: C.red, color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>Pause</button>
+            <button disabled={isBusy} onClick={() => onToggleStatus?.(agent)} style={{ flex: 1, padding: "8px", borderRadius: 6, border: "none", background: C.red, color: "#fff", fontSize: 11, fontWeight: 600, cursor: isBusy ? "not-allowed" : "pointer", opacity: isBusy ? 0.6 : 1 }}>{pendingAction === 'status' ? 'Pausing…' : 'Pause'}</button>
           ) : (
-            <button onClick={() => onToggleStatus?.(agent)} style={{ flex: 1, padding: "8px", borderRadius: 6, border: "none", background: C.green, color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>Activate</button>
+            <button disabled={isBusy} onClick={() => onToggleStatus?.(agent)} style={{ flex: 1, padding: "8px", borderRadius: 6, border: "none", background: C.green, color: "#fff", fontSize: 11, fontWeight: 600, cursor: isBusy ? "not-allowed" : "pointer", opacity: isBusy ? 0.6 : 1 }}>{pendingAction === 'status' ? 'Activating…' : 'Activate'}</button>
           )}
-          <button onClick={() => onDelete?.(agent)} style={{ padding: "8px 10px", borderRadius: 6, border: `1px solid ${C.red}55`, background: `${C.red}14`, color: C.red, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>Delete</button>
+          <button disabled={isBusy} onClick={() => onDelete?.(agent)} style={{ padding: "8px 10px", borderRadius: 6, border: `1px solid ${C.red}55`, background: `${C.red}14`, color: C.red, fontSize: 11, fontWeight: 600, cursor: isBusy ? "not-allowed" : "pointer", opacity: isBusy ? 0.6 : 1 }}>{pendingAction === 'delete' ? 'Deleting…' : 'Delete'}</button>
         </div>
       )}
     </div>
@@ -465,7 +466,8 @@ function Sidebar({ activePage, themeMode, setThemeMode, C, collapsedSections, on
           );
         })}
       </div>
-      <div style={{ padding: "10px 12px", borderTop: `1px solid ${C.border}` }}>
+      <div style={{ padding: "10px 12px", borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "center" }}>
+        <ThemeToggle themeMode={themeMode} setThemeMode={setThemeMode} C={C} />
       </div>
       <div style={{ padding: "12px 16px", borderTop: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg, ${C.blue}, ${C.purple})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>JC</div>
@@ -478,17 +480,9 @@ function Sidebar({ activePage, themeMode, setThemeMode, C, collapsedSections, on
   );
 }
 
-const THEME_STORAGE_KEY = "cf-theme";
 const VIEWMODE_STORAGE_KEY = "clawforge-agentarmy-viewmode";
 const DELETED_AGENTS_STORAGE_KEY = "clawforge-agentarmy-deleted-ids";
-
-function getInitialThemeMode() {
-  if (typeof window === "undefined") return false;
-  const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (saved === "light") return false;
-  if (saved === "dark") return true;
-  return false;
-}
+const STATUS_OVERRIDES_STORAGE_KEY = "clawforge-agentarmy-status-overrides";
 
 function getInitialViewMode() {
   if (typeof window === "undefined") return "grid";
@@ -509,19 +503,34 @@ function getInitialDeletedAgentIds() {
   }
 }
 
+function getInitialStatusOverrides() {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(STATUS_OVERRIDES_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 export default function AgentArmy() {
   const { store, client } = useMissionControl();
+  const storeAgents = store?.agents || {};
   const [themeMode, setThemeMode] = useState(getStoredThemeMode);
   const isDark = themeMode !== "light";
   const C = getTheme(themeMode);
 
   const [selectedAgent, setSelectedAgent] = useState(null);
-  const [deletedAgentIds, setDeletedAgentIds] = useState(() => store.agents?.deletedIds || getInitialDeletedAgentIds());
-  const [agentStatusOverrides, setAgentStatusOverrides] = useState(() => store.agents?.statusOverrides || {});
+  const [deletedAgentIds, setDeletedAgentIds] = useState(() => storeAgents.deletedIds || getInitialDeletedAgentIds());
+  const [agentStatusOverrides, setAgentStatusOverrides] = useState(() => storeAgents.statusOverrides || getInitialStatusOverrides());
   const [opMessage, setOpMessage] = useState('');
   const [connectionInfo, setConnectionInfo] = useState(() => client.getConnectionState());
   const [collapsedSections, setCollapsedSections] = useState({ SYSTEM: true });
-  const [viewMode, setViewMode] = useState(() => store.agents.viewMode || getInitialViewMode());
+  const [viewMode, setViewMode] = useState(() => storeAgents.viewMode || getInitialViewMode());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [pendingActionByAgent, setPendingActionByAgent] = useState({});
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -550,6 +559,11 @@ export default function AgentArmy() {
   }, [deletedAgentIds]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(STATUS_OVERRIDES_STORAGE_KEY, JSON.stringify(agentStatusOverrides));
+  }, [agentStatusOverrides]);
+
+  useEffect(() => {
     const syncFromStore = () => {
       const snapshot = client.getConnectionState();
       setConnectionInfo(snapshot);
@@ -568,8 +582,24 @@ export default function AgentArmy() {
     t = setTimeout(() => setCollapsedSections((p) => ({ ...p, SYSTEM: true })), 12000);
     return () => t && clearTimeout(t);
   }, [collapsedSections.SYSTEM]);
+  const withPendingAction = async (agentId, action, fn) => {
+    if (!agentId) return;
+    const current = pendingActionByAgent[agentId];
+    if (current) return;
+    setPendingActionByAgent((prev) => ({ ...prev, [agentId]: action }));
+    try {
+      await fn();
+    } finally {
+      setPendingActionByAgent((prev) => {
+        const next = { ...prev };
+        delete next[agentId];
+        return next;
+      });
+    }
+  };
+
   const knownAgentIds = new Set(CEO_AGENTS.flatMap((ceo) => [ceo.id, ...((ceo.children || []).map((child) => child.id))]));
-  const injectedAgents = (store.agents?.roster || [])
+  const injectedAgents = (storeAgents.roster || [])
     .filter((agent) => agent?.id && !knownAgentIds.has(agent.id) && !deletedAgentIds.includes(agent.id))
     .map((agent) => ({ ...agent, children: [] }));
 
@@ -586,8 +616,28 @@ export default function AgentArmy() {
     ...injectedAgents.map((agent) => ({ ...agent, status: agentStatusOverrides[agent.id] || agent.status || 'online' })),
   ];
   const allVisibleAgents = visibleCeoAgents.flatMap((ceo) => [ceo, ...(ceo.children || [])]);
-  const totalAgents = allVisibleAgents.length;
-  const onlineCount = allVisibleAgents.filter((agent) => agent.status === "online").length;
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const matchesQuery = (agent) => {
+    if (!normalizedQuery) return true;
+    const haystack = [agent?.name, agent?.role, agent?.model, ...(agent?.permissions || [])]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(normalizedQuery);
+  };
+  const filteredCeoAgents = normalizedQuery
+    ? visibleCeoAgents
+      .map((ceo) => {
+        const children = (ceo.children || []).filter(matchesQuery);
+        if (matchesQuery(ceo) || children.length > 0) return { ...ceo, children };
+        return null;
+      })
+      .filter(Boolean)
+    : visibleCeoAgents;
+  const filteredAllAgents = filteredCeoAgents.flatMap((ceo) => [ceo, ...(ceo.children || [])]);
+
+  const totalAgents = filteredAllAgents.length;
+  const onlineCount = filteredAllAgents.filter((agent) => agent.status === "online").length;
 
   const handleAddAgent = () => {
     window.location.hash = '/configurator?step=1';
@@ -598,14 +648,16 @@ export default function AgentArmy() {
       setOpMessage('Delete failed: missing agent id.');
       return;
     }
-    const resp = await client.run('oc.agent.delete', { agentId: agent.id });
-    if (!resp.ok) {
-      setOpMessage(formatOpError(resp.error));
-      return;
-    }
-    setDeletedAgentIds((prev) => (prev.includes(agent.id) ? prev : [...prev, agent.id]));
-    setOpMessage(formatOpSuccess(`${agent.name} deleted from org chart view.`, resp));
-    setSelectedAgent(null);
+    await withPendingAction(agent.id, 'delete', async () => {
+      const resp = await client.run('oc.agent.delete', { agentId: agent.id });
+      if (!resp.ok) {
+        setOpMessage(formatOpError(resp.error));
+        return;
+      }
+      setDeletedAgentIds((prev) => (prev.includes(agent.id) ? prev : [...prev, agent.id]));
+      setOpMessage(formatOpSuccess(`${agent.name} deleted from org chart view.`, resp));
+      setSelectedAgent(null);
+    });
   };
 
   const handleConfigureAgent = async (agent) => {
@@ -613,13 +665,15 @@ export default function AgentArmy() {
       setOpMessage('Configure failed: missing agent id.');
       return;
     }
-    const resp = await client.run('oc.agent.configure.open', { agentId: agent.id });
-    if (!resp.ok) {
-      setOpMessage(formatOpError(resp.error));
-      return;
-    }
-    setOpMessage(formatOpSuccess(`Opening ${agent.name} in configurator`, resp));
-    window.location.hash = `/configurator?step=1&agentId=${encodeURIComponent(agent.id)}`;
+    await withPendingAction(agent.id, 'configure', async () => {
+      const resp = await client.run('oc.agent.configure.open', { agentId: agent.id });
+      if (!resp.ok) {
+        setOpMessage(formatOpError(resp.error));
+        return;
+      }
+      setOpMessage(formatOpSuccess(`Opening ${agent.name} in configurator`, resp));
+      window.location.hash = `/configurator?step=1&agentId=${encodeURIComponent(agent.id)}`;
+    });
   };
 
   const handleToggleAgentStatus = async (agent) => {
@@ -627,16 +681,18 @@ export default function AgentArmy() {
       setOpMessage('State change failed: missing agent id.');
       return;
     }
-    const nextState = agent.status === 'online' ? 'paused' : 'active';
-    const resp = await client.run('oc.agent.state.set', { agentId: agent.id, state: nextState });
-    if (resp.ok) {
-      const nextStatus = nextState === 'active' ? 'online' : 'offline';
-      setAgentStatusOverrides((prev) => ({ ...prev, [agent.id]: nextStatus }));
-      setSelectedAgent((prev) => (prev?.id === agent.id ? { ...prev, status: nextStatus } : prev));
-      setOpMessage(`${agent.name} is now ${nextStatus}.`);
-      return;
-    }
-    setOpMessage(formatOpError(resp.error));
+    await withPendingAction(agent.id, 'status', async () => {
+      const nextState = agent.status === 'online' ? 'paused' : 'active';
+      const resp = await client.run('oc.agent.state.set', { agentId: agent.id, state: nextState });
+      if (resp.ok) {
+        const nextStatus = nextState === 'active' ? 'online' : 'offline';
+        setAgentStatusOverrides((prev) => ({ ...prev, [agent.id]: nextStatus }));
+        setSelectedAgent((prev) => (prev?.id === agent.id ? { ...prev, status: nextStatus } : prev));
+        setOpMessage(`${agent.name} is now ${nextStatus}.`);
+        return;
+      }
+      setOpMessage(formatOpError(resp.error));
+    });
   };
 
   const handleMessageAgent = async (agent) => {
@@ -649,12 +705,14 @@ export default function AgentArmy() {
       setOpMessage('Message cancelled: empty input.');
       return;
     }
-    const resp = await client.run('oc.agent.message.send', { agentId: agent.id, message: message.trim() });
-    if (resp.ok) {
-      setOpMessage(formatOpSuccess(`Message sent to ${agent.name}`, resp));
-      return;
-    }
-    setOpMessage(formatOpError(resp.error));
+    await withPendingAction(agent.id, 'message', async () => {
+      const resp = await client.run('oc.agent.message.send', { agentId: agent.id, message: message.trim() });
+      if (resp.ok) {
+        setOpMessage(formatOpSuccess(`Message sent to ${agent.name}`, resp));
+        return;
+      }
+      setOpMessage(formatOpError(resp.error));
+    });
   };
 
   return (
@@ -665,8 +723,28 @@ export default function AgentArmy() {
         <div style={{ height: 52, flexShrink: 0, display: "flex", alignItems: "center", padding: "0 20px", gap: 16, borderBottom: `1px solid ${C.border}`, background: C.surface }}>
           <span style={{ fontSize: 12, color: C.textMuted }}>Agents</span><span style={{ color: C.textMuted }}>/</span><span style={{ fontSize: 12, color: C.text, fontWeight: 600 }}>Org Chart</span>
           <div style={{ flex: 1 }} />
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 8, border: `1px solid ${C.border}`, background: C.bg, width: 280 }}>
-            <span style={{ fontSize: 13, color: C.textMuted }}>⌘</span><span style={{ fontSize: 12, color: C.textMuted }}>Search agents...</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 8, border: `1px solid ${C.border}`, background: C.bg, width: 280 }}>
+            <span style={{ fontSize: 13, color: C.textMuted }}>⌘</span>
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search agents..."
+              style={{
+                flex: 1,
+                minWidth: 0,
+                border: "none",
+                outline: "none",
+                fontSize: 12,
+                background: "transparent",
+                color: C.text,
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                style={{ border: "none", background: "transparent", color: C.textMuted, cursor: "pointer", fontSize: 12 }}
+              >✕</button>
+            )}
           </div>
           <div style={{ flex: 1 }} />
           <span style={{ fontSize: 10, color: C.green, display: "flex", alignItems: "center", gap: 4 }}><span style={{ fontSize: 6 }}>●</span> {onlineCount} online</span>
@@ -713,9 +791,14 @@ export default function AgentArmy() {
                   <OrgNode agent={ORCHESTRATOR} isSelected={selectedAgent?.id === "orch"} onClick={setSelectedAgent} isCEO={true} C={C} />
                 </div>
                 <div style={{ width: 1.5, height: 28, background: C.border, opacity: 0.5 }} />
-                <div style={{ height: 1.5, background: C.border, opacity: 0.5, width: `${(Math.max(visibleCeoAgents.length - 1, 0)) * 220}px`, maxWidth: "100%" }} />
+                <div style={{ height: 1.5, background: C.border, opacity: 0.5, width: `${(Math.max(filteredCeoAgents.length - 1, 0)) * 220}px`, maxWidth: "100%" }} />
                 <div style={{ display: "flex", gap: 20, justifyContent: "center", position: "relative" }}>
-                  {visibleCeoAgents.map(ceo => (
+                  {filteredCeoAgents.length === 0 && (
+                    <div style={{ padding: "18px 24px", border: `1px dashed ${C.border}`, borderRadius: 10, color: C.textMuted, fontSize: 12 }}>
+                      No agents match “{searchQuery.trim()}”.
+                    </div>
+                  )}
+                  {filteredCeoAgents.map(ceo => (
                     <div key={ceo.id} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                       <div style={{ width: 1.5, height: 20, background: C.border, opacity: 0.5 }} />
                       <OrgNode agent={ceo} isSelected={selectedAgent?.id === ceo.id} onClick={setSelectedAgent} isCEO={true} C={C} />
@@ -739,7 +822,12 @@ export default function AgentArmy() {
               </div>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 10, alignItems: "start" }}>
-                {allVisibleAgents.map(ag => (
+                {filteredAllAgents.length === 0 && (
+                  <div style={{ padding: "18px 24px", border: `1px dashed ${C.border}`, borderRadius: 10, color: C.textMuted, fontSize: 12 }}>
+                    No agents match “{searchQuery.trim()}”.
+                  </div>
+                )}
+                {filteredAllAgents.map(ag => (
                   <div key={ag.id} onClick={() => setSelectedAgent(ag)} style={{
                     background: selectedAgent?.id === ag.id ? C.elevated : C.surface,
                     border: `1px solid ${selectedAgent?.id === ag.id ? C.blue : C.border}`,
@@ -777,6 +865,7 @@ export default function AgentArmy() {
                 <AgentDetailPanel
                   agent={selectedAgent}
                   C={C}
+                  pendingAction={selectedAgent?.id ? pendingActionByAgent[selectedAgent.id] : null}
                   onClose={() => setSelectedAgent(null)}
                   onDelete={handleDeleteAgent}
                   onConfigure={handleConfigureAgent}
