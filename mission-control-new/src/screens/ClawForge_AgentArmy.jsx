@@ -44,9 +44,9 @@ function getTheme(mode) {
   };
 }
 
-// Module-level default for data constants (component-level C shadows this for rendering)
-// Use light palette defaults so static seed colors don't look black in light mode.
-let C = getTheme(false);
+// Module-level default for data constants used in static seed objects.
+// Keep this explicitly light so seed gradients/colors are neutral in light mode.
+const seedTheme = getTheme("light");
 
 
 const STATUS_MAP = {
@@ -62,49 +62,49 @@ const MODEL_ICONS = {
 
 const ORCHESTRATOR = {
   id: "orch", name: "Joseph", role: "Orchestrator", initials: "JC",
-  color: `linear-gradient(135deg, ${C.blue}, ${C.purple})`,
+  color: `linear-gradient(135deg, ${seedTheme.blue}, ${seedTheme.purple})`,
   status: "online", model: null, queue: 0, permissions: ["Full Access"], isHuman: true,
 };
 
 const CEO_AGENTS = [
   {
-    id: "ops", name: "Operations CEO", initials: "OP", color: C.blue, model: "Claude",
+    id: "ops", name: "Operations CEO", initials: "OP", color: seedTheme.blue, model: "Claude",
     status: "online", queue: 4, uptime: "99.8%", tasksCompleted: 142, costToday: "$2.14",
     permissions: ["AWS Management", "Docker", "CI/CD", "Database"],
     description: "Manages infrastructure, deployments, and technical operations across all customer instances.",
     children: [
       { id: "dev", name: "Full-Stack Dev", initials: "FS", color: "#60A5FA", model: "Claude", status: "online", queue: 6, uptime: "99.7%", tasksCompleted: 89, costToday: "$1.87", permissions: ["GitHub", "AWS EC2", "Docker"], description: "Builds and maintains product codebase, APIs, and frontend." },
-      { id: "devops", name: "DevOps Engineer", initials: "DV", color: C.orange, model: "Claude", status: "online", queue: 5, uptime: "99.9%", tasksCompleted: 67, costToday: "$0.92", permissions: ["Terraform", "AWS", "Docker", "CI/CD"], description: "Infrastructure as code, CI/CD pipelines, monitoring." },
+      { id: "devops", name: "DevOps Engineer", initials: "DV", color: seedTheme.orange, model: "Claude", status: "online", queue: 5, uptime: "99.9%", tasksCompleted: 67, costToday: "$0.92", permissions: ["Terraform", "AWS", "Docker", "CI/CD"], description: "Infrastructure as code, CI/CD pipelines, monitoring." },
       { id: "qa", name: "QA Tester", initials: "QA", color: "#FB923C", model: "Claude", status: "online", queue: 3, uptime: "99.8%", tasksCompleted: 54, costToday: "$0.68", permissions: ["Test Suites", "Staging Env"], description: "End-to-end testing, regression, performance validation." },
     ],
   },
   {
-    id: "mkt", name: "Marketing CEO", initials: "MK", color: C.purple, model: "GPT-4o",
+    id: "mkt", name: "Marketing CEO", initials: "MK", color: seedTheme.purple, model: "GPT-4o",
     status: "online", queue: 7, uptime: "99.6%", tasksCompleted: 118, costToday: "$3.41",
     permissions: ["Meta Ads", "Google Ads", "Analytics", "Email"],
     description: "Leads all marketing campaigns, content strategy, and growth initiatives for launch.",
     children: [
-      { id: "content", name: "Content Writer", initials: "CW", color: C.pink, model: "Claude", status: "online", queue: 3, uptime: "99.7%", tasksCompleted: 76, costToday: "$1.23", permissions: ["CMS", "Google Docs", "Canva API"], description: "Website copy, blog posts, email sequences, ad creative." },
+      { id: "content", name: "Content Writer", initials: "CW", color: seedTheme.pink, model: "Claude", status: "online", queue: 3, uptime: "99.7%", tasksCompleted: 76, costToday: "$1.23", permissions: ["CMS", "Google Docs", "Canva API"], description: "Website copy, blog posts, email sequences, ad creative." },
       { id: "seo", name: "SEO Specialist", initials: "SE", color: "#818CF8", model: "GPT-4o", status: "offline", queue: 0, uptime: "—", tasksCompleted: 31, costToday: "$0.00", permissions: ["GA4", "Search Console", "Ahrefs"], description: "SEO strategy, keyword research, technical optimization." },
       { id: "community", name: "Community Mgr", initials: "CM", color: "#34D399", model: "Claude", status: "online", queue: 1, uptime: "99.4%", tasksCompleted: 43, costToday: "$0.54", permissions: ["Discord", "Telegram", "Slack"], description: "Community engagement, weekly Zoom calls, member onboarding." },
     ],
   },
   {
-    id: "sales", name: "Sales CEO", initials: "SL", color: C.green, model: "Claude",
+    id: "sales", name: "Sales CEO", initials: "SL", color: seedTheme.green, model: "Claude",
     status: "online", queue: 2, uptime: "99.9%", tasksCompleted: 96, costToday: "$1.67",
     permissions: ["CRM", "Gmail", "LinkedIn", "Calendar"],
     description: "Manages sales pipeline, outreach, partnerships, and deal closing.",
     children: [],
   },
   {
-    id: "fin", name: "Finance CEO", initials: "FN", color: C.amber, model: "Gemini",
+    id: "fin", name: "Finance CEO", initials: "FN", color: seedTheme.amber, model: "Gemini",
     status: "online", queue: 1, uptime: "100%", tasksCompleted: 58, costToday: "$0.89",
     permissions: ["Stripe", "QuickBooks", "Banking API"],
     description: "Financial reporting, billing, invoicing, budgeting, and cash flow management.",
     children: [],
   },
   {
-    id: "cx", name: "CX CEO", initials: "CX", color: C.teal, model: "GPT-4o",
+    id: "cx", name: "CX CEO", initials: "CX", color: seedTheme.teal, model: "GPT-4o",
     status: "online", queue: 2, uptime: "99.5%", tasksCompleted: 82, costToday: "$1.12",
     permissions: ["Support Tickets", "Knowledge Base", "Email"],
     description: "Customer success, onboarding coordination, support ticket management.",
@@ -113,7 +113,7 @@ const CEO_AGENTS = [
     ],
   },
   {
-    id: "sec", name: "Security Sentinel", initials: "SS", color: C.red, model: "Claude",
+    id: "sec", name: "Security Sentinel", initials: "SS", color: seedTheme.red, model: "Claude",
     status: "degraded", queue: 0, uptime: "98.1%", tasksCompleted: 37, costToday: "$0.76",
     permissions: ["AWS WAF", "CloudWatch", "Vuln Scanner"],
     description: "Security reviews, threat detection, vulnerability management, incident response.",
@@ -122,7 +122,7 @@ const CEO_AGENTS = [
   },
 ];
 
-function Avatar({ initials, color, size = 40, status, isHuman }) {
+function Avatar({ initials, color, size = 40, status, isHuman, C }) {
   const isGrad = typeof color === "string" && color.includes("gradient");
   const st = STATUS_MAP[status];
   return (
@@ -146,7 +146,7 @@ function Avatar({ initials, color, size = 40, status, isHuman }) {
   );
 }
 
-function ModelBadge({ model }) {
+function ModelBadge({ model, C }) {
   if (!model) return null;
   const m = MODEL_ICONS[model];
   return (
@@ -157,7 +157,7 @@ function ModelBadge({ model }) {
   );
 }
 
-function OrgNode({ agent, isSelected, onClick, isCEO }) {
+function OrgNode({ agent, isSelected, onClick, isCEO, C }) {
   const st = STATUS_MAP[agent.status];
   const [hovered, setHovered] = useState(false);
   return (
@@ -186,11 +186,11 @@ function OrgNode({ agent, isSelected, onClick, isCEO }) {
         }}>!</div>
       )}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-        <Avatar initials={agent.initials} color={agent.color} size={isCEO ? 36 : 30} status={agent.status} isHuman={agent.isHuman} />
+        <Avatar initials={agent.initials} color={agent.color} size={isCEO ? 36 : 30} status={agent.status} isHuman={agent.isHuman} C={C} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: isCEO ? 12 : 11, fontWeight: 700, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{agent.name || agent.role}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
-            {agent.model ? <ModelBadge model={agent.model} /> : <span style={{ fontSize: 10, color: C.purple, fontWeight: 600 }}>Human</span>}
+            {agent.model ? <ModelBadge model={agent.model} C={C} /> : <span style={{ fontSize: 10, color: C.purple, fontWeight: 600 }}>Human</span>}
           </div>
         </div>
       </div>
@@ -210,7 +210,7 @@ function OrgNode({ agent, isSelected, onClick, isCEO }) {
   );
 }
 
-function AgentDetailPanel({ agent, onClose, onDelete, onConfigure, onMessage, onToggleStatus }) {
+function AgentDetailPanel({ agent, onClose, onDelete, onConfigure, onMessage, onToggleStatus, C }) {
   if (!agent) return null;
   const st = STATUS_MAP[agent.status];
   return (
@@ -231,13 +231,13 @@ function AgentDetailPanel({ agent, onClose, onDelete, onConfigure, onMessage, on
       </div>
       <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
-          <Avatar initials={agent.initials} color={agent.color} size={48} status={agent.status} isHuman={agent.isHuman} />
+          <Avatar initials={agent.initials} color={agent.color} size={48} status={agent.status} isHuman={agent.isHuman} C={C} />
           <div>
             <div style={{ fontSize: 16, fontWeight: 800, color: C.text }}>{agent.name || agent.role}</div>
             {agent.role && <div style={{ fontSize: 11, color: C.textMuted }}>{agent.role}</div>}
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
               <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 9999, background: st?.bg, color: st?.color, border: `1px solid ${st?.color}33` }}>{st?.label}</span>
-              {agent.model && <ModelBadge model={agent.model} />}
+              {agent.model && <ModelBadge model={agent.model} C={C} />}
             </div>
           </div>
         </div>
@@ -296,11 +296,11 @@ function AgentDetailPanel({ agent, onClose, onDelete, onConfigure, onMessage, on
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {agent.children.map(child => (
                 <div key={child.id} style={{ padding: "8px 12px", borderRadius: 8, background: C.elevated, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10 }}>
-                  <Avatar initials={child.initials} color={child.color} size={26} status={child.status} />
+                  <Avatar initials={child.initials} color={child.color} size={26} status={child.status} C={C} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 11, fontWeight: 600, color: C.text }}>{child.name}</div>
                     <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 1 }}>
-                      <ModelBadge model={child.model} />
+                      <ModelBadge model={child.model} C={C} />
                       <span style={{ fontSize: 9, color: STATUS_MAP[child.status].color }}>{STATUS_MAP[child.status].label}</span>
                     </div>
                   </div>
@@ -710,7 +710,7 @@ export default function AgentArmy() {
             {viewMode === "org" ? (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0, minWidth: "max-content", padding: "0 40px" }}>
                 <div style={{ marginBottom: 8 }}>
-                  <OrgNode agent={ORCHESTRATOR} isSelected={selectedAgent?.id === "orch"} onClick={setSelectedAgent} isCEO={true} />
+                  <OrgNode agent={ORCHESTRATOR} isSelected={selectedAgent?.id === "orch"} onClick={setSelectedAgent} isCEO={true} C={C} />
                 </div>
                 <div style={{ width: 1.5, height: 28, background: C.border, opacity: 0.5 }} />
                 <div style={{ height: 1.5, background: C.border, opacity: 0.5, width: `${(Math.max(visibleCeoAgents.length - 1, 0)) * 220}px`, maxWidth: "100%" }} />
@@ -718,7 +718,7 @@ export default function AgentArmy() {
                   {visibleCeoAgents.map(ceo => (
                     <div key={ceo.id} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                       <div style={{ width: 1.5, height: 20, background: C.border, opacity: 0.5 }} />
-                      <OrgNode agent={ceo} isSelected={selectedAgent?.id === ceo.id} onClick={setSelectedAgent} isCEO={true} />
+                      <OrgNode agent={ceo} isSelected={selectedAgent?.id === ceo.id} onClick={setSelectedAgent} isCEO={true} C={C} />
                       {ceo.children && ceo.children.length > 0 && (
                         <>
                           <div style={{ width: 1.5, height: 20, background: C.border, opacity: 0.3 }} />
@@ -727,7 +727,7 @@ export default function AgentArmy() {
                             {ceo.children.map(child => (
                               <div key={child.id} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                                 <div style={{ width: 1.5, height: 16, background: C.border, opacity: 0.3 }} />
-                                <OrgNode agent={child} isSelected={selectedAgent?.id === child.id} onClick={setSelectedAgent} isCEO={false} />
+                                <OrgNode agent={child} isSelected={selectedAgent?.id === child.id} onClick={setSelectedAgent} isCEO={false} C={C} />
                               </div>
                             ))}
                           </div>
@@ -747,8 +747,8 @@ export default function AgentArmy() {
                     minHeight: 96,
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                      <Avatar initials={ag.initials} color={ag.color} size={34} status={ag.status} />
-                      <div><div style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{ag.name}</div><div style={{ display: "flex", alignItems: "center", gap: 4 }}><ModelBadge model={ag.model} /><span style={{ fontSize: 6, color: STATUS_MAP[ag.status].color }}>●</span></div></div>
+                      <Avatar initials={ag.initials} color={ag.color} size={34} status={ag.status} C={C} />
+                      <div><div style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{ag.name}</div><div style={{ display: "flex", alignItems: "center", gap: 4 }}><ModelBadge model={ag.model} C={C} /><span style={{ fontSize: 6, color: STATUS_MAP[ag.status].color }}>●</span></div></div>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: C.textMuted }}>
                       <span>{ag.queue} queued</span><span>{ag.tasksCompleted} done</span><span>{ag.costToday}</span>
@@ -776,6 +776,7 @@ export default function AgentArmy() {
               <div onClick={(e) => e.stopPropagation()}>
                 <AgentDetailPanel
                   agent={selectedAgent}
+                  C={C}
                   onClose={() => setSelectedAgent(null)}
                   onDelete={handleDeleteAgent}
                   onConfigure={handleConfigureAgent}
