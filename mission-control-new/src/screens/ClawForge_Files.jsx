@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { readStore, writeStore } from "../lib/missionControlStore";
 import { ensureKnowledgeMapping, syncKnowledgeToStoreAndStartHere } from "../lib/startHereKnowledgeSync";
+import { buildMainMenuSections } from "../lib/systemNav";
 
 // ─── Light theme tokens (ClawForge-flavored) ──────────────────────────────────
 const L = {
@@ -346,7 +347,7 @@ function SlashMenu({ query, onSelect, onClose }) {
 }
 
 // ─── Formatting toolbar ───────────────────────────────────────────────────────
-function FormatBar({ activeBlockId, blocks, onChangeContent }) {
+function FormatBar({ activeBlockId, blocks, onChangeContent, onChangeType }) {
   const tools = [
     { label: "B",  title: "Bold",          wrap: ["**", "**"],  style: { fontWeight: 800 } },
     { label: "I",  title: "Italic",         wrap: ["*", "*"],    style: { fontStyle: "italic" } },
@@ -391,6 +392,11 @@ function FormatBar({ activeBlockId, blocks, onChangeContent }) {
             color: active ? L.blue : L.textSec, cursor: "pointer", fontSize: 10, fontWeight: 800,
             display: "flex", alignItems: "center", justifyContent: "center",
           }}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              if (!activeBlockId) return;
+              onChangeType(activeBlockId, type);
+            }}
             onMouseEnter={e => e.currentTarget.style.background = L.elevated}
             onMouseLeave={e => e.currentTarget.style.background = active ? L.blueGlow : "transparent"}
           >{h}</button>
@@ -655,7 +661,7 @@ function PageEditor({ page, onUpdatePage, onOpenEmojiPicker }) {
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* Formatting toolbar */}
-      <FormatBar activeBlockId={focusedBlockId} blocks={page.blocks} onChangeContent={onContent} />
+      <FormatBar activeBlockId={focusedBlockId} blocks={page.blocks} onChangeContent={onContent} onChangeType={onTypeChange} />
 
       {/* Scrollable content */}
       <div style={{ flex: 1, overflowY: "auto" }} onClick={() => { if (!focusedBlockId) addBlock(); }}>
@@ -893,26 +899,7 @@ function FileManager({ files, folders, onUpload, onPreviewFile, currentFolder, o
 
 // ─── In-page main menu + docs sidebar ────────────────────────────────────────
 function MainMenuSidebar({ activePage, collapsedSections, onToggleSection }) {
-  const nav = [
-    { section: "MAIN", items: [
-      { icon: "🚀", label: "Start Here", key: "start-here" },
-      { icon: "💬", label: "Chat", key: "chat" },
-      { icon: "▦", label: "Tasks", key: "boards" },
-      { icon: "◉", label: "Approvals", key: "approvals" },
-      { icon: "◐", label: "Brainstorming", key: "brainstorm" },
-      { icon: "⬡", label: "Org Chart", key: "agentarmy" },
-      { icon: "⚙", label: "Add Agent", key: "configurator" },
-      { icon: "🗂", label: "Files", key: "files" },
-    ]},
-    { section: "SYSTEM", items: [
-      { icon: "⛨", label: "Security", key: "security" },
-      { icon: "⊞", label: "Integrations", key: "integrations" },
-      { icon: "📊", label: "Cost & Usage", key: "costusage" },
-      { icon: "⚙️", label: "Settings", key: "settings" },
-      { icon: "🛠", label: "Under Development", key: "development" },
-      { icon: "🧾", label: "Activity Log", key: "activitylog" },
-    ]},
-  ];
+  const nav = buildMainMenuSections();
 
   const routeMap = {
     chat: "/chat", brainstorm: "/brainstorm", brainstorming: "/brainstorm", boards: "/boards", tasks: "/boards",
@@ -1217,7 +1204,7 @@ function DocsSidebar({ pages, files, folders, selectedId, currentFolder, onSelec
           <div style={{ fontSize: 12, fontWeight: 600, color: L.text }}>Joseph</div>
           <div style={{ fontSize: 10, color: L.textMuted }}>Orchestrator</div>
         </div>
-        <button style={{ width: 26, height: 26, borderRadius: 6, border: `1px solid ${L.border}`, background: L.surface, cursor: "pointer", fontSize: 13 }}>⚙️</button>
+        <button onClick={() => { window.location.hash = "/settings"; }} style={{ width: 26, height: 26, borderRadius: 6, border: `1px solid ${L.border}`, background: L.surface, cursor: "pointer", fontSize: 13 }}>⚙️</button>
       </div>
     </div>
   );
@@ -1288,6 +1275,19 @@ function EmojiPickerModal({ currentEmoji, onClose, onSelect }) {
 
 // ─── Modal: File Preview ──────────────────────────────────────────────────────
 function FilePreviewModal({ file, onClose, onDelete }) {
+  const handleDownload = () => {
+    const payload = `Mock file download for ${file.name}\nSize: ${fmtSize(file.size)}\nUploaded by: ${file.uploadedBy}\nUploaded at: ${file.uploadedAt}\n`;
+    const blob = new Blob([payload], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${file.name}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Overlay onClose={onClose}>
       <ModalCard width={460}>
@@ -1317,7 +1317,7 @@ function FilePreviewModal({ file, onClose, onDelete }) {
           <Btn variant="danger" onClick={() => onDelete(file.id)}>🗑 Delete</Btn>
           <div style={{ display: "flex", gap: 10 }}>
             <Btn onClick={onClose}>Close</Btn>
-            <Btn variant="primary">⬇ Download</Btn>
+            <Btn variant="primary" onClick={handleDownload}>⬇ Download</Btn>
           </div>
         </div>
       </ModalCard>
@@ -1570,7 +1570,14 @@ export default function ClawForgeDocs() {
               {/* Page actions */}
               <button onClick={handleOpenPageSettings} style={{ padding: "5px 12px", borderRadius: 6, border: `1px solid ${L.border}`, background: "transparent", color: L.textSec, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>⚙️ Settings</button>
               <button onClick={() => handleNewPage(selectedPage.id)} style={{ padding: "5px 12px", borderRadius: 6, border: `1px solid ${L.border}`, background: "transparent", color: L.textSec, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>+ Sub-page</button>
-              <button style={{ padding: "5px 12px", borderRadius: 6, border: "none", background: L.blueGlow, color: L.blue, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>Share</button>
+              <button onClick={() => {
+                const sharePath = `#/files?page=${encodeURIComponent(selectedPage.id)}`;
+                const shareUrl = `${window.location.origin}${window.location.pathname}${sharePath}`;
+                if (navigator.clipboard?.writeText) {
+                  navigator.clipboard.writeText(shareUrl).catch(() => {});
+                }
+                window.alert(`Share link copied:\n${shareUrl}`);
+              }} style={{ padding: "5px 12px", borderRadius: 6, border: "none", background: L.blueGlow, color: L.blue, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>Share</button>
             </div>
             <PageEditor page={selectedPage} onUpdatePage={handleUpdatePage} onOpenEmojiPicker={handleOpenEmojiPicker} />
           </>

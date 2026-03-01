@@ -45,7 +45,7 @@ function DiffViewer({ before, after }) {
   );
 }
 
-function ActionRow({ action, isExpanded, onToggle, onRollback, isSelected, onSelect, rollbackState }) {
+function ActionRow({ action, isExpanded, onToggle, onRollback, isSelected, onSelect, rollbackState, onCopyDetails, onViewContext }) {
   const agent = AGENTS[action.agent];
   const actionType = ACTION_TYPES[action.type];
   const sevColor = SEVERITY_COLORS[actionType.severity];
@@ -77,8 +77,8 @@ function ActionRow({ action, isExpanded, onToggle, onRollback, isSelected, onSel
             <DiffViewer before={action.before} after={action.after} />
             <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
               {action.canUndo && !isRolledBack && <button onClick={(e) => { e.stopPropagation(); onRollback(action.id); }} disabled={isRollingBack} style={{ padding: "8px 16px", background: isRollingBack ? "#fef2f2" : "linear-gradient(135deg, #ff4a00, #dc2626)", color: isRollingBack ? "#dc2626" : "#fff", border: isRollingBack ? "1px solid #fecaca" : "none", borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: isRollingBack ? "wait" : "pointer" }}>{isRollingBack ? "Rolling Back…" : "⏪ Rollback This Action"}</button>}
-              <button style={{ padding: "8px 16px", background: "#f8fafc", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12.5, fontWeight: 500 }}>📋 Copy Details</button>
-              <button style={{ padding: "8px 16px", background: "#f8fafc", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12.5, fontWeight: 500 }}>🔗 View Full Context</button>
+              <button onClick={(e) => { e.stopPropagation(); onCopyDetails(action); }} style={{ padding: "8px 16px", background: "#f8fafc", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12.5, fontWeight: 500, cursor: "pointer" }}>📋 Copy Details</button>
+              <button onClick={(e) => { e.stopPropagation(); onViewContext(action); }} style={{ padding: "8px 16px", background: "#f8fafc", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12.5, fontWeight: 500, cursor: "pointer" }}>🔗 View Full Context</button>
             </div>
           </div>
         </div>
@@ -117,6 +117,39 @@ export default function ClawForgeActivityRollback() {
   });
 
   const rolledBackCount = Object.values(rollbackStates).filter((s) => s === "done").length;
+
+  const handleCopyDetails = async (action) => {
+    const payload = [
+      `${action.summary}`,
+      `Agent: ${AGENTS[action.agent]?.name || action.agent}`,
+      `Type: ${ACTION_TYPES[action.type]?.label || action.type}`,
+      `Time: ${formatDate(action.timestamp)} ${formatTime(action.timestamp)}`,
+      `Detail: ${action.detail}`,
+      action.before ? `Before:\n${action.before}` : null,
+      action.after ? `After:\n${action.after}` : null,
+    ].filter(Boolean).join("\n\n");
+
+    try {
+      await navigator.clipboard.writeText(payload);
+      window.alert("Action details copied to clipboard.");
+    } catch {
+      window.prompt("Copy action details:", payload);
+    }
+  };
+
+  const handleViewContext = (action) => {
+    const routeByType = {
+      file_modified: "/files",
+      deployment: "/runs",
+      config_change: "/settings",
+      permission_change: "/security",
+      data_update: "/overview",
+      agent_action: "/army",
+      rollback: "/activity-log",
+      system_event: "/overview",
+    };
+    window.location.hash = routeByType[action.type] || "/overview";
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(180deg, #f8f9fb 0%, #f0f1f5 100%)", fontFamily: "'DM Sans', 'Outfit', -apple-system, sans-serif", color: "#0f172a" }}>
@@ -175,6 +208,8 @@ export default function ClawForgeActivityRollback() {
             isSelected={selectedIds.has(action.id)}
             onSelect={() => toggleSelect(action.id)}
             rollbackState={rollbackStates[action.id]}
+            onCopyDetails={handleCopyDetails}
+            onViewContext={handleViewContext}
           />
         ))}
       </div>
