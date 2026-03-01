@@ -36,6 +36,15 @@ export const defaultStore = {
     drafts: {},
     updatedAt: null,
   },
+  docs: {
+    pages: null,
+    files: null,
+    folders: null,
+    knowledgeBasePageId: null,
+    selectedId: 'files',
+    currentFolder: null,
+    updatedAt: null,
+  },
   configurator: {
     activeDraftId: 'draft-default',
     drafts: {

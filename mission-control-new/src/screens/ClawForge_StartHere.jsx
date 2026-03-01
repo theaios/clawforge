@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { getStoredThemeMode } from "../lib/themeMode";
 import { PRIMARY_NAV_ITEMS, SYSTEM_NAV_ITEMS } from "../lib/systemNav";
+import { START_HERE_STORAGE_KEY, upsertKnowledgePageFromStartHere, getKnowledgeLinkInfo, markdownFromBlocks } from "../lib/startHereKnowledgeSync";
+import { readStore, writeStore } from "../lib/missionControlStore";
 
 function getTheme(mode) {
   if (mode === "trippy") {
@@ -45,8 +47,6 @@ function getTheme(mode) {
 }
 
 let C = getTheme(true);
-
-const START_HERE_STORAGE_KEY = "clawforge.startHere.state.v1";
 
 const DEFAULT_MEMORY_SETTINGS = {
   perAgent: true,
@@ -623,7 +623,7 @@ function ProtocolSection({ value, onChange }) {
 }
 
 // ── Section: Knowledge Base ────────────────────────────────────────────────────
-function KnowledgeSection({ value, onChange, structuredFields, onStructuredFieldChange }) {
+function KnowledgeSection({ value, onChange, structuredFields, onStructuredFieldChange, missingLinkedPage, linkedPageId }) {
   const [saved, setSaved] = useState(false);
   const [activeField, setActiveField] = useState(null);
   const save = () => { setSaved(true); setTimeout(() => setSaved(false), 2500); };
@@ -657,6 +657,14 @@ function KnowledgeSection({ value, onChange, structuredFields, onStructuredField
             The more detail you add here, the better your agents perform. Think of this as the company wiki — your brand voice, audience, pricing, competitors, and messaging all live here.
           </div>
         </div>
+        {missingLinkedPage && (
+          <div style={{ margin: "12px 22px 0", padding: "12px 16px", borderRadius: 10, background: C.amberGlow, border: `1px solid ${C.amber}35`, display: "flex", gap: 10 }}>
+            <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
+            <div style={{ fontSize: 12, color: C.textSec, lineHeight: 1.6 }}>
+              The linked Files page was missing{linkedPageId ? ` (id: ${linkedPageId})` : ""}. A replacement linked page is being used automatically.
+            </div>
+          </div>
+        )}
 
         {/* Structured fields */}
         <div style={{ padding: "20px 22px" }}>
@@ -922,9 +930,21 @@ export default function StartHere() {
   const [memorySettings, setMemorySettings] = useState(persisted?.memorySettings || DEFAULT_MEMORY_SETTINGS);
   const [savedAll, setSavedAll] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState(persisted?.lastSavedAt || null);
+  const [missingKnowledgeLink, setMissingKnowledgeLink] = useState(false);
+  const [knowledgePageId, setKnowledgePageId] = useState(() => getKnowledgeLinkInfo().pageId);
 
   const updateDiscovery = (key, val) => setDiscovery((d) => ({ ...d, [key]: val }));
   const updateKnowledgeField = (key, val) => setKnowledgeFields((prev) => ({ ...prev, [key]: val }));
+
+  useEffect(() => {
+    const store = readStore();
+    const linkedId = store?.docs?.knowledgeBasePageId;
+    const linkedPage = linkedId ? (store?.docs?.pages || []).find((p) => p.id === linkedId) : null;
+    if (!linkedPage) return;
+    const markdown = markdownFromBlocks(linkedPage.blocks || []);
+    if (markdown && markdown !== knowledge) setKnowledge(markdown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const TABS = [
     { id: "discovery", icon: "🏢", label: "Your Business" },
@@ -968,6 +988,21 @@ export default function StartHere() {
     };
     localStorage.setItem(START_HERE_STORAGE_KEY, JSON.stringify(payload));
   }, [activeTab, discovery, protocol, knowledge, knowledgeFields, memorySettings, lastSavedAt]);
+
+  useEffect(() => {
+    const store = readStore();
+    const existingPages = Array.isArray(store?.docs?.pages) && store.docs.pages.length ? store.docs.pages : [];
+    const synced = upsertKnowledgePageFromStartHere(existingPages, knowledge);
+    store.docs = {
+      ...(store.docs || {}),
+      pages: synced.pages,
+      knowledgeBasePageId: synced.pageId,
+      updatedAt: new Date().toISOString(),
+    };
+    writeStore(store);
+    setKnowledgePageId(synced.pageId);
+    setMissingKnowledgeLink(!!synced.missingLink);
+  }, [knowledge]);
 
   const saveAll = () => {
     const now = new Date().toISOString();
@@ -1044,6 +1079,8 @@ export default function StartHere() {
                   onChange={setKnowledge}
                   structuredFields={knowledgeFields}
                   onStructuredFieldChange={updateKnowledgeField}
+                  missingLinkedPage={missingKnowledgeLink}
+                  linkedPageId={knowledgePageId}
                 />
               )}
               {activeTab === "memory" && (

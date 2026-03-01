@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { readStore, writeStore } from "../lib/missionControlStore";
+import { ensureKnowledgeMapping, syncKnowledgeToStoreAndStartHere } from "../lib/startHereKnowledgeSync";
 
 // ─── Light theme tokens (ClawForge-flavored) ──────────────────────────────────
 const L = {
@@ -1359,13 +1361,42 @@ function PageSettingsModal({ page, onClose, onUpdate, onDelete }) {
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function ClawForgeDocs() {
-  const [pages,         setPages]         = useState(SEED_PAGES);
-  const [files,         setFiles]         = useState(SEED_FILES);
-  const [folders,       setFolders]       = useState(SEED_FOLDERS);
-  const [selectedId,    setSelectedId]    = useState("files");
-  const [currentFolder, setCurrentFolder] = useState(null);   // lifted from FileManager
+  const [boot] = useState(() => {
+    const store = readStore();
+    const storedPages = Array.isArray(store?.docs?.pages) && store.docs.pages.length ? store.docs.pages : SEED_PAGES;
+    const synced = ensureKnowledgeMapping(storedPages);
+    const docs = store.docs || {};
+    const payload = {
+      pages: synced.pages,
+      files: Array.isArray(docs.files) && docs.files.length ? docs.files : SEED_FILES,
+      folders: Array.isArray(docs.folders) && docs.folders.length ? docs.folders : SEED_FOLDERS,
+      selectedId: docs.selectedId || 'files',
+      currentFolder: docs.currentFolder ?? null,
+      knowledgeBasePageId: synced.pageId,
+      missingKnowledgeLink: !!synced.missingLink,
+    };
+    store.docs = {
+      ...docs,
+      pages: payload.pages,
+      files: payload.files,
+      folders: payload.folders,
+      selectedId: payload.selectedId,
+      currentFolder: payload.currentFolder,
+      knowledgeBasePageId: payload.knowledgeBasePageId,
+      updatedAt: new Date().toISOString(),
+    };
+    writeStore(store);
+    return payload;
+  });
+
+  const [pages,         setPages]         = useState(boot.pages);
+  const [files,         setFiles]         = useState(boot.files);
+  const [folders,       setFolders]       = useState(boot.folders);
+  const [selectedId,    setSelectedId]    = useState(boot.selectedId);
+  const [currentFolder, setCurrentFolder] = useState(boot.currentFolder);   // lifted from FileManager
   const [search,        setSearch]        = useState("");
   const [collapsedSections, setCollapsedSections] = useState({ SYSTEM: true });
+  const [missingKnowledgeLink] = useState(boot.missingKnowledgeLink);
 
   // Modals
   const [modal,     setModal]     = useState(null);
@@ -1380,6 +1411,30 @@ export default function ClawForgeDocs() {
     t = setTimeout(() => setCollapsedSections((p) => ({ ...p, SYSTEM: true })), 12000);
     return () => t && clearTimeout(t);
   }, [collapsedSections.SYSTEM]);
+
+  useEffect(() => {
+    const store = readStore();
+    const docs = store.docs || {};
+    store.docs = {
+      ...docs,
+      pages,
+      files,
+      folders,
+      selectedId,
+      currentFolder,
+      updatedAt: new Date().toISOString(),
+    };
+    writeStore(store);
+  }, [pages, files, folders, selectedId, currentFolder]);
+
+  useEffect(() => {
+    const store = readStore();
+    const linkedPageId = store?.docs?.knowledgeBasePageId;
+    if (!linkedPageId) return;
+    const linkedPage = pages.find((p) => p.id === linkedPageId);
+    if (!linkedPage) return;
+    syncKnowledgeToStoreAndStartHere(pages, linkedPageId);
+  }, [pages]);
 
   // Navigate into a folder from sidebar — also switches main view to Files
   const handleSelectFolder = (folderId) => {
@@ -1399,7 +1454,17 @@ export default function ClawForgeDocs() {
     setPages(prev => prev.map(p => p.id === selectedId ? (typeof updater === "function" ? updater(p) : { ...p, ...updater }) : p));
   }, [selectedId]);
   const handleDeletePage = (id) => {
-    setPages(prev => prev.filter(p => p.id !== id && p.parentId !== id));
+    setPages(prev => {
+      const next = prev.filter(p => p.id !== id && p.parentId !== id);
+      const store = readStore();
+      if (store?.docs?.knowledgeBasePageId === id) {
+        const recreated = ensureKnowledgeMapping(next);
+        store.docs = { ...(store.docs || {}), pages: recreated.pages, knowledgeBasePageId: recreated.pageId, updatedAt: new Date().toISOString() };
+        writeStore(store);
+        return recreated.pages;
+      }
+      return next;
+    });
     if (selectedId === id) setSelectedId("pg-home");
     setModal(null);
   };
@@ -1470,6 +1535,11 @@ export default function ClawForgeDocs() {
 
       {/* ─── Main area ─── */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {missingKnowledgeLink && (
+          <div style={{ margin: "12px 20px 0", padding: "10px 12px", borderRadius: 8, border: `1px solid ${L.amber}40`, background: L.amberLight, color: "#92400E", fontSize: 12 }}>
+            ⚠️ The Start Here knowledge link pointed to a missing page. A fallback linked page was auto-created to preserve sync.
+          </div>
+        )}
         {isFiles ? (
           <FileManager
             files={files}
