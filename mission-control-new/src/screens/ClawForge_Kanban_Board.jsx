@@ -1258,6 +1258,54 @@ function Sidebar({ activePage, themeMode, setThemeMode, C, collapsedSections, on
   );
 }
 
+const API_STATUS_TO_COLUMN = {
+  inbox: 'backlog',
+  todo: 'ready',
+  in_progress: 'progress',
+  review: 'review',
+  done: 'done',
+};
+
+function mapApiStatusToColumn(status) {
+  return API_STATUS_TO_COLUMN[String(status || '').toLowerCase()] || 'ready';
+}
+
+function mapApiPriorityToUi(priority) {
+  const p = String(priority || '').toLowerCase();
+  if (p === 'urgent' || p === 'critical') return 'P0';
+  if (p === 'high') return 'P1';
+  if (p === 'low') return 'P3';
+  return 'P2';
+}
+
+function normalizeApiTask(task, idx = 0) {
+  return {
+    id: task.id || `api-${idx}-${Date.now()}`,
+    title: task.title || 'Untitled task',
+    agent: 0,
+    priority: mapApiPriorityToUi(task.priority),
+    due: task.due_at ? new Date(task.due_at).toLocaleDateString() : '—',
+    labels: [],
+    description: task.description || '',
+    checklist: [],
+    subtasks: [],
+    attachments: [],
+    comments: [],
+    blocked: task.is_blocked ? 'Blocked by dependency' : null,
+    approval: String(task.status || '').toLowerCase() === 'review',
+  };
+}
+
+function buildTasksFromApi(items = []) {
+  const mapped = { backlog: [], ready: [], progress: [], review: [], done: [] };
+  (Array.isArray(items) ? items : []).forEach((task, idx) => {
+    const colId = mapApiStatusToColumn(task.status);
+    mapped[colId] = mapped[colId] || [];
+    mapped[colId].push(normalizeApiTask(task, idx));
+  });
+  return mapped;
+}
+
 /* ══════════════════════════════════════════════════════════════
    MAIN EXPORT
    ══════════════════════════════════════════════════════════════ */
@@ -1271,6 +1319,7 @@ export default function ClawForgeKanban() {
 
   const [columns, setColumns] = useState(INITIAL_COLUMNS);
   const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [activeBoardId, setActiveBoardId] = useState(store.boards.boardId || 'product-launch');
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedColId, setSelectedColId] = useState(null);
   const [dragTaskId, setDragTaskId] = useState(null);
@@ -1303,6 +1352,39 @@ export default function ClawForgeKanban() {
     setFilterPriority(store.boards.filters?.priority || 'all');
     setFilterAgent(store.boards.filters?.agent || 'all');
     setSearchQuery(store.boards.filters?.search || '');
+
+    const loadBoard = async () => {
+      const directResp = await client.run('oc.board.get', { boardId: activeBoardId });
+      if (directResp?.ok && Array.isArray(directResp.data?.items) && directResp.data.items[0]?.status) {
+        setTasks(buildTasksFromApi(directResp.data.items));
+        setOpMessage(formatOpSuccess('Board loaded', directResp));
+        return;
+      }
+
+      const boardsResp = await client.run('oc.board.get', {});
+      const boards = boardsResp?.data?.items;
+      if (!boardsResp?.ok || !Array.isArray(boards) || boards.length === 0) {
+        setOpMessage(formatOpError(boardsResp?.error, 'Failed to load boards'));
+        return;
+      }
+
+      const selected = boards.find((b) => b.id === activeBoardId || b.slug === activeBoardId) || boards[0];
+      setActiveBoardId(selected.id);
+
+      const tasksResp = await client.run('oc.board.get', { boardId: selected.id });
+      if (!tasksResp?.ok) {
+        setOpMessage(formatOpError(tasksResp?.error, 'Failed to load tasks'));
+        return;
+      }
+      if (Array.isArray(tasksResp.data?.items)) {
+        setTasks(buildTasksFromApi(tasksResp.data.items));
+        setOpMessage(formatOpSuccess(`Board loaded (${selected.name || selected.slug || selected.id})`, tasksResp));
+      } else {
+        setOpMessage('Board response did not include task items.');
+      }
+    };
+
+    loadBoard().catch((e) => setOpMessage(`Failed to load tasks (${e?.message || 'unknown error'})`));
   }, []);
 
   useEffect(() => {
@@ -1388,7 +1470,9 @@ export default function ClawForgeKanban() {
     const sourceColId = findTaskColumn(taskId);
     if (!sourceColId) return;
 
+    let rollbackState = null;
     setTasks(prev => {
+      rollbackState = prev;
       const next = { ...prev };
       const task = next[sourceColId].find(t => t.id === taskId);
       if (!task) return prev;
@@ -1402,17 +1486,23 @@ export default function ClawForgeKanban() {
     });
 
     client.run('oc.board.card.move', {
-      boardId: store.boards.boardId,
+      boardId: activeBoardId,
       cardId: taskId,
       fromColumnId: sourceColId,
       toColumnId: targetColId,
       toIndex: Math.max(0, Number.isFinite(dropIndex) ? dropIndex : 0),
     }).then((resp) => {
       if (!resp?.ok) {
+        if (rollbackState) setTasks(rollbackState);
         setOpMessage(formatOpError(resp?.error, 'Move failed'));
+      } else {
+        setOpMessage(formatOpSuccess('Card moved', resp));
       }
+    }).catch((e) => {
+      if (rollbackState) setTasks(rollbackState);
+      setOpMessage(`Move failed (${e?.message || 'unknown error'})`);
     });
-  }, [findTaskColumn, client, store.boards.boardId, applyColumnSemantics]);
+  }, [findTaskColumn, client, activeBoardId, applyColumnSemantics]);
 
   // Toggle card expand
   const toggleExpand = (taskId) => {
@@ -1513,30 +1603,31 @@ export default function ClawForgeKanban() {
       [sourceColId]: (prev[sourceColId] || []).filter((t) => t.id !== taskId),
     }));
 
-    const payload = { task: archivedTask, sourceColId };
+    const payload = { boardId: activeBoardId, taskId, task: archivedTask, sourceColId };
     const resp = await client.run('oc.board.archive.task', payload);
     if (resp.ok) {
       const entry = { ...archivedTask, sourceColId, archivedAt: new Date().toISOString() };
       setArchivedTasks((prev) => [entry, ...prev]);
       setOpMessage(formatOpSuccess('Task archived', resp));
+      setSelectedTask(null);
     } else {
-      setOpMessage(formatOpError(resp.error));
+      setTasks((prev) => ({ ...prev, [sourceColId]: [archivedTask, ...(prev[sourceColId] || [])] }));
+      setOpMessage(formatOpError(resp.error, 'Archive failed'));
     }
-    setSelectedTask(null);
   };
 
   const restoreArchivedTask = async (taskId, targetColId = 'ready') => {
     const archived = archivedTasks.find((t) => t.id === taskId);
     if (!archived) return;
-    const resp = await client.run('oc.board.restore.task', { taskId, targetColId });
+    const resp = await client.run('oc.board.restore.task', { boardId: activeBoardId, taskId, targetColId, task: archived });
 
-    if (resp.ok) {
-      setOpMessage(formatOpSuccess('Task restored', resp));
-    } else {
-      setOpMessage(formatOpError(resp.error));
+    if (!resp.ok) {
+      setOpMessage(formatOpError(resp.error, 'Restore failed'));
+      return;
     }
 
-    const restoredTask = resp.ok ? (resp.data?.task || archived) : archived;
+    setOpMessage(formatOpSuccess('Task restored', resp));
+    const restoredTask = resp.data?.task || archived;
     const clean = { ...restoredTask };
     delete clean.archivedAt;
     delete clean.sourceColId;
@@ -1577,8 +1668,12 @@ export default function ClawForgeKanban() {
   };
 
   useEffect(() => {
-    client.run('oc.board.view.setFilters', { priority: filterPriority, agent: filterAgent, search: searchQuery });
-  }, [filterPriority, filterAgent, searchQuery]);
+    client.run('oc.board.view.setFilters', { boardId: activeBoardId, priority: filterPriority, agent: filterAgent, search: searchQuery })
+      .then((resp) => {
+        if (!resp?.ok) setOpMessage(formatOpError(resp.error, 'Failed to save filters'));
+      })
+      .catch((e) => setOpMessage(`Failed to save filters (${e?.message || 'unknown error'})`));
+  }, [filterPriority, filterAgent, searchQuery, activeBoardId]);
 
   // Stats
   const allTasks = Object.values(tasks).flat();
