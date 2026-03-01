@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react'
 import { getStoredThemeMode } from '../lib/themeMode'
 
-const links = []
+const links = [
+  { label: 'Timeline', path: '#/timeline' },
+  { label: 'Comms Center', path: '#/comms' },
+  { label: 'CRM & Sales', path: '#/crm' },
+  { label: 'Marketing Command Center', path: '#/marketing' },
+  { label: 'Finance', path: '#/finance' },
+  { label: 'Web & Delivery', path: '#/web' },
+  { label: 'Templates Library', path: '#/templates' },
+  { label: 'Agent Files (Internal)', path: '#/agent-files' },
+]
 
 const themes = {
   dark: { bg: '#0a0c10', surface: '#12151b', border: '#2a303d', text: '#e8eaed', muted: '#9ca3af', link: '#d9dce3' },
