@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How It Works — ClawForge | From First Call to Full Command</title>
+<meta name="description" content="See exactly how ClawForge builds your AI agent army — from discovery call to live deployment to ongoing maintenance. Face-to-face setup via Zoom or in-person.">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg-primary:#050507;--bg-secondary:#0a0a0e;--bg-card:#0f0f15;--bg-card-hover:#141420;--text-primary:#e8e6ef;--text-secondary:#8a8899;--chrome:#c0c0cc;--chrome-bright:#e0dfe8;--accent:#ff6a1a;--accent-bright:#ff8c42;--accent-dim:#4a2208;--accent-glow:rgba(255,106,26,.15);--accent-glow-strong:rgba(255,106,26,.3);--molten:#ff3d00;--ember:#ff9100;--border:#1e1e2a;--border-light:#2a2a3a;--font-body:'Exo 2',sans-serif;--font-mono:'JetBrains Mono',monospace;--font-display:'Rajdhani',sans-serif}
+  *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:var(--font-body);background:var(--bg-primary);color:var(--text-primary);line-height:1.7;overflow-x:hidden}
+  ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg-primary)}::-webkit-scrollbar-thumb{background:var(--accent-dim);border-radius:4px}
+
+  /* NAV */
+  nav{position:fixed;top:0;width:100%;z-index:100;background:rgba(5,5,7,.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:.8rem 2rem;display:flex;justify-content:space-between;align-items:center}
+  .nav-logo{display:flex;align-items:center;text-decoration:none}.nav-logo img{height:28px;width:auto;filter:drop-shadow(0 0 8px rgba(255,106,26,.3))}
+  .nav-links{display:flex;gap:2rem;align-items:center}.nav-links a{color:var(--text-secondary);text-decoration:none;font-size:.82rem;font-weight:500;letter-spacing:.5px;text-transform:uppercase;transition:color .3s}.nav-links a:hover{color:var(--text-primary)}.nav-links a.active{color:var(--accent)}
+  .nav-cta{background:var(--accent)!important;color:#000!important;padding:.5rem 1.2rem!important;border-radius:6px;font-weight:700!important;text-transform:uppercase!important;transition:transform .2s,box-shadow .3s!important}.nav-cta:hover{transform:translateY(-1px);box-shadow:0 4px 24px var(--accent-glow-strong)}
+
+  /* HERO */
+  .page-hero{min-height:70vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 2rem 4rem;position:relative;overflow:hidden}
+  .page-hero-bg{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:.85;pointer-events:none}
+  .page-hero::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:50%;background:linear-gradient(to top,var(--bg-primary),transparent);pointer-events:none}
+  .page-hero-content{position:relative;z-index:2;max-width:800px}
+  .gradient-text{font-style:normal;background:linear-gradient(135deg,var(--accent),var(--ember));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+  /* SHARED */
+  section{padding:6rem 2rem}.container{max-width:1100px;margin:0 auto}
+  .section-label{font-family:var(--font-mono);font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:1rem}
+  .section-title{font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;line-height:1.15;margin-bottom:1rem;text-transform:uppercase}
+  .section-desc{font-size:1.02rem;color:var(--text-secondary);max-width:620px;line-height:1.8;font-weight:300}
+  .molten-divider{height:1px;background:linear-gradient(90deg,transparent 0%,var(--accent-dim) 30%,var(--accent) 50%,var(--accent-dim) 70%,transparent 100%);opacity:.5}
+  .btn-primary{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--accent),var(--molten));color:#000;padding:.9rem 2.2rem;border-radius:8px;font-weight:700;font-size:.9rem;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;transition:transform .2s,box-shadow .3s;border:none}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 36px var(--accent-glow-strong)}
+  .btn-secondary{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.04);color:var(--chrome-bright);padding:.9rem 2.2rem;border-radius:8px;border:1px solid var(--border-light);font-weight:500;font-size:.9rem;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;transition:border-color .3s,background .3s}.btn-secondary:hover{border-color:var(--accent-dim);background:rgba(255,106,26,.05)}
+
+  /* TIMELINE */
+  .timeline{margin-top:3rem;position:relative;padding-left:3.5rem}
+  .timeline::before{content:'';position:absolute;top:0;left:14px;width:2px;height:100%;background:linear-gradient(to bottom,var(--accent),var(--accent-dim) 80%,transparent)}
+  .timeline-step{position:relative;margin-bottom:3.5rem}
+  .timeline-step:last-child{margin-bottom:0}
+  .timeline-dot{position:absolute;left:-3.5rem;top:.2rem;width:28px;height:28px;background:var(--bg-primary);border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:.6rem;font-weight:700;color:var(--accent)}
+  .timeline-step h3{font-family:var(--font-display);font-size:1.3rem;font-weight:700;text-transform:uppercase;margin-bottom:.25rem}
+  .timeline-tag{font-family:var(--font-mono);font-size:.6rem;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:.75rem;display:block}
+  .timeline-step p{font-size:.9rem;color:var(--text-secondary);line-height:1.8;font-weight:300;max-width:650px}
+  .timeline-detail{margin-top:1rem;padding:1rem 1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;font-size:.84rem;color:var(--text-secondary);line-height:1.7;font-weight:300}
+  .timeline-detail strong{color:var(--chrome-bright);font-weight:600}
+
+  /* WHAT GETS BUILT GRID */
+  .built-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-top:3rem}
+  .built-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:2rem;transition:border-color .3s,transform .2s;position:relative;overflow:hidden}
+  .built-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent);opacity:0;transition:opacity .3s}
+  .built-card:hover{border-color:var(--accent-dim);transform:translateY(-3px)}.built-card:hover::before{opacity:1}
+  .built-card .icon{font-size:1.4rem;margin-bottom:.75rem}
+  .built-card h4{font-family:var(--font-display);font-size:1rem;font-weight:700;text-transform:uppercase;margin-bottom:.4rem}
+  .built-card p{font-size:.84rem;color:var(--text-secondary);line-height:1.7;font-weight:300}
+
+  /* EXPECT SECTION */
+  .expect-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-top:3rem;align-items:start}
+  .expect-col h3{font-family:var(--font-display);font-size:1.2rem;font-weight:700;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+  .expect-list{list-style:none;display:flex;flex-direction:column;gap:.75rem}
+  .expect-list li{padding:1rem 1.25rem;border-radius:8px;font-size:.88rem;line-height:1.6;font-weight:300;background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary)}
+  .expect-list li strong{color:var(--chrome-bright);font-weight:600}
+
+  /* AFTER LAUNCH */
+  .after-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;margin-top:3rem}
+  .after-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1.5rem;transition:border-color .3s}
+  .after-card:hover{border-color:var(--accent-dim)}
+  .after-card h4{font-family:var(--font-display);font-size:.95rem;font-weight:700;text-transform:uppercase;margin-bottom:.4rem}
+  .after-card p{font-size:.82rem;color:var(--text-secondary);line-height:1.6;font-weight:300}
+
+  /* CTA */
+  .final-cta{text-align:center;padding:8rem 2rem;position:relative;overflow:hidden}
+  .final-cta::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:800px;height:400px;background:radial-gradient(ellipse,var(--accent-glow),transparent 70%);pointer-events:none}
+  .final-cta h2{position:relative;font-family:var(--font-display);font-size:clamp(2rem,4vw,3rem);font-weight:700;margin-bottom:1rem;text-transform:uppercase}
+  .final-cta p{position:relative;color:var(--text-secondary);max-width:550px;margin:0 auto 2rem;line-height:1.8;font-weight:300}
+  .hero-buttons{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;position:relative}
+
+  footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center}footer p{font-size:.78rem;color:var(--text-secondary);font-weight:300}footer a{color:var(--accent);text-decoration:none}
+
+  @media(max-width:768px){.page-hero-bg{opacity:.4!important}.nav-links{display:none}.expect-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><img src="logo.jpg" alt="ClawForge"></a>
+  <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/how-it-works.html">How It Works</a>
+      <a href="/agent-army.html">Agent Army</a>
+      <a href="/security.html">Security</a>
+      <a href="/services.html">Packages</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/contact.html" class="nav-cta">Book Call</a>
+    </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="page-hero">
+  <img src="how-it-works-hero.jpg" alt="" class="page-hero-bg">
+  <div class="page-hero-content">
+    <span class="section-label">How It Works</span>
+    <h1 style="font-family:var(--font-display);font-size:clamp(2.4rem,5.5vw,4rem);font-weight:700;line-height:1.1;text-transform:uppercase;margin-bottom:1.5rem;">Precision-engineered. <span class="gradient-text">Assembled with you.</span></h1>
+    <p style="font-size:1.1rem;color:var(--chrome);max-width:600px;margin:0 auto;line-height:1.8;font-weight:300;">
+      Every ClawForge deployment follows a deliberate, four-phase process — from understanding your business to handing you a fully operational AI command center. Nothing is rushed. Nothing is automated without your approval.
+    </p>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<!-- ===== THE FULL PROCESS ===== -->
+<section>
+  <div class="container">
+    <span class="section-label">The Four Phases</span>
+    <h2 class="section-title">From first call to full command.</h2>
+    <p class="section-desc">This isn't a SaaS onboarding flow. It's a hands-on build process where every component is configured to your business — together, on camera or in person.</p>
+
+    <div class="timeline">
+      <!-- PHASE 1 -->
+      <div class="timeline-step">
+        <div class="timeline-dot">01</div>
+        <span class="timeline-tag">Phase One — Discovery</span>
+        <h3>We Learn Your Business</h3>
+        <p>Before we build anything, we need to understand what you actually do. We get on a Zoom call or meet in person and map out your operations — your workflows, your pain points, where you're losing time, and where AI agents will create the most leverage.</p>
+        <div class="timeline-detail">
+          <strong>What happens:</strong> A candid, no-sales-pitch conversation about your business. We ask about your daily operations, the tools you currently use, your team structure, and what outcomes you actually care about. We take notes. We ask follow-up questions. By the end, we know exactly what your agent army needs to look like.
+        </div>
+      </div>
+
+      <!-- PHASE 2 -->
+      <div class="timeline-step">
+        <div class="timeline-dot">02</div>
+        <span class="timeline-tag">Phase Two — Architecture</span>
+        <h3>We Design Your Agent Hierarchy</h3>
+        <p>Based on what we learned, we architect your complete system — your orchestrator (the single point of command), the CEO-level agents that manage each department, and the sub-agents beneath them that handle execution.</p>
+        <div class="timeline-detail">
+          <strong>What gets designed:</strong> Your orchestrator's personality and routing logic. Which CEO agents you need (Operations, Finance, Marketing, Sales, Customer Success, etc.). What automation workflows each agent runs. How they communicate with each other. What guardrails and oversight mechanisms prevent errors. How your security layer protects everything.
+        </div>
+      </div>
+
+      <!-- PHASE 3 -->
+      <div class="timeline-step">
+        <div class="timeline-dot">03</div>
+        <span class="timeline-tag">Phase Three — Live Build</span>
+        <h3>We Build It Together, Face-to-Face</h3>
+        <p>This is the core of the ClawForge experience. During your dedicated live session (60 minutes on Zoom or in person), we walk through every single piece of your agent army as it comes online. You see everything being built. You understand every agent. You approve every workflow before it goes live.</p>
+        <div class="timeline-detail">
+          <strong>Core Setup (1 session):</strong> One focused 60-minute Zoom call or in-person meeting covers your full orchestrator build, agent deployment, Kanban + Telegram integration, 3 automation workflows, and a complete walkthrough of how to operate your system day-to-day.<br><br>
+          <strong>Executive Build (2 sessions):</strong> Two 60-minute sessions give us room for advanced workflow orchestration, deeper security hardening, custom agent personality tuning, and more complex multi-agent coordination. The second session is pure optimization — fine-tuning based on how the system performs in your real environment.
+        </div>
+      </div>
+
+      <!-- PHASE 4 -->
+      <div class="timeline-step">
+        <div class="timeline-dot">04</div>
+        <span class="timeline-tag">Phase Four — Launch & Maintain</span>
+        <h3>You Go Live. We Stay With You.</h3>
+        <p>Once you're launched, we don't disappear. You become a ClawForge member — which means ongoing support, agent updates, workflow maintenance, and access to weekly community Zoom calls. The relationship between you, your orchestrator, and your sub-agents is something we actively maintain over time.</p>
+        <div class="timeline-detail">
+          <strong>What ongoing looks like:</strong> Private support channel for async questions. Weekly live Zoom calls open to all members. Agent behavior updates as AI models improve. Workflow adjustments as your business evolves. Priority access to new agent types and features. Executive Build clients also get a 7-day post-launch optimization window with priority support.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<!-- ===== WHAT GETS BUILT ===== -->
+<section style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <span class="section-label">Anatomy of a Deployment</span>
+    <h2 class="section-title">What's inside your AI command center.</h2>
+    <p class="section-desc">Every ClawForge build includes these core components — precision-fit to your specific business operations.</p>
+
+    <div class="built-grid">
+      <div class="built-card">
+        <div class="icon">⚡</div>
+        <h4>The Orchestrator</h4>
+        <p>The brain. You speak to it in plain language and it routes your requests to the right agents, tracks progress across departments, and reports back with status updates. One conversation controls everything.</p>
+      </div>
+      <div class="built-card">
+        <div class="icon">👔</div>
+        <h4>CEO-Level Agents</h4>
+        <p>Specialized executive agents that manage entire business functions — Operations, Finance, Marketing, Sales, Customer Success, and more. Each one runs its own workflows and manages its own sub-agents.</p>
+      </div>
+      <div class="built-card">
+        <div class="icon">⚙️</div>
+        <h4>Automation Workflows</h4>
+        <p>Pre-configured automation recipes that handle recurring tasks — invoice tracking, content scheduling, lead follow-ups, report generation, and whatever else your business runs on.</p>
+      </div>
+      <div class="built-card">
+        <div class="icon">📋</div>
+        <h4>Kanban + Telegram</h4>
+        <p>A visual task board for tracking agent work, plus Telegram integration so you can issue commands, get updates, and manage your army straight from your phone.</p>
+      </div>
+      <div class="built-card">
+        <div class="icon">🧠</div>
+        <h4>Thought Assistant</h4>
+        <p>Your personal strategy agent. It brainstorms ideas, drafts documents, researches competitors, analyzes data, and helps you think through decisions — like a chief of staff that never sleeps.</p>
+      </div>
+      <div class="built-card">
+        <div class="icon">🛡️</div>
+        <h4>Security Layer</h4>
+        <p>Encrypted data handling, isolated environments, access controls, automated backups, and a Security Sentinel agent that monitors system integrity and alerts you to anomalies.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHAT TO EXPECT ON YOUR FIRST CALL ===== -->
+<section>
+  <div class="container">
+    <span class="section-label">Your First Session</span>
+    <h2 class="section-title">What to expect when we meet.</h2>
+    <p class="section-desc">Whether it's Zoom or in-person (Waldorf / Bryans Road, MD area), here's what your first live session looks like.</p>
+
+    <div class="expect-grid">
+      <div class="expect-col">
+        <h3 style="color:var(--accent);">✓ What we do</h3>
+        <ul class="expect-list">
+          <li><strong>Walk through your business together</strong> — we map your operations and identify where each agent creates the most value.</li>
+          <li><strong>Build your orchestrator live</strong> — you watch your command center come online and test it in real time.</li>
+          <li><strong>Deploy your agent army</strong> — each CEO agent and sub-agent is configured, named, and tested right in front of you.</li>
+          <li><strong>Set up automation workflows</strong> — we wire up the recurring tasks your agents will handle autonomously.</li>
+          <li><strong>Teach you how to use it</strong> — by the end, you'll know exactly how to talk to your orchestrator and get results.</li>
+          <li><strong>Lock down security</strong> — encryption, backups, access controls, and monitoring are configured before we finish.</li>
+        </ul>
+      </div>
+      <div class="expect-col">
+        <h3 style="color:var(--molten);">✕ What we don't do</h3>
+        <ul class="expect-list">
+          <li><strong>No sales pitches</strong> — you already bought. This session is pure build and education.</li>
+          <li><strong>No jargon dumps</strong> — everything is explained in plain language. You don't need to be technical.</li>
+          <li><strong>No rushing</strong> — your full 60 minutes is yours. We don't cut corners to hit a clock.</li>
+          <li><strong>No auto-generated setups</strong> — every agent is configured by a human, for your specific business.</li>
+          <li><strong>No "figure it out yourself" handoffs</strong> — you leave with documentation, a support channel, and community access.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<!-- ===== AFTER LAUNCH ===== -->
+<section style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <span class="section-label">After Launch</span>
+    <h2 class="section-title">The relationship doesn't end at deployment.</h2>
+    <p class="section-desc">Every ClawForge client becomes a member. Here's what ongoing support actually looks like.</p>
+
+    <div class="after-grid">
+      <div class="after-card">
+        <h4>📹 Weekly Zoom Calls</h4>
+        <p>Every week, we host a live community call on Zoom. Ask questions, see new features, troubleshoot issues, and learn from other operators building with ClawForge.</p>
+      </div>
+      <div class="after-card">
+        <h4>💬 Private Support</h4>
+        <p>Direct access to a private support channel for async questions between calls. You're never left waiting for a weekly call to get help.</p>
+      </div>
+      <div class="after-card">
+        <h4>🔄 Agent Updates</h4>
+        <p>As AI models improve and new capabilities emerge, we update your agents — better reasoning, new tools, improved workflows. Your system gets smarter over time.</p>
+      </div>
+      <div class="after-card">
+        <h4>🔧 Workflow Maintenance</h4>
+        <p>Businesses change. We maintain the relationship between you, your orchestrator, and your sub-agents — adjusting workflows as your operations evolve.</p>
+      </div>
+      <div class="after-card">
+        <h4>🚀 New Agent Types</h4>
+        <p>As we develop new specialized agents, members get priority access. Your army can grow with new capabilities without rebuilding from scratch.</p>
+      </div>
+      <div class="after-card">
+        <h4>👤 Direct Access</h4>
+        <p>You always have a direct line to the person who built your system. Not a ticket queue. Not a chatbot. A human who knows your setup inside and out.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="final-cta">
+  <h2>Ready to see the <span class="gradient-text">blueprint in action?</span></h2>
+  <p>Book a call and we'll walk you through exactly how ClawForge would work for your business. No commitment required — just a real conversation.</p>
+  <div class="hero-buttons">
+    <a href="/checkout.html" class="btn-primary">Get Started →</a>
+    <a href="services.html" class="btn-secondary">View Packages</a>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <a href="/">ClawForge</a> — Secure AI Agent Deployment, Built Face-to-Face</p>
+</footer>
+
+</body>
+</html>

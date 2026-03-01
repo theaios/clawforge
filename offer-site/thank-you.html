@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thank You — ClawForge</title>
+<meta name="description" content="Your ClawForge purchase is confirmed. Welcome to the future of business automation.">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg-primary:#050507;--bg-secondary:#0a0a0e;--bg-card:#0f0f15;--bg-card-hover:#141420;--text-primary:#e8e6ef;--text-secondary:#8a8899;--chrome:#c0c0cc;--chrome-bright:#e0dfe8;--accent:#ff6a1a;--accent-bright:#ff8c42;--accent-dim:#4a2208;--accent-glow:rgba(255,106,26,.15);--accent-glow-strong:rgba(255,106,26,.3);--molten:#ff3d00;--ember:#ff9100;--border:#1e1e2a;--border-light:#2a2a3a;--font-body:'Exo 2',sans-serif;--font-mono:'JetBrains Mono',monospace;--font-display:'Rajdhani',sans-serif}
+  *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:var(--font-body);background:var(--bg-primary);color:var(--text-primary);line-height:1.7;overflow-x:hidden}
+  nav{position:fixed;top:0;width:100%;z-index:100;background:rgba(5,5,7,.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:.8rem 2rem;display:flex;justify-content:space-between;align-items:center}
+  .nav-logo{display:flex;align-items:center;text-decoration:none}.nav-logo img{height:28px;width:auto;filter:drop-shadow(0 0 8px rgba(255,106,26,.3))}
+  .nav-links{display:flex;gap:2rem;align-items:center}.nav-links a{color:var(--text-secondary);text-decoration:none;font-size:.82rem;font-weight:500;letter-spacing:.5px;text-transform:uppercase;transition:color .3s}.nav-links a:hover{color:var(--text-primary)}
+  .nav-cta{background:var(--accent)!important;color:#000!important;padding:.5rem 1.2rem!important;border-radius:6px;font-weight:700!important;text-transform:uppercase!important}
+  .thank-you{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:10rem 2rem 4rem}
+  .thank-you h1{font-family:var(--font-display);font-size:clamp(2.5rem,5vw,4rem);font-weight:700;margin-bottom:1rem;letter-spacing:-0.5px}
+  .thank-you h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent),var(--ember));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .thank-you .sub{color:var(--chrome);font-size:1.15rem;max-width:600px;margin:0 auto 2rem;line-height:1.8;font-weight:300}
+  .check-icon{font-size:4rem;margin-bottom:1.5rem;animation:scaleIn .5s ease-out}
+  @keyframes scaleIn{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+  .next-steps{max-width:600px;margin:2rem auto 0;text-align:left;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:2rem}
+  .next-steps h3{font-family:var(--font-display);font-size:1.3rem;margin-bottom:1rem;color:var(--accent)}
+  .next-steps ol{list-style:none;counter-reset:steps}
+  .next-steps li{counter-increment:steps;padding:.75rem 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:.75rem;font-weight:300}
+  .next-steps li:last-child{border-bottom:none}
+  .next-steps li::before{content:counter(steps);font-family:var(--font-mono);font-size:.7rem;background:var(--accent-dim);color:var(--accent);padding:.25rem .5rem;border-radius:4px;font-weight:700;flex-shrink:0;margin-top:.2rem}
+  .btn-primary{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--accent),var(--molten));color:#000;padding:.9rem 2.2rem;border-radius:8px;font-weight:700;font-size:.85rem;text-decoration:none;text-transform:uppercase;letter-spacing:1px;margin-top:2rem;transition:transform .2s}.btn-primary:hover{transform:translateY(-2px)}
+  .molten-divider{height:1px;background:linear-gradient(90deg,transparent,var(--accent-dim) 30%,var(--accent) 50%,var(--accent-dim) 70%,transparent);opacity:.5;margin:2rem 0}
+  footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center;color:var(--text-secondary);font-size:.8rem}
+  footer a{color:var(--accent);text-decoration:none}
+  @media(max-width:980px){.nav-links{display:none}.next-steps{margin:2rem 1rem 0}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><img src="logo.jpg" alt="ClawForge"></a>
+  <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/how-it-works.html">How It Works</a>
+      <a href="/agent-army.html">Agent Army</a>
+      <a href="/security.html">Security</a>
+      <a href="/services.html">Packages</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/contact.html" class="nav-cta">Book Call</a>
+    </div>
+</nav>
+
+<section class="thank-you">
+  <div class="check-icon">✅</div>
+  <h1>Welcome to <em>ClawForge.</em></h1>
+  <p class="sub">Your purchase is confirmed. You've just taken the first step toward having an AI-powered team running your operations.</p>
+  
+  <div class="next-steps">
+    <h3>What Happens Next</h3>
+    <ol>
+      <li>You'll receive a confirmation email from Stripe with your receipt</li>
+      <li>Our team will reach out within 24 hours to schedule your setup call</li>
+      <li>On the call, we'll configure your agent army to your specific business needs</li>
+      <li>We deploy your secure, pre-configured environment live on the call</li>
+      <li>You walk away with a fully operational AI team — ready to work</li>
+    </ol>
+  </div>
+  
+  <div class="molten-divider" style="max-width:400px;margin:2rem auto"></div>
+  <p style="color:var(--text-secondary);font-size:.9rem;font-weight:300">Questions? Reach out anytime.</p>
+  <a href="contact.html" class="btn-primary">Contact Us →</a>
+</section>
+
+<footer>
+  <p>&copy; 2025 ClawForge. All rights reserved. | <a href="security.html">Security</a> | <a href="faq.html">FAQ</a> | <a href="contact.html">Contact</a></p>
+</footer>
+
+</body>
+</html>

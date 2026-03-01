@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Packages — ClawForge | Core Setup & Executive Build</title>
+<meta name="description" content="Two ClawForge packages: Core Setup ($499) and Executive Build ($899). Pre-built AI agent armies with live Zoom or in-person deployment, security hardening, and ongoing membership.">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg-primary:#050507;--bg-secondary:#0a0a0e;--bg-card:#0f0f15;--bg-card-hover:#141420;--text-primary:#e8e6ef;--text-secondary:#8a8899;--chrome:#c0c0cc;--chrome-bright:#e0dfe8;--accent:#ff6a1a;--accent-bright:#ff8c42;--accent-dim:#4a2208;--accent-glow:rgba(255,106,26,.15);--accent-glow-strong:rgba(255,106,26,.3);--molten:#ff3d00;--ember:#ff9100;--border:#1e1e2a;--border-light:#2a2a3a;--blue-steel:#4a8ecc;--blue-dim:rgba(74,142,204,.15);--font-body:'Exo 2',sans-serif;--font-mono:'JetBrains Mono',monospace;--font-display:'Rajdhani',sans-serif}
+  *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:var(--font-body);background:var(--bg-primary);color:var(--text-primary);line-height:1.7;overflow-x:hidden}
+  ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg-primary)}::-webkit-scrollbar-thumb{background:var(--accent-dim);border-radius:4px}
+
+  nav{position:fixed;top:0;width:100%;z-index:100;background:rgba(5,5,7,.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:.8rem 2rem;display:flex;justify-content:space-between;align-items:center}
+  .nav-logo{display:flex;align-items:center;text-decoration:none}.nav-logo img{height:28px;width:auto;filter:drop-shadow(0 0 8px rgba(255,106,26,.3))}
+  .nav-links{display:flex;gap:2rem;align-items:center}.nav-links a{color:var(--text-secondary);text-decoration:none;font-size:.82rem;font-weight:500;letter-spacing:.5px;text-transform:uppercase;transition:color .3s}.nav-links a:hover{color:var(--text-primary)}.nav-links a.active{color:var(--accent)}
+  .nav-cta{background:var(--accent)!important;color:#000!important;padding:.5rem 1.2rem!important;border-radius:6px;font-weight:700!important;text-transform:uppercase!important;transition:transform .2s,box-shadow .3s!important}.nav-cta:hover{transform:translateY(-1px);box-shadow:0 4px 24px var(--accent-glow-strong)}
+
+  .page-hero{min-height:70vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 2rem 4rem;position:relative;overflow:hidden}
+  .page-hero-bg{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:.85;pointer-events:none}
+  .page-hero::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:50%;background:linear-gradient(to top,var(--bg-primary),transparent);pointer-events:none}
+  .page-hero-content{position:relative;z-index:2;max-width:800px}
+  .gradient-text{font-style:normal;background:linear-gradient(135deg,var(--accent),var(--ember));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+  section{padding:6rem 2rem}.container{max-width:1100px;margin:0 auto}
+  .section-label{font-family:var(--font-mono);font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:1rem}
+  .section-title{font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;line-height:1.15;margin-bottom:1rem;text-transform:uppercase}
+  .section-desc{font-size:1.02rem;color:var(--text-secondary);max-width:620px;line-height:1.8;font-weight:300}
+  .molten-divider{height:1px;background:linear-gradient(90deg,transparent,var(--accent-dim) 30%,var(--accent) 50%,var(--accent-dim) 70%,transparent);opacity:.5}
+  .btn-primary{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--accent),var(--molten));color:#000;padding:.9rem 2.2rem;border-radius:8px;font-weight:700;font-size:.9rem;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;transition:transform .2s,box-shadow .3s;border:none}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 36px var(--accent-glow-strong)}
+  .btn-secondary{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.04);color:var(--chrome-bright);padding:.9rem 2.2rem;border-radius:8px;border:1px solid var(--border-light);font-weight:500;font-size:.9rem;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;transition:border-color .3s,background .3s}.btn-secondary:hover{border-color:var(--accent-dim);background:rgba(255,106,26,.05)}
+
+  /* PACKAGES */
+  .packages-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:2rem;margin-top:3rem}
+  .package{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:2.5rem;display:flex;flex-direction:column;transition:border-color .3s,transform .3s}
+  .package:hover{transform:translateY(-4px)}
+  .package.standard{border-color:rgba(74,142,204,.2);background:linear-gradient(175deg,rgba(74,142,204,.04) 0%,var(--bg-card) 30%)}
+  .package.standard .package-tier{color:var(--blue-steel)}
+  .package.premium{border-color:var(--accent-dim);background:linear-gradient(175deg,rgba(255,106,26,.06) 0%,var(--bg-card) 30%);box-shadow:0 0 80px rgba(255,106,26,.06);position:relative}
+  .package.premium::before{content:'MOST POPULAR';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--accent),var(--molten));color:#000;font-family:var(--font-mono);font-size:.6rem;font-weight:700;letter-spacing:2px;padding:.3rem 1rem;border-radius:100px}
+  .package-tier{font-family:var(--font-mono);font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem}
+  .package h3{font-family:var(--font-display);font-size:1.6rem;font-weight:700;margin-bottom:.5rem;text-transform:uppercase}
+  .package-price{font-family:var(--font-display);font-size:2.8rem;font-weight:700;margin-bottom:.25rem}
+  .package.standard .package-price{background:linear-gradient(135deg,#a0b8d0,var(--blue-steel));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .package.premium .package-price{background:linear-gradient(135deg,var(--accent),var(--ember));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .package-note{font-size:.78rem;color:var(--text-secondary);margin-bottom:1.5rem;font-weight:300}
+  .package-desc{font-size:.9rem;color:var(--text-secondary);line-height:1.7;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border);font-weight:300}
+  .package-features{list-style:none;display:flex;flex-direction:column;gap:.7rem;margin-bottom:2rem;flex:1}
+  .package-features li{font-size:.86rem;color:var(--text-secondary);display:flex;align-items:flex-start;gap:.6rem;line-height:1.5;font-weight:300}
+  .package.standard .package-features li::before{content:'✓';color:var(--blue-steel);font-weight:700;flex-shrink:0}
+  .package.premium .package-features li::before{content:'✓';color:var(--accent);font-weight:700;flex-shrink:0}
+  .package .btn-primary,.package .btn-secondary{text-align:center;justify-content:center;width:100%}
+  .btn-steel{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--blue-steel),#3670a8);color:#fff;padding:.9rem 2.2rem;border-radius:8px;font-weight:700;font-size:.9rem;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;transition:transform .2s,box-shadow .3s;border:none;text-align:center;justify-content:center;width:100%}.btn-steel:hover{transform:translateY(-2px);box-shadow:0 8px 36px var(--blue-dim)}
+
+  /* COMPARISON TABLE */
+  .table-wrap{overflow-x:auto;margin-top:3rem;border-radius:12px;border:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse;min-width:600px}
+  thead th{padding:1rem 1.5rem;text-align:left;font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-size:.85rem;background:var(--bg-card);border-bottom:1px solid var(--border)}
+  thead th:nth-child(2){color:var(--blue-steel)}
+  thead th:nth-child(3){color:var(--accent)}
+  tbody td{padding:.85rem 1.5rem;font-size:.86rem;color:var(--text-secondary);font-weight:300;border-bottom:1px solid var(--border)}
+  tbody td:first-child{color:var(--text-primary);font-weight:500}
+  tbody tr:hover td{background:rgba(255,106,26,.02)}
+  tbody tr:last-child td{border-bottom:none}
+  .t-check{color:var(--accent);font-weight:700;font-size:1rem}
+  .t-steel{color:var(--blue-steel);font-weight:700;font-size:1rem}
+  .t-dash{color:var(--border-light)}
+
+  /* INCLUDED GRID */
+  .inc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-top:3rem}
+  .inc-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:2rem;transition:border-color .3s,transform .2s;position:relative;overflow:hidden}
+  .inc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent);opacity:0;transition:opacity .3s}
+  .inc-card:hover{border-color:var(--accent-dim);transform:translateY(-3px)}.inc-card:hover::before{opacity:1}
+  .inc-card .ic{font-size:1.4rem;margin-bottom:.75rem}
+  .inc-card h4{font-family:var(--font-display);font-size:1rem;font-weight:700;text-transform:uppercase;margin-bottom:.4rem}
+  .inc-card p{font-size:.84rem;color:var(--text-secondary);line-height:1.7;font-weight:300}
+
+  /* WHO IT'S FOR */
+  .who-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3rem}
+  .who-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:2rem;transition:border-color .3s}
+  .who-card:hover{border-color:var(--accent-dim)}
+  .who-card h4{font-family:var(--font-display);font-size:1.1rem;font-weight:700;text-transform:uppercase;margin-bottom:.75rem}
+  .who-list{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+  .who-list li{font-size:.86rem;color:var(--text-secondary);line-height:1.6;font-weight:300;display:flex;align-items:flex-start;gap:.5rem}
+  .who-list li::before{content:'→';color:var(--accent);font-weight:700;font-family:var(--font-mono);flex-shrink:0}
+
+  /* ADD-ONS */
+  .addon-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.25rem;margin-top:3rem}
+  .addon{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1.5rem;transition:border-color .3s}
+  .addon:hover{border-color:var(--accent-dim)}
+  .addon h4{font-family:var(--font-display);font-size:.95rem;font-weight:700;text-transform:uppercase;margin-bottom:.25rem}
+  .addon-price{font-family:var(--font-mono);font-size:.72rem;color:var(--accent);letter-spacing:1px;margin-bottom:.5rem;display:block}
+  .addon p{font-size:.82rem;color:var(--text-secondary);line-height:1.6;font-weight:300}
+
+  /* MEMBERSHIP */
+  .mem-box{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:3rem;margin-top:3rem;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center}
+  .mem-box h3{font-family:var(--font-display);font-size:1.5rem;font-weight:700;text-transform:uppercase;margin-bottom:1rem}
+  .mem-box p{color:var(--text-secondary);line-height:1.8;margin-bottom:1rem;font-weight:300;font-size:.92rem}
+  .mem-list{list-style:none;display:flex;flex-direction:column;gap:.6rem}
+  .mem-list li{font-size:.88rem;color:var(--text-secondary);display:flex;align-items:center;gap:.6rem;font-weight:300}
+  .mem-list li::before{content:'✓';color:var(--accent);font-weight:700;font-family:var(--font-mono)}
+
+  .final-cta{text-align:center;padding:8rem 2rem;position:relative;overflow:hidden}
+  .final-cta::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:800px;height:400px;background:radial-gradient(ellipse,var(--accent-glow),transparent 70%);pointer-events:none}
+  .final-cta h2{position:relative;font-family:var(--font-display);font-size:clamp(2rem,4vw,3rem);font-weight:700;margin-bottom:1rem;text-transform:uppercase}
+  .final-cta p{position:relative;color:var(--text-secondary);max-width:550px;margin:0 auto 2rem;line-height:1.8;font-weight:300}
+  .hero-buttons{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;position:relative}
+
+  footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center}footer p{font-size:.78rem;color:var(--text-secondary);font-weight:300}footer a{color:var(--accent);text-decoration:none}
+
+  @media(max-width:768px){.page-hero-bg{opacity:.4!important}.nav-links{display:none}.packages-grid{grid-template-columns:1fr}.who-grid{grid-template-columns:1fr}.mem-box{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><img src="logo.jpg" alt="ClawForge"></a>
+  <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/how-it-works.html">How It Works</a>
+      <a href="/agent-army.html">Agent Army</a>
+      <a href="/security.html">Security</a>
+      <a href="/services.html">Packages</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/contact.html" class="nav-cta">Book Call</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="page-hero">
+  <img src="packages-hero.jpg" alt="" class="page-hero-bg">
+  <div class="page-hero-content">
+    <span class="section-label">Packages & Pricing</span>
+    <h1 style="font-family:var(--font-display);font-size:clamp(2.4rem,5.5vw,4rem);font-weight:700;line-height:1.1;text-transform:uppercase;margin-bottom:1.5rem;">Two tiers. <span class="gradient-text">One mission.</span></h1>
+    <p style="font-size:1.1rem;color:var(--chrome);max-width:620px;margin:0 auto;line-height:1.8;font-weight:300;">
+      Every ClawForge package delivers a complete, security-hardened AI agent army — built with you face-to-face and maintained for as long as you're a member. Choose the depth that fits your business.
+    </p>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<!-- PACKAGES -->
+<section style="background:var(--bg-secondary);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <span class="section-label">Choose Your Build</span>
+    <h2 class="section-title">Standard or Premium. Both fully armed.</h2>
+    <p class="section-desc">The difference isn't what you get — both packages include a complete agent army. The difference is how deep we go together and how hardened your system becomes.</p>
+
+    <div class="packages-grid">
+      <!-- STANDARD -->
+      <div class="package standard">
+        <div class="package-tier">Standard ★★★</div>
+        <h3>Core Setup</h3>
+        <div class="package-price">$499</div>
+        <div class="package-note">One-time investment</div>
+        <p class="package-desc">Your launchpad. A fully operational AI command center built in a single focused session. Ideal for solo operators and lean teams who want to automate fast with a solid foundation.</p>
+        <ul class="package-features">
+          <li>Full orchestrator + complete agent army deployment</li>
+          <li>Kanban task board + Telegram command integration</li>
+          <li>3 custom automation workflows</li>
+          <li>1× 60-minute live setup session (Zoom or in-person — Waldorf / Bryans Road, MD)</li>
+          <li>Baseline security: encryption, backups, access controls</li>
+          <li>Private support channel access</li>
+          <li>Launch documentation & walkthrough guide</li>
+          <li>Weekly community Zoom call membership</li>
+          <li>Ongoing agent updates & maintenance</li>
+        </ul>
+        <a href="/checkout.html?package=standard" class="btn-steel">Buy Mission Launch — $499 →</a>
+      </div>
+
+      <!-- PREMIUM -->
+      <div class="package premium">
+        <div class="package-tier">Premium ★★★</div>
+        <h3>Executive Build</h3>
+        <div class="package-price">$899</div>
+        <div class="package-note">One-time investment</div>
+        <p class="package-desc">The full arsenal. Double the face time, deeper security, complex multi-agent workflows, and a post-launch optimization window. Built for businesses with moving parts and high stakes.</p>
+        <ul class="package-features">
+          <li>Everything in Core Setup</li>
+          <li>Advanced security hardening & encrypted backup systems</li>
+          <li>Complex multi-agent workflow orchestration</li>
+          <li>2× 60-minute live sessions (Zoom or in-person)</li>
+          <li>Priority private support channel</li>
+          <li>7-day post-launch optimization window</li>
+          <li>Custom agent personality tuning & calibration</li>
+          <li>Agent behavior guardrails & oversight configuration</li>
+          <li>Dedicated workflow stress-testing</li>
+          <li>Weekly community Zoom call membership</li>
+        </ul>
+        <a href="/checkout.html?package=premium" class="btn-primary">Buy Full Command — $899 →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section>
+  <div class="container">
+    <span class="section-label">Side by Side</span>
+    <h2 class="section-title">Full comparison.</h2>
+    <p class="section-desc">Every line item, clearly laid out — so you know exactly what you're getting at each tier.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Standard — $499</th>
+            <th>Premium — $899</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Central Orchestrator</td><td><span class="t-steel">✓</span></td><td><span class="t-check">✓</span></td></tr>
+          <tr><td>Full Agent Army (all CEO agents)</td><td><span class="t-steel">✓</span></td><td><span class="t-check">✓</span></td></tr>
+          <tr><td>Kanban Board + Telegram</td><td><span class="t-steel">✓</span></td><td><span class="t-check">✓</span></td></tr>
+          <tr><td>Custom Automation Workflows</td><td>3 workflows</td><td>Unlimited</td></tr>
+          <tr><td>Live Setup Sessions</td><td>1× 60 min</td><td>2× 60 min</td></tr>
+          <tr><td>Zoom or In-Person Option</td><td><span class="t-steel">✓</span></td><td><span class="t-check">✓</span></td></tr>
+          <tr><td>Encryption (transit + rest)</td><td><span class="t-steel">✓</span></td><td><span class="t-check">✓</span></td></tr>
+          <tr><td>Automated Backups</td><td><span class="t-steel">✓</span></td><td><span class="t-check">✓</span></td></tr>
+          <tr><td>Advanced Security Hardening</td><td><span class="t-dash">—</span></td><td><span class="t-check">✓</span></td></tr>
+          <tr><td>Agent Personality Tuning</td><td><span class="t-dash">—</span></td><td><span class="t-check">✓</span></td></tr>
+          <tr><td>Agent Guardrails & Oversight</td><td>Basic</td><td>Advanced</td></tr>
+          <tr><td>Workflow Stress-Testing</td><td><span class="t-dash">—</span></td><td><span class="t-check">✓</span></td></tr>
+          <tr><td>Post-Launch Optimization</td><td><span class="t-dash">—</span></td><td>7 days</td></tr>
+          <tr><td>Private Support Channel</td><td><span class="t-steel">✓</span></td><td>Priority</td></tr>
+          <tr><td>Weekly Community Zoom Calls</td><td><span class="t-steel">✓</span></td><td><span class="t-check">✓</span></td></tr>
+          <tr><td>Launch Documentation</td><td><span class="t-steel">✓</span></td><td><span class="t-check">✓</span></td></tr>
+          <tr><td>Ongoing Agent Updates</td><td><span class="t-steel">✓</span></td><td><span class="t-check">✓</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<!-- WHO IT'S FOR -->
+<section style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <span class="section-label">Right Fit</span>
+    <h2 class="section-title">Which package is right for you?</h2>
+    <p class="section-desc">Not sure which tier to choose? Here's who typically picks each — and why.</p>
+
+    <div class="who-grid">
+      <div class="who-card" style="border-color:rgba(74,142,204,.15);">
+        <h4 style="color:var(--blue-steel);">Standard — Core Setup</h4>
+        <ul class="who-list">
+          <li>Solo operators and freelancers automating their own workflows</li>
+          <li>Small businesses with straightforward operations</li>
+          <li>People who learn fast and want a solid foundation to build on</li>
+          <li>First-time AI adopters who want hands-on guidance without overwhelm</li>
+          <li>Budget-conscious operators who still want a complete agent army</li>
+        </ul>
+      </div>
+      <div class="who-card" style="border-color:var(--accent-dim);">
+        <h4 style="color:var(--accent);">Premium — Executive Build</h4>
+        <ul class="who-list">
+          <li>Business owners managing multiple departments or revenue streams</li>
+          <li>Operations with complex workflows that require multi-agent coordination</li>
+          <li>Anyone handling sensitive data who needs maximum security hardening</li>
+          <li>Leaders who want agents fine-tuned to their specific voice and brand</li>
+          <li>Teams that benefit from two sessions: build first, then optimize</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S INCLUDED IN BOTH -->
+<section>
+  <div class="container">
+    <span class="section-label">Every Deployment Includes</span>
+    <h2 class="section-title">The foundation that comes standard.</h2>
+    <p class="section-desc">Regardless of which tier you pick, every ClawForge build includes these core components — configured to your specific business.</p>
+
+    <div class="inc-grid">
+      <div class="inc-card">
+        <div class="ic">⚡</div>
+        <h4>Central Orchestrator</h4>
+        <p>Your single command interface. Speak naturally and it routes requests across your entire agent army — tracking progress, managing handoffs, and reporting results.</p>
+      </div>
+      <div class="inc-card">
+        <div class="ic">👔</div>
+        <h4>Full Agent Army</h4>
+        <p>CEO-level agents for Operations, Finance, Marketing, Sales, Customer Success — each with sub-agents handling execution. Customized to match your actual business structure.</p>
+      </div>
+      <div class="inc-card">
+        <div class="ic">🧠</div>
+        <h4>Thought Assistant</h4>
+        <p>Your personal strategist agent. Brainstorms ideas, drafts documents, researches competitors, analyzes data, and helps you think through decisions on demand.</p>
+      </div>
+      <div class="inc-card">
+        <div class="ic">🔐</div>
+        <h4>Security Foundation</h4>
+        <p>Encrypted data at rest and in transit, isolated environments, access controls, automated backups, and a Security Sentinel agent monitoring system integrity.</p>
+      </div>
+      <div class="inc-card">
+        <div class="ic">📋</div>
+        <h4>Kanban + Telegram</h4>
+        <p>Visual task management board plus Telegram command integration — issue orders, track agent work, and get status updates straight from your phone.</p>
+      </div>
+      <div class="inc-card">
+        <div class="ic">🔄</div>
+        <h4>Ongoing Membership</h4>
+        <p>Weekly community Zoom calls, private support channel, agent updates, workflow maintenance, and direct access to the person who built your system.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<!-- FUTURE ADD-ONS -->
+<section style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <span class="section-label">Coming Soon</span>
+    <h2 class="section-title">Future add-ons & expansions.</h2>
+    <p class="section-desc">We're continuously building new agent types and capabilities. Members get priority access as these become available.</p>
+
+    <div class="addon-grid">
+      <div class="addon">
+        <h4>🎯 Lead Generation Agent</h4>
+        <span class="addon-price">Coming Q2 2025</span>
+        <p>Automated prospecting, outreach sequencing, and lead scoring — plugged directly into your Sales CEO agent's pipeline.</p>
+      </div>
+      <div class="addon">
+        <h4>📧 Email Command Agent</h4>
+        <span class="addon-price">Coming Q2 2025</span>
+        <p>Draft, send, and manage email workflows through your orchestrator. Integrates with your existing email provider.</p>
+      </div>
+      <div class="addon">
+        <h4>📊 Analytics CEO</h4>
+        <span class="addon-price">Coming Q3 2025</span>
+        <p>A dedicated agent for data analysis, report generation, trend monitoring, and business intelligence dashboards.</p>
+      </div>
+      <div class="addon">
+        <h4>🔗 Custom API Integrations</h4>
+        <span class="addon-price">Available Now — Custom Quote</span>
+        <p>Connect your agent army to specific third-party tools, APIs, or internal systems your business depends on.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MEMBERSHIP -->
+<section>
+  <div class="container">
+    <span class="section-label">Included With Both Packages</span>
+    <h2 class="section-title">Membership is part of the deal.</h2>
+    <p class="section-desc">When you buy a ClawForge package, you don't just get a deployment — you become a member of an ongoing support ecosystem.</p>
+
+    <div class="mem-box">
+      <div>
+        <h3>Weekly Community <span class="gradient-text">Zoom Calls</span></h3>
+        <p>Every week, we host a live video call open to all ClawForge members. Get your questions answered, see new agent capabilities demonstrated, troubleshoot issues, and learn from other operators using the same tools.</p>
+        <p>This isn't a recorded webinar. It's a live working session where real people get real help — and where the entire ClawForge ecosystem improves for everyone.</p>
+      </div>
+      <div>
+        <ul class="mem-list">
+          <li>Live weekly Zoom sessions — open to all members</li>
+          <li>Agent updates & new workflow rollouts</li>
+          <li>Private support channel for questions between calls</li>
+          <li>Ongoing maintenance of your orchestrator & agents</li>
+          <li>Priority access to new agent types & features</li>
+          <li>Direct line to the person who built your system</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="final-cta">
+  <h2>Ready to pick your <span class="gradient-text">tier?</span></h2>
+  <p>Book a call and we'll help you figure out which package makes sense for your business. No pressure — just an honest conversation about what you need.</p>
+  <div class="hero-buttons">
+    <a href="/checkout.html" class="btn-primary">Get Started →</a>
+    <a href="how-it-works.html" class="btn-secondary">See How It Works</a>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <a href="/">ClawForge</a> — Secure AI Agent Deployment, Built Face-to-Face</p>
+</footer>
+</body>
+</html>

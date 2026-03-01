@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security — ClawForge | How We Protect Your AI Agent Army</title>
+<meta name="description" content="Security is the foundation of every ClawForge deployment. Encrypted data, isolated environments, human-verified setup, automated backups, and ongoing monitoring.">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg-primary:#050507;--bg-secondary:#0a0a0e;--bg-card:#0f0f15;--bg-card-hover:#141420;--text-primary:#e8e6ef;--text-secondary:#8a8899;--chrome:#c0c0cc;--chrome-bright:#e0dfe8;--accent:#ff6a1a;--accent-bright:#ff8c42;--accent-dim:#4a2208;--accent-glow:rgba(255,106,26,.15);--accent-glow-strong:rgba(255,106,26,.3);--molten:#ff3d00;--ember:#ff9100;--border:#1e1e2a;--border-light:#2a2a3a;--font-body:'Exo 2',sans-serif;--font-mono:'JetBrains Mono',monospace;--font-display:'Rajdhani',sans-serif}
+  *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:var(--font-body);background:var(--bg-primary);color:var(--text-primary);line-height:1.7;overflow-x:hidden}
+  ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg-primary)}::-webkit-scrollbar-thumb{background:var(--accent-dim);border-radius:4px}
+
+  nav{position:fixed;top:0;width:100%;z-index:100;background:rgba(5,5,7,.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:.8rem 2rem;display:flex;justify-content:space-between;align-items:center}
+  .nav-logo{display:flex;align-items:center;text-decoration:none}.nav-logo img{height:28px;width:auto;filter:drop-shadow(0 0 8px rgba(255,106,26,.3))}
+  .nav-links{display:flex;gap:2rem;align-items:center}.nav-links a{color:var(--text-secondary);text-decoration:none;font-size:.82rem;font-weight:500;letter-spacing:.5px;text-transform:uppercase;transition:color .3s}.nav-links a:hover{color:var(--text-primary)}.nav-links a.active{color:var(--accent)}
+  .nav-cta{background:var(--accent)!important;color:#000!important;padding:.5rem 1.2rem!important;border-radius:6px;font-weight:700!important;text-transform:uppercase!important;transition:transform .2s,box-shadow .3s!important}.nav-cta:hover{transform:translateY(-1px);box-shadow:0 4px 24px var(--accent-glow-strong)}
+
+  .page-hero{min-height:70vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 2rem 4rem;position:relative;overflow:hidden}
+  .page-hero-bg{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:.85;pointer-events:none}
+  .page-hero::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:50%;background:linear-gradient(to top,var(--bg-primary),transparent);pointer-events:none}
+  .page-hero-content{position:relative;z-index:2;max-width:800px}
+  .gradient-text{font-style:normal;background:linear-gradient(135deg,var(--accent),var(--ember));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+  section{padding:6rem 2rem}.container{max-width:1100px;margin:0 auto}
+  .section-label{font-family:var(--font-mono);font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:1rem}
+  .section-title{font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;line-height:1.15;margin-bottom:1rem;text-transform:uppercase}
+  .section-desc{font-size:1.02rem;color:var(--text-secondary);max-width:620px;line-height:1.8;font-weight:300}
+  .molten-divider{height:1px;background:linear-gradient(90deg,transparent 0%,var(--accent-dim) 30%,var(--accent) 50%,var(--accent-dim) 70%,transparent 100%);opacity:.5}
+  .btn-primary{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--accent),var(--molten));color:#000;padding:.9rem 2.2rem;border-radius:8px;font-weight:700;font-size:.9rem;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;transition:transform .2s,box-shadow .3s;border:none}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 36px var(--accent-glow-strong)}
+  .btn-secondary{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.04);color:var(--chrome-bright);padding:.9rem 2.2rem;border-radius:8px;border:1px solid var(--border-light);font-weight:500;font-size:.9rem;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;transition:border-color .3s,background .3s}.btn-secondary:hover{border-color:var(--accent-dim);background:rgba(255,106,26,.05)}
+
+  /* PILLARS */
+  .pillars-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-top:3rem}
+  .pillar{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:2rem;transition:border-color .3s,transform .2s;position:relative;overflow:hidden}
+  .pillar::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent);opacity:0;transition:opacity .3s}
+  .pillar:hover{border-color:var(--accent-dim);transform:translateY(-3px)}.pillar:hover::before{opacity:1}
+  .pillar .p-icon{font-size:1.5rem;margin-bottom:.75rem}
+  .pillar h4{font-family:var(--font-display);font-size:1.1rem;font-weight:700;text-transform:uppercase;margin-bottom:.5rem}
+  .pillar p{font-size:.88rem;color:var(--text-secondary);line-height:1.7;font-weight:300}
+
+  /* THREAT SECTION */
+  .threat-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-top:3rem;align-items:start}
+  .threat-col h3{font-family:var(--font-display);font-size:1.15rem;font-weight:700;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+  .threat-list{list-style:none;display:flex;flex-direction:column;gap:.6rem}
+  .threat-list li{padding:.9rem 1.2rem;border-radius:8px;font-size:.86rem;line-height:1.6;font-weight:300}
+  .threats li{background:rgba(255,61,0,.04);border:1px solid rgba(255,61,0,.12);color:var(--text-secondary)}
+  .defenses li{background:rgba(255,106,26,.06);border:1px solid rgba(255,106,26,.18);color:var(--chrome-bright)}
+
+  /* HUMAN SECTION */
+  .human-section{background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .human-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-top:3rem;align-items:center}
+  .human-grid h3{font-family:var(--font-display);font-size:1.6rem;font-weight:700;text-transform:uppercase;margin-bottom:1rem;line-height:1.2}
+  .human-grid p{font-size:.92rem;color:var(--text-secondary);line-height:1.8;font-weight:300;margin-bottom:1rem}
+  .human-checks{list-style:none;display:flex;flex-direction:column;gap:.6rem}
+  .human-checks li{font-size:.88rem;color:var(--text-secondary);display:flex;align-items:flex-start;gap:.6rem;line-height:1.5;font-weight:300}
+  .human-checks li::before{content:'✓';color:var(--accent);font-weight:700;flex-shrink:0}
+
+  /* PRACTICES */
+  .practices-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;margin-top:3rem}
+  .practice{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1.5rem;transition:border-color .3s}
+  .practice:hover{border-color:var(--accent-dim)}
+  .practice h4{font-family:var(--font-display);font-size:.95rem;font-weight:700;text-transform:uppercase;margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem}
+  .practice p{font-size:.82rem;color:var(--text-secondary);line-height:1.6;font-weight:300}
+
+  /* COMMITMENT */
+  .commitment-box{background:var(--bg-card);border:1px solid var(--accent-dim);border-radius:14px;padding:3rem;margin-top:3rem;text-align:center;position:relative;overflow:hidden}
+  .commitment-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+  .commitment-box h3{font-family:var(--font-display);font-size:1.6rem;font-weight:700;text-transform:uppercase;margin-bottom:1rem}
+  .commitment-box p{font-size:.95rem;color:var(--text-secondary);line-height:1.8;font-weight:300;max-width:650px;margin:0 auto 1.5rem}
+  .commitment-points{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin-top:1.5rem}
+  .commitment-points .cp{text-align:center;max-width:200px}
+  .commitment-points .cp-num{font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--accent);display:block}
+  .commitment-points .cp-label{font-size:.78rem;color:var(--text-secondary);font-weight:300}
+
+  .final-cta{text-align:center;padding:8rem 2rem;position:relative;overflow:hidden}
+  .final-cta::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:800px;height:400px;background:radial-gradient(ellipse,var(--accent-glow),transparent 70%);pointer-events:none}
+  .final-cta h2{position:relative;font-family:var(--font-display);font-size:clamp(2rem,4vw,3rem);font-weight:700;margin-bottom:1rem;text-transform:uppercase}
+  .final-cta p{position:relative;color:var(--text-secondary);max-width:550px;margin:0 auto 2rem;line-height:1.8;font-weight:300}
+  .hero-buttons{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;position:relative}
+
+  footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center}footer p{font-size:.78rem;color:var(--text-secondary);font-weight:300}footer a{color:var(--accent);text-decoration:none}
+
+  @media(max-width:768px){.page-hero-bg{opacity:.4!important}.nav-links{display:none}.threat-grid,.human-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><img src="logo.jpg" alt="ClawForge"></a>
+  <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/how-it-works.html">How It Works</a>
+      <a href="/agent-army.html">Agent Army</a>
+      <a href="/security.html">Security</a>
+      <a href="/services.html">Packages</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/contact.html" class="nav-cta">Book Call</a>
+    </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="page-hero">
+  <img src="clawforge_security_bg.png" alt="" class="page-hero-bg">
+  <div class="page-hero-content">
+    <span class="section-label">Security</span>
+    <h1 style="font-family:var(--font-display);font-size:clamp(2.4rem,5.5vw,4rem);font-weight:700;line-height:1.1;text-transform:uppercase;margin-bottom:1.5rem;">Your AI army has <span class="gradient-text">a security army behind it.</span></h1>
+    <p style="font-size:1.1rem;color:var(--chrome);max-width:620px;margin:0 auto;line-height:1.8;font-weight:300;">
+      Your agents handle real business data — customer information, financial records, operational logic. We treat that with the gravity it deserves. Security isn't a feature we bolt on. It's the foundation everything is built upon.
+    </p>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<!-- ===== SIX PILLARS ===== -->
+<section>
+  <div class="container">
+    <span class="section-label">The Six Pillars</span>
+    <h2 class="section-title">How we protect your system at every layer.</h2>
+    <p class="section-desc">Every ClawForge deployment is secured across six critical dimensions — from the moment data enters your system to the backups that protect it long-term.</p>
+
+    <div class="pillars-grid">
+      <div class="pillar">
+        <div class="p-icon">🔒</div>
+        <h4>End-to-End Encryption</h4>
+        <p>All data is encrypted in transit (TLS) and at rest. Your business information, agent configurations, workflow data, and communication logs are never stored in plaintext. Even if infrastructure were compromised, your data remains unreadable.</p>
+      </div>
+      <div class="pillar">
+        <div class="p-icon">🧱</div>
+        <h4>Isolated Environments</h4>
+        <p>Your agent army runs in a completely sandboxed, private environment. There is zero cross-contamination with other clients' systems, data, or agent configurations. Your instance is yours alone.</p>
+      </div>
+      <div class="pillar">
+        <div class="p-icon">🔑</div>
+        <h4>Granular Access Controls</h4>
+        <p>Strict permission layers ensure only authorized users can interact with, modify, or view your agents. You control who has access to what — and we configure this with you during your live session so there are no surprises.</p>
+      </div>
+      <div class="pillar">
+        <div class="p-icon">💾</div>
+        <h4>Automated Backups</h4>
+        <p>Your entire system — agent configurations, workflow logic, data, and settings — is backed up automatically on a recurring schedule. If anything ever needs to be restored, your complete setup can be recovered quickly.</p>
+      </div>
+      <div class="pillar">
+        <div class="p-icon">👤</div>
+        <h4>Human-Verified Setup</h4>
+        <p>Nothing goes live without a real person configuring it and you approving it. Every agent, every workflow, every permission is set up during a face-to-face session where you see and verify everything before launch.</p>
+      </div>
+      <div class="pillar">
+        <div class="p-icon">🔍</div>
+        <h4>Continuous Monitoring</h4>
+        <p>After deployment, we don't stop watching. Agent behaviors are monitored for anomalies. Security patches are applied as AI platforms release them. Your Security Sentinel agent runs continuous integrity checks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<!-- ===== THREAT / DEFENSE ===== -->
+<section style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <span class="section-label">Threat Model</span>
+    <h2 class="section-title">What we protect you against.</h2>
+    <p class="section-desc">AI agent systems face real security risks. We've designed ClawForge to defend against the threats that actually matter to businesses running real operations.</p>
+
+    <div class="threat-grid">
+      <div class="threat-col">
+        <h3 style="color:var(--molten);">⚠ Real Threats</h3>
+        <ul class="threat-list threats">
+          <li>Unauthorized access to business data through agent interfaces</li>
+          <li>Agent hallucination producing incorrect financial or legal information</li>
+          <li>Prompt injection attacks that manipulate agent behavior</li>
+          <li>Data leakage through improperly scoped agent permissions</li>
+          <li>Configuration drift where agents slowly deviate from intended behavior</li>
+          <li>Loss of agent configurations with no backup or recovery plan</li>
+          <li>Cross-client data contamination in shared infrastructure</li>
+        </ul>
+      </div>
+      <div class="threat-col">
+        <h3 style="color:var(--accent);">🛡 ClawForge Defenses</h3>
+        <ul class="threat-list defenses">
+          <li>Strict access controls and permission layers configured during live setup</li>
+          <li>Guardrails and oversight mechanisms that flag uncertain agent outputs</li>
+          <li>Input validation and instruction hardening against injection attacks</li>
+          <li>Scoped permissions ensuring agents only access data they need</li>
+          <li>Ongoing monitoring and regular agent behavior audits</li>
+          <li>Automated backups with full system restore capability</li>
+          <li>Fully isolated, single-tenant environments for every client</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HUMAN VERIFICATION ===== -->
+<section class="human-section">
+  <div class="container">
+    <span class="section-label">Human in the Loop</span>
+    <h2 class="section-title">Why face-to-face setup is a security feature.</h2>
+
+    <div class="human-grid">
+      <div>
+        <h3>Every system is built <span class="gradient-text">with a human, not by a bot.</span></h3>
+        <p>
+          One of the biggest security risks in AI deployment is automation without oversight — systems that get auto-generated, auto-configured, and auto-deployed with no one actually verifying what was built.
+        </p>
+        <p>
+          ClawForge takes the opposite approach. Every single agent, workflow, permission, and security measure is configured by a real person during a live session — and you're there watching, asking questions, and approving everything before it goes live.
+        </p>
+        <p>
+          This isn't just good customer service. It's a security practice. When a human builds your system face-to-face, errors get caught, misconfigurations get corrected, and you leave the session actually understanding what's running and why.
+        </p>
+      </div>
+      <div>
+        <ul class="human-checks">
+          <li>Every agent configuration is reviewed during your live session</li>
+          <li>Permissions are set with your explicit approval</li>
+          <li>Workflow logic is explained and tested before going live</li>
+          <li>Security settings are walked through, not hidden behind defaults</li>
+          <li>You receive documentation of your complete system architecture</li>
+          <li>The person who builds your system is the same person who supports it</li>
+          <li>In-person sessions available for clients who want physical verification (Waldorf / Bryans Road, MD)</li>
+          <li>Nothing is black-boxed — you understand every piece of your deployment</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ONGOING SECURITY ===== -->
+<section>
+  <div class="container">
+    <span class="section-label">Ongoing Protection</span>
+    <h2 class="section-title">Security doesn't stop at deployment.</h2>
+    <p class="section-desc">Your system lives in a changing landscape — AI models update, new vulnerabilities emerge, and your business evolves. Here's how we keep your defenses current.</p>
+
+    <div class="practices-grid">
+      <div class="practice">
+        <h4>🔄 Model Updates</h4>
+        <p>When AI providers release security patches or model improvements, we update your agents to use the latest, most secure versions — without breaking your workflows.</p>
+      </div>
+      <div class="practice">
+        <h4>🕵️ Behavior Monitoring</h4>
+        <p>Your Security Sentinel agent watches for unusual patterns — unexpected data access, agent responses outside normal parameters, or signs of prompt manipulation.</p>
+      </div>
+      <div class="practice">
+        <h4>📋 Configuration Audits</h4>
+        <p>We periodically review your agent configurations, permissions, and workflows to ensure nothing has drifted from its intended setup as your business has evolved.</p>
+      </div>
+      <div class="practice">
+        <h4>💾 Backup Verification</h4>
+        <p>Backups aren't useful if they don't work. We verify backup integrity to ensure your full system can be restored if ever needed.</p>
+      </div>
+      <div class="practice">
+        <h4>📹 Weekly Check-ins</h4>
+        <p>Our weekly community Zoom calls aren't just for feature updates — they're also where security concerns get raised, addressed, and resolved in real time.</p>
+      </div>
+      <div class="practice">
+        <h4>🚨 Incident Response</h4>
+        <p>If something does go wrong, you have a direct line to the person who built your system. No ticket queues. No escalation ladders. Fast, informed response.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<!-- ===== COMMITMENT ===== -->
+<section style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="commitment-box">
+      <h3>Our Security Commitment</h3>
+      <p>
+        We understand that when you hand your business operations to an AI system, you're placing extraordinary trust in the people who build and maintain it. We don't take that lightly. Security at ClawForge isn't a checklist — it's a relationship. We protect your system the way we'd protect our own.
+      </p>
+      <div class="commitment-points">
+        <div class="cp">
+          <span class="cp-num">100%</span>
+          <span class="cp-label">Human-verified deployments</span>
+        </div>
+        <div class="cp">
+          <span class="cp-num">0</span>
+          <span class="cp-label">Auto-generated configs without your approval</span>
+        </div>
+        <div class="cp">
+          <span class="cp-num">24/7</span>
+          <span class="cp-label">Encrypted data at rest and in transit</span>
+        </div>
+        <div class="cp">
+          <span class="cp-num">1:1</span>
+          <span class="cp-label">Direct access to your builder for security concerns</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="final-cta">
+  <h2>Questions about how we <span class="gradient-text">protect your system?</span></h2>
+  <p>We're happy to walk through our security practices in detail on a call. Ask us anything — the more specific, the better.</p>
+  <div class="hero-buttons">
+    <a href="/checkout.html" class="btn-primary">Get Started →</a>
+    <a href="how-it-works.html" class="btn-secondary">See How It Works</a>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <a href="/">ClawForge</a> — Secure AI Agent Deployment, Built Face-to-Face</p>
+</footer>
+
+</body>
+</html>

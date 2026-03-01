@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Agent Army — ClawForge | Meet the AI Workforce</title>
+<meta name="description" content="Meet every agent in your ClawForge army — from the central orchestrator to CEO-level agents for operations, finance, marketing, sales, and more. See what each one does.">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg-primary:#050507;--bg-secondary:#0a0a0e;--bg-card:#0f0f15;--bg-card-hover:#141420;--text-primary:#e8e6ef;--text-secondary:#8a8899;--chrome:#c0c0cc;--chrome-bright:#e0dfe8;--accent:#ff6a1a;--accent-bright:#ff8c42;--accent-dim:#4a2208;--accent-glow:rgba(255,106,26,.15);--accent-glow-strong:rgba(255,106,26,.3);--molten:#ff3d00;--ember:#ff9100;--border:#1e1e2a;--border-light:#2a2a3a;--font-body:'Exo 2',sans-serif;--font-mono:'JetBrains Mono',monospace;--font-display:'Rajdhani',sans-serif}
+  *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:var(--font-body);background:var(--bg-primary);color:var(--text-primary);line-height:1.7;overflow-x:hidden}
+  ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg-primary)}::-webkit-scrollbar-thumb{background:var(--accent-dim);border-radius:4px}
+
+  nav{position:fixed;top:0;width:100%;z-index:100;background:rgba(5,5,7,.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:.8rem 2rem;display:flex;justify-content:space-between;align-items:center}
+  .nav-logo{display:flex;align-items:center;text-decoration:none}.nav-logo img{height:28px;width:auto;filter:drop-shadow(0 0 8px rgba(255,106,26,.3))}
+  .nav-links{display:flex;gap:2rem;align-items:center}.nav-links a{color:var(--text-secondary);text-decoration:none;font-size:.82rem;font-weight:500;letter-spacing:.5px;text-transform:uppercase;transition:color .3s}.nav-links a:hover{color:var(--text-primary)}.nav-links a.active{color:var(--accent)}
+  .nav-cta{background:var(--accent)!important;color:#000!important;padding:.5rem 1.2rem!important;border-radius:6px;font-weight:700!important;text-transform:uppercase!important;transition:transform .2s,box-shadow .3s!important}.nav-cta:hover{transform:translateY(-1px);box-shadow:0 4px 24px var(--accent-glow-strong)}
+
+  .page-hero{min-height:70vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 2rem 4rem;position:relative;overflow:hidden}
+  .page-hero-bg{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:.85;pointer-events:none}
+  .page-hero::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:50%;background:linear-gradient(to top,var(--bg-primary),transparent);pointer-events:none}
+  .page-hero-content{position:relative;z-index:2;max-width:800px}
+  .gradient-text{font-style:normal;background:linear-gradient(135deg,var(--accent),var(--ember));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+  section{padding:6rem 2rem}.container{max-width:1100px;margin:0 auto}
+  .section-label{font-family:var(--font-mono);font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:1rem}
+  .section-title{font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;line-height:1.15;margin-bottom:1rem;text-transform:uppercase}
+  .section-desc{font-size:1.02rem;color:var(--text-secondary);max-width:620px;line-height:1.8;font-weight:300}
+  .molten-divider{height:1px;background:linear-gradient(90deg,transparent,var(--accent-dim) 30%,var(--accent) 50%,var(--accent-dim) 70%,transparent);opacity:.5}
+  .btn-primary{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--accent),var(--molten));color:#000;padding:.9rem 2.2rem;border-radius:8px;font-weight:700;font-size:.9rem;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;transition:transform .2s,box-shadow .3s;border:none}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 36px var(--accent-glow-strong)}
+  .btn-secondary{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.04);color:var(--chrome-bright);padding:.9rem 2.2rem;border-radius:8px;border:1px solid var(--border-light);font-weight:500;font-size:.9rem;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;transition:border-color .3s,background .3s}.btn-secondary:hover{border-color:var(--accent-dim);background:rgba(255,106,26,.05)}
+
+  /* HIERARCHY VISUAL */
+  .hierarchy{margin-top:3rem;text-align:center}
+  .h-level{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;position:relative}
+  .h-connector{width:2px;height:2rem;background:var(--accent-dim);margin:0 auto}
+  .h-spread{width:60%;height:2px;background:var(--accent-dim);margin:0 auto}
+  .h-box{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.5rem;text-align:center;min-width:140px;transition:border-color .3s}
+  .h-box:hover{border-color:var(--accent-dim)}
+  .h-box.commander{border-color:var(--accent-dim);background:linear-gradient(165deg,rgba(255,106,26,.1),var(--bg-card) 60%);box-shadow:0 0 40px rgba(255,106,26,.06)}
+  .h-box .h-icon{font-size:1.3rem;margin-bottom:.3rem}
+  .h-box .h-name{font-family:var(--font-display);font-size:.85rem;font-weight:700;text-transform:uppercase}
+  .h-box .h-role{font-family:var(--font-mono);font-size:.55rem;color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+
+  /* AGENT PROFILES */
+  .profiles{display:flex;flex-direction:column;gap:2rem;margin-top:3rem}
+  .profile{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:2.5rem;display:grid;grid-template-columns:auto 1fr;gap:2rem;align-items:start;transition:border-color .3s}
+  .profile:hover{border-color:var(--accent-dim)}
+  .profile.featured{border-color:var(--accent-dim);background:linear-gradient(165deg,rgba(255,106,26,.06),var(--bg-card) 40%)}
+  .profile-icon{font-size:2.5rem;width:70px;height:70px;display:flex;align-items:center;justify-content:center;background:var(--bg-primary);border:1px solid var(--border);border-radius:12px;flex-shrink:0}
+  .profile-body{}
+  .profile-tag{font-family:var(--font-mono);font-size:.55rem;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:.25rem;display:block}
+  .profile h3{font-family:var(--font-display);font-size:1.3rem;font-weight:700;text-transform:uppercase;margin-bottom:.5rem}
+  .profile-desc{font-size:.92rem;color:var(--text-secondary);line-height:1.8;font-weight:300;margin-bottom:1rem}
+  .profile-tasks{list-style:none;display:flex;flex-wrap:wrap;gap:.5rem}
+  .profile-tasks li{font-size:.72rem;font-family:var(--font-mono);color:var(--text-secondary);background:var(--bg-primary);border:1px solid var(--border);padding:.3rem .75rem;border-radius:100px;letter-spacing:.5px}
+
+  /* USE CASES */
+  .use-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-top:3rem}
+  .use-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:2rem;transition:border-color .3s,transform .2s}
+  .use-card:hover{border-color:var(--accent-dim);transform:translateY(-3px)}
+  .use-card h4{font-family:var(--font-display);font-size:1rem;font-weight:700;text-transform:uppercase;margin-bottom:.5rem}
+  .use-card p{font-size:.86rem;color:var(--text-secondary);line-height:1.7;font-weight:300;margin-bottom:.75rem}
+  .use-card .use-agents{font-family:var(--font-mono);font-size:.6rem;color:var(--accent);letter-spacing:1px}
+
+  /* CUSTOMIZATION */
+  .custom-box{background:var(--bg-card);border:1px solid var(--accent-dim);border-radius:14px;padding:3rem;margin-top:3rem;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;position:relative;overflow:hidden}
+  .custom-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+  .custom-box h3{font-family:var(--font-display);font-size:1.5rem;font-weight:700;text-transform:uppercase;margin-bottom:1rem}
+  .custom-box p{font-size:.92rem;color:var(--text-secondary);line-height:1.8;font-weight:300;margin-bottom:1rem}
+  .custom-list{list-style:none;display:flex;flex-direction:column;gap:.6rem}
+  .custom-list li{font-size:.88rem;color:var(--text-secondary);display:flex;align-items:flex-start;gap:.6rem;font-weight:300}
+  .custom-list li::before{content:'→';color:var(--accent);font-weight:700;font-family:var(--font-mono);flex-shrink:0}
+
+  .final-cta{text-align:center;padding:8rem 2rem;position:relative;overflow:hidden}
+  .final-cta::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:800px;height:400px;background:radial-gradient(ellipse,var(--accent-glow),transparent 70%);pointer-events:none}
+  .final-cta h2{position:relative;font-family:var(--font-display);font-size:clamp(2rem,4vw,3rem);font-weight:700;margin-bottom:1rem;text-transform:uppercase}
+  .final-cta p{position:relative;color:var(--text-secondary);max-width:550px;margin:0 auto 2rem;line-height:1.8;font-weight:300}
+  .hero-buttons{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;position:relative}
+
+  footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center}footer p{font-size:.78rem;color:var(--text-secondary);font-weight:300}footer a{color:var(--accent);text-decoration:none}
+
+  @media(max-width:768px){.page-hero-bg{opacity:.4!important}.nav-links{display:none}.profile{grid-template-columns:1fr}.profile-icon{margin:0 auto}.custom-box{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><img src="agent-army-logo.jpg" alt="ClawForge"></a>
+  <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/how-it-works.html">How It Works</a>
+      <a href="/agent-army.html">Agent Army</a>
+      <a href="/security.html">Security</a>
+      <a href="/services.html">Packages</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/contact.html" class="nav-cta">Book Call</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="page-hero">
+  <img src="agent-army-hero.jpg" alt="" class="page-hero-bg">
+  <div class="page-hero-content">
+    <span class="section-label">Your Agent Army</span>
+    <h1 style="font-family:var(--font-display);font-size:clamp(2.4rem,5.5vw,4rem);font-weight:700;line-height:1.1;text-transform:uppercase;margin-bottom:1.5rem;">An entire workforce. <span class="gradient-text">Under one command.</span></h1>
+    <p style="font-size:1.1rem;color:var(--chrome);max-width:620px;margin:0 auto;line-height:1.8;font-weight:300;">
+      Every ClawForge deployment gives you a complete AI organization — an orchestrator at the top, executive agents running departments, and specialist sub-agents executing tasks. You speak to one. They all move.
+    </p>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<!-- CHAIN OF COMMAND -->
+<section>
+  <div class="container">
+    <span class="section-label">Chain of Command</span>
+    <h2 class="section-title">How your army is structured.</h2>
+    <p class="section-desc">Your agent army follows a clear hierarchy — just like a real organization. You talk to the orchestrator. It delegates to the right CEO. The CEO activates its sub-agents. Results flow back up.</p>
+
+    <div class="hierarchy">
+      <div class="h-level">
+        <div class="h-box commander">
+          <div class="h-icon">👤</div>
+          <div class="h-name">You</div>
+          <div class="h-role">Commander</div>
+        </div>
+      </div>
+      <div class="h-connector"></div>
+      <div class="h-level">
+        <div class="h-box commander">
+          <div class="h-icon">⚡</div>
+          <div class="h-name">Orchestrator</div>
+          <div class="h-role">Central Command</div>
+        </div>
+      </div>
+      <div class="h-connector"></div>
+      <div class="h-spread"></div>
+      <div class="h-level">
+        <div class="h-box"><div class="h-icon">📊</div><div class="h-name">Ops CEO</div><div class="h-role">Executive</div></div>
+        <div class="h-box"><div class="h-icon">💰</div><div class="h-name">Finance CEO</div><div class="h-role">Executive</div></div>
+        <div class="h-box"><div class="h-icon">📣</div><div class="h-name">Marketing CEO</div><div class="h-role">Executive</div></div>
+        <div class="h-box"><div class="h-icon">🤝</div><div class="h-name">Sales CEO</div><div class="h-role">Executive</div></div>
+        <div class="h-box"><div class="h-icon">📞</div><div class="h-name">CX CEO</div><div class="h-role">Executive</div></div>
+      </div>
+      <div class="h-connector"></div>
+      <div class="h-level" style="opacity:.6;">
+        <div class="h-box"><div class="h-name" style="font-size:.75rem;">Sub-agents</div><div class="h-role">Execution</div></div>
+        <div class="h-box"><div class="h-name" style="font-size:.75rem;">Sub-agents</div><div class="h-role">Execution</div></div>
+        <div class="h-box"><div class="h-name" style="font-size:.75rem;">Sub-agents</div><div class="h-role">Execution</div></div>
+        <div class="h-box"><div class="h-name" style="font-size:.75rem;">Sub-agents</div><div class="h-role">Execution</div></div>
+        <div class="h-box"><div class="h-name" style="font-size:.75rem;">Sub-agents</div><div class="h-role">Execution</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<!-- AGENT PROFILES -->
+<section style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <span class="section-label">Agent Roster</span>
+    <h2 class="section-title">Meet every agent in your army.</h2>
+    <p class="section-desc">Each agent is purpose-built for a specific domain. Here's who they are, what they do, and how they work together.</p>
+
+    <div class="profiles">
+      <!-- ORCHESTRATOR -->
+      <div class="profile featured">
+        <div class="profile-icon">⚡</div>
+        <div class="profile-body">
+          <span class="profile-tag">Central Command</span>
+          <h3>The Orchestrator</h3>
+          <p class="profile-desc">The brain of your entire operation. You speak to the Orchestrator in plain language — describe what you need, and it figures out which agents to activate, in what order, and with what instructions. It tracks progress across every department, manages handoffs between agents, resolves conflicts, and reports status back to you. Think of it as your AI chief of staff: always listening, always routing, always keeping the machine running.</p>
+          <div class="profile-tasks">
+            <li>Task routing</li><li>Agent coordination</li><li>Status reporting</li><li>Priority management</li><li>Cross-department handoffs</li><li>Natural language interface</li>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPS -->
+      <div class="profile">
+        <div class="profile-icon">📊</div>
+        <div class="profile-body">
+          <span class="profile-tag">Executive Agent</span>
+          <h3>Operations CEO</h3>
+          <p class="profile-desc">Runs your day-to-day operational machine. Manages task boards, tracks project timelines, coordinates team workflows, handles resource allocation, and keeps your Kanban board up to date. If something needs to happen on time and in the right order, the Operations CEO owns it.</p>
+          <div class="profile-tasks">
+            <li>Project management</li><li>Task tracking</li><li>Team coordination</li><li>Kanban updates</li><li>Deadline monitoring</li><li>Process optimization</li>
+          </div>
+        </div>
+      </div>
+
+      <!-- FINANCE -->
+      <div class="profile">
+        <div class="profile-icon">💰</div>
+        <div class="profile-body">
+          <span class="profile-tag">Executive Agent</span>
+          <h3>Finance CEO</h3>
+          <p class="profile-desc">Keeps your financial operations organized and visible. Tracks invoices, categorizes expenses, monitors revenue, generates financial reports, and maintains dashboards that give you a clear picture of your numbers at any moment. It doesn't make financial decisions for you — it makes sure you always have the data to make them yourself.</p>
+          <div class="profile-tasks">
+            <li>Invoice tracking</li><li>Expense categorization</li><li>Revenue monitoring</li><li>Report generation</li><li>Financial dashboards</li><li>Budget alerts</li>
+          </div>
+        </div>
+      </div>
+
+      <!-- MARKETING -->
+      <div class="profile">
+        <div class="profile-icon">📣</div>
+        <div class="profile-body">
+          <span class="profile-tag">Executive Agent</span>
+          <h3>Marketing CEO</h3>
+          <p class="profile-desc">Handles the full marketing lifecycle — from content creation to distribution to engagement tracking. Drafts social posts, schedules content calendars, manages campaign workflows, monitors audience engagement, and generates performance reports. Keeps your brand active across platforms without you manually posting every day.</p>
+          <div class="profile-tasks">
+            <li>Content creation</li><li>Social scheduling</li><li>Campaign management</li><li>Engagement tracking</li><li>Content calendar</li><li>Performance reports</li>
+          </div>
+        </div>
+      </div>
+
+      <!-- SALES -->
+      <div class="profile">
+        <div class="profile-icon">🤝</div>
+        <div class="profile-body">
+          <span class="profile-tag">Executive Agent</span>
+          <h3>Sales CEO</h3>
+          <p class="profile-desc">Manages your entire sales pipeline from lead capture to close. Tracks leads, automates follow-up sequences, manages CRM updates, scores prospects, and sends you alerts when high-value opportunities need your personal attention. The deals that need a human touch get flagged. Everything else moves automatically.</p>
+          <div class="profile-tasks">
+            <li>Lead management</li><li>Follow-up automation</li><li>Pipeline tracking</li><li>CRM updates</li><li>Prospect scoring</li><li>Outreach sequences</li>
+          </div>
+        </div>
+      </div>
+
+      <!-- CX -->
+      <div class="profile">
+        <div class="profile-icon">📞</div>
+        <div class="profile-body">
+          <span class="profile-tag">Executive Agent</span>
+          <h3>Customer Success CEO</h3>
+          <p class="profile-desc">Owns the post-sale relationship. Handles support tickets, manages client communication, tracks satisfaction metrics, runs onboarding sequences for new customers, and escalates issues that need your personal involvement. Your customers feel taken care of — because they are.</p>
+          <div class="profile-tasks">
+            <li>Support tickets</li><li>Client communication</li><li>Satisfaction tracking</li><li>Onboarding flows</li><li>Escalation routing</li><li>Feedback collection</li>
+          </div>
+        </div>
+      </div>
+
+      <!-- THOUGHT -->
+      <div class="profile">
+        <div class="profile-icon">🧠</div>
+        <div class="profile-body">
+          <span class="profile-tag">Personal Agent</span>
+          <h3>Thought Assistant</h3>
+          <p class="profile-desc">Your personal strategist and thinking partner. This isn't a department agent — it's your agent. It brainstorms ideas, drafts documents, researches competitors, analyzes market data, writes proposals, and helps you think through complex decisions. Ask it anything, at any time. It's the agent that makes you sharper.</p>
+          <div class="profile-tasks">
+            <li>Strategic brainstorming</li><li>Document drafting</li><li>Competitive research</li><li>Data analysis</li><li>Proposal writing</li><li>Decision frameworks</li>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECURITY -->
+      <div class="profile">
+        <div class="profile-icon">🛡️</div>
+        <div class="profile-body">
+          <span class="profile-tag">Security Agent</span>
+          <h3>Security Sentinel</h3>
+          <p class="profile-desc">The silent guardian. Monitors system integrity across your entire deployment — watching for unusual access patterns, verifying backup integrity, managing permission audits, and alerting you to anything that looks off. It doesn't just protect your data — it protects every other agent in your army.</p>
+          <div class="profile-tasks">
+            <li>Integrity monitoring</li><li>Access auditing</li><li>Backup verification</li><li>Anomaly detection</li><li>Permission management</li><li>Security alerts</li>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section>
+  <div class="container">
+    <span class="section-label">In Action</span>
+    <h2 class="section-title">How your army works in real scenarios.</h2>
+    <p class="section-desc">Here's what it looks like when you give a single command and your entire agent army coordinates to execute it.</p>
+
+    <div class="use-grid">
+      <div class="use-card">
+        <h4>"Launch the new product campaign"</h4>
+        <p>You tell your Orchestrator. It activates your Marketing CEO to draft content and schedule posts, your Sales CEO to set up lead capture sequences, your Operations CEO to create project milestones, and your Finance CEO to set a campaign budget tracker. All from one sentence.</p>
+        <span class="use-agents">Agents involved: Orchestrator → Marketing → Sales → Operations → Finance</span>
+      </div>
+      <div class="use-card">
+        <h4>"What's our financial position this month?"</h4>
+        <p>Your Orchestrator routes this to the Finance CEO, which pulls invoice data, expense reports, and revenue figures — then compiles a clean summary and sends it back to you in seconds. No spreadsheets. No digging.</p>
+        <span class="use-agents">Agents involved: Orchestrator → Finance</span>
+      </div>
+      <div class="use-card">
+        <h4>"A customer is unhappy — handle it"</h4>
+        <p>The Orchestrator sends this to your Customer Success CEO, which pulls up the ticket history, drafts an empathetic response, escalates if needed, and logs the interaction. Your Sales CEO is also notified to flag the account for retention risk.</p>
+        <span class="use-agents">Agents involved: Orchestrator → Customer Success → Sales</span>
+      </div>
+      <div class="use-card">
+        <h4>"Help me think through this acquisition"</h4>
+        <p>This goes straight to your Thought Assistant — which researches the target company, analyzes financials, identifies risks, drafts a pro/con framework, and helps you model different outcomes. Pure strategy, on demand.</p>
+        <span class="use-agents">Agents involved: Orchestrator → Thought Assistant</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<!-- CUSTOMIZATION -->
+<section style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <span class="section-label">Built for You</span>
+    <h2 class="section-title">Every army is custom-configured.</h2>
+
+    <div class="custom-box">
+      <div>
+        <h3>Your business isn't a <span class="gradient-text">template.</span></h3>
+        <p>We don't hand you a generic AI setup and wish you luck. Every agent in your army is configured to match your actual business — your workflows, your terminology, your priorities, your tone.</p>
+        <p>During your live setup session, we tailor each agent's behavior, scope, and integrations to fit how you actually operate. Premium clients get even deeper customization — including agent personality tuning, guardrail calibration, and workflow stress-testing.</p>
+      </div>
+      <div>
+        <ul class="custom-list">
+          <li>Agent names and roles mapped to your business structure</li>
+          <li>Workflow automation configured around your real processes</li>
+          <li>Communication tone matched to your brand voice</li>
+          <li>Integration points connected to your existing tools</li>
+          <li>Guardrails set based on your risk tolerance and industry</li>
+          <li>Escalation rules defined for when humans should step in</li>
+          <li>Agent hierarchy adjusted to match your organizational priorities</li>
+          <li>Ongoing tuning as your business evolves post-launch</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="final-cta">
+  <h2>Ready to deploy <span class="gradient-text">your army?</span></h2>
+  <p>Book a call and we'll design an agent army built specifically for your business. Every deployment is custom. Every session is face-to-face.</p>
+  <div class="hero-buttons">
+    <a href="/checkout.html" class="btn-primary">Get Started →</a>
+    <a href="services.html" class="btn-secondary">View Packages</a>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <a href="/">ClawForge</a> — Secure AI Agent Deployment, Built Face-to-Face</p>
+</footer>
+</body>
+</html>

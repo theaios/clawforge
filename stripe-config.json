@@ -1,0 +1,14 @@
+{
+  "products": {
+    "core": {
+      "product_id": "prod_U2fn512cv4X88z",
+      "price_id": "price_1T4aRj7bKcScxN7Ak3AALABR",
+      "payment_link": "https://buy.stripe.com/aFa14gaEwfQWcO7apc9IQ00"
+    },
+    "executive": {
+      "product_id": "prod_U2fn8wR5Qt3Jsz",
+      "price_id": "price_1T4aRk7bKcScxN7AplpBmfUT",
+      "payment_link": "https://buy.stripe.com/28EbIU4g8bAG9BVgNA9IQ01"
+    }
+  }
+}

@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawForge — Your AI Agent Army, Built & Protected</title>
+<meta name="description" content="ClawForge builds secure, pre-configured AI agent armies with a central orchestrator that runs your entire business. White-glove setup via Zoom or in-person. Security-first. Human-guided.">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #050507;
+    --bg-secondary: #0a0a0e;
+    --bg-card: #0f0f15;
+    --bg-card-hover: #141420;
+    --text-primary: #e8e6ef;
+    --text-secondary: #8a8899;
+    --chrome: #c0c0cc;
+    --chrome-bright: #e0dfe8;
+    --accent: #ff6a1a;
+    --accent-bright: #ff8c42;
+    --accent-dim: #4a2208;
+    --accent-glow: rgba(255, 106, 26, 0.15);
+    --accent-glow-strong: rgba(255, 106, 26, 0.3);
+    --molten: #ff3d00;
+    --molten-dim: rgba(255, 61, 0, 0.1);
+    --ember: #ff9100;
+    --border: #1e1e2a;
+    --border-light: #2a2a3a;
+    --font-body: 'Exo 2', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-display: 'Rajdhani', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--accent-dim); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  nav {
+    position: fixed; top: 0; width: 100%; z-index: 100;
+    background: rgba(5,5,7,0.88);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.8rem 2rem;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    text-decoration: none;
+  }
+  .nav-logo img {
+    height: 28px;
+    width: auto;
+    filter: drop-shadow(0 0 8px rgba(255,106,26,0.3));
+  }
+  .nav-links { display: flex; gap: 2rem; align-items: center; }
+  .nav-links a {
+    color: var(--text-secondary); text-decoration: none;
+    font-size: 0.82rem; font-weight: 500;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--text-primary); }
+  .nav-cta {
+    background: var(--accent) !important;
+    color: #000 !important;
+    padding: 0.5rem 1.2rem !important;
+    border-radius: 6px;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    transition: transform 0.2s, box-shadow 0.3s !important;
+  }
+  .nav-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 24px var(--accent-glow-strong);
+  }
+
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    padding: 8rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 40%;
+    background: linear-gradient(to top, var(--bg-primary) 0%, transparent 100%);
+    pointer-events: none;
+  }
+  .hero-content {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center;
+  }
+  .hero-badge {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent-dim);
+    padding: 0.4rem 1.2rem;
+    border-radius: 100px;
+    margin-bottom: 2.5rem;
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: rgba(255,106,26,0.05);
+  }
+  .hero-badge .dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: blink 2s ease-in-out infinite;
+    box-shadow: 0 0 8px var(--accent);
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.8rem, 6.5vw, 5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    max-width: 850px;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+  }
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--ember) 50%, var(--molten) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--chrome);
+    max-width: 600px;
+    margin-bottom: 2.5rem;
+    line-height: 1.8;
+    font-weight: 300;
+  }
+  .hero-buttons {
+    display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: linear-gradient(135deg, var(--accent), var(--molten));
+    color: #000;
+    padding: 0.9rem 2.2rem;
+    border-radius: 8px;
+    font-weight: 700; font-size: 0.9rem;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: transform 0.2s, box-shadow 0.3s;
+    border: none;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 36px var(--accent-glow-strong);
+  }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(255,255,255,0.04);
+    color: var(--chrome-bright);
+    padding: 0.9rem 2.2rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    font-weight: 500; font-size: 0.9rem;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent-dim);
+    background: rgba(255,106,26,0.05);
+  }
+
+  .trust-bar {
+    text-align: center;
+    padding: 3rem 2rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-secondary);
+  }
+  .trust-bar p {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+  }
+  .trust-logos {
+    display: flex; gap: 2.5rem; justify-content: center;
+    align-items: center; flex-wrap: wrap;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.5;
+  }
+  .trust-logos span { transition: opacity 0.3s; }
+  .trust-logos span:hover { opacity: 1.5; color: var(--chrome-bright); }
+
+  section { padding: 6rem 2rem; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: -0.3px;
+  }
+  .section-desc {
+    font-size: 1.02rem;
+    color: var(--text-secondary);
+    max-width: 620px;
+    line-height: 1.8;
+    font-weight: 300;
+  }
+  .gradient-text {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--accent), var(--ember));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .preview-section {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+  .preview-section .container { max-width: 900px; }
+  .preview-img-wrap {
+    margin-top: 3rem;
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 20px 80px rgba(255,106,26,0.08), 0 0 0 1px rgba(255,106,26,0.05);
+  }
+  .preview-img-wrap img {
+    width: 100%;
+    display: block;
+    border-radius: 16px;
+  }
+
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-top: 3rem;
+  }
+  .problem-col h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .problem-col ul {
+    list-style: none;
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .problem-col li {
+    padding: 1rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .problems-list li {
+    background: rgba(255,61,0,0.04);
+    border: 1px solid rgba(255,61,0,0.12);
+    color: var(--text-secondary);
+  }
+  .solutions-list li {
+    background: rgba(255,106,26,0.06);
+    border: 1px solid rgba(255,106,26,0.18);
+    color: var(--chrome-bright);
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+  .step {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    position: relative;
+    transition: border-color 0.3s, transform 0.3s;
+    overflow: hidden;
+  }
+  .step::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .step:hover {
+    border-color: var(--accent-dim);
+    transform: translateY(-4px);
+  }
+  .step:hover::before { opacity: 1; }
+  .step-number {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+  }
+  .step h3 {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+  }
+  .step p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .agent-section {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .agent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1.25rem;
+    margin-top: 3rem;
+  }
+  .agent-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: border-color 0.3s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .agent-card:first-child {
+    border-color: var(--accent-dim);
+    background: linear-gradient(165deg, rgba(255,106,26,0.08) 0%, var(--bg-card) 50%);
+  }
+  .agent-card:hover {
+    border-color: var(--accent-dim);
+    transform: translateY(-3px);
+  }
+  .agent-icon { font-size: 1.4rem; margin-bottom: 0.75rem; display: inline-block; }
+  .agent-card h4 {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .agent-card p {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+  .agent-tag {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .security-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+  .security-item {
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-card);
+    transition: border-color 0.3s;
+  }
+  .security-item:hover { border-color: var(--accent-dim); }
+  .security-item h4 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .security-item p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .packages-section {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .packages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+  .package {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 2.5rem;
+    display: flex; flex-direction: column;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .package:hover { transform: translateY(-4px); }
+  .package.featured {
+    border-color: var(--accent-dim);
+    position: relative;
+    background: linear-gradient(175deg, rgba(255,106,26,0.06) 0%, var(--bg-card) 30%);
+    box-shadow: 0 0 80px rgba(255,106,26,0.06);
+  }
+  .package.featured::before {
+    content: 'MOST POPULAR';
+    position: absolute;
+    top: -12px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--accent), var(--molten));
+    color: #000;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 0.3rem 1rem;
+    border-radius: 100px;
+  }
+  .package-name {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .package h3 {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+  .package-price {
+    font-family: var(--font-display);
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    background: linear-gradient(135deg, var(--chrome-bright), var(--chrome));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .package-price-note {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-weight: 300;
+  }
+  .package-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-weight: 300;
+  }
+  .package-features {
+    list-style: none;
+    display: flex; flex-direction: column;
+    gap: 0.7rem;
+    margin-bottom: 2rem;
+    flex: 1;
+  }
+  .package-features li {
+    font-size: 0.86rem;
+    color: var(--text-secondary);
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    line-height: 1.5;
+    font-weight: 300;
+  }
+  .package-features li::before {
+    content: '✓';
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .package .btn-primary, .package .btn-secondary {
+    text-align: center; justify-content: center;
+    width: 100%;
+  }
+
+  .membership-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 3rem;
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+  .membership-box h3 {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  .membership-box p {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 1rem;
+    font-weight: 300;
+  }
+  .membership-perks {
+    list-style: none;
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .membership-perks li {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    display: flex; align-items: center; gap: 0.6rem;
+    font-weight: 300;
+  }
+  .membership-perks li::before {
+    content: '→';
+    color: var(--accent);
+    font-weight: 700;
+    font-family: var(--font-mono);
+  }
+
+  .why-section {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .faq-list {
+    margin-top: 3rem;
+    display: flex; flex-direction: column; gap: 0.75rem;
+    max-width: 750px;
+  }
+  .faq-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .faq-q {
+    width: 100%; text-align: left;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: none;
+    padding: 1.1rem 1.5rem;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: background 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .faq-q:hover { background: var(--bg-card-hover); }
+  .faq-q .arrow { transition: transform 0.3s; color: var(--accent); }
+  .faq-q.open .arrow { transform: rotate(180deg); }
+  .faq-a {
+    padding: 0 1.5rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.3s;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    background: var(--bg-card);
+    font-weight: 300;
+  }
+  .faq-a.open {
+    max-height: 300px;
+    padding: 0 1.5rem 1.5rem;
+  }
+
+  .final-cta {
+    text-align: center;
+    padding: 8rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .final-cta::before {
+    content: '';
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 800px; height: 400px;
+    background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .final-cta h2 {
+    position: relative;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  .final-cta p {
+    position: relative;
+    color: var(--text-secondary);
+    max-width: 550px;
+    margin: 0 auto 2rem;
+    line-height: 1.8;
+    font-weight: 300;
+  }
+  .final-cta .hero-buttons { position: relative; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+  footer p {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  .molten-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--accent-dim) 30%, var(--accent) 50%, var(--accent-dim) 70%, transparent 100%);
+    opacity: 0.5;
+  }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .problem-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .membership-box { grid-template-columns: 1fr; gap: 2rem; }
+    .packages-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 2.4rem; }
+     .hero-bg { opacity: 0.45 !important; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="logo.jpg" alt="ClawForge">
+  </a>
+  <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/how-it-works.html">How It Works</a>
+      <a href="/agent-army.html">Agent Army</a>
+      <a href="/security.html">Security</a>
+      <a href="/services.html">Packages</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/contact.html" class="nav-cta">Book Call</a>
+    </div>
+</nav>
+
+<section class="hero">
+  <img src="background.png" alt="" class="hero-bg">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      Now accepting new clients
+    </div>
+    <h1>One conversation runs <em>your entire business.</em></h1>
+    <p class="hero-sub">
+      ClawForge builds you a secure, pre-configured army of AI agents — led by a single orchestrator you simply talk to. We set it all up with you, face-to-face, so you actually understand and trust the system running your operations.
+    </p>
+    <div class="hero-buttons">
+      <a href="/checkout.html" class="btn-primary">Get Started →</a>
+      <a href="#how" class="btn-secondary">See How It Works</a>
+    </div>
+  </div>
+</section>
+
+<div class="trust-bar">
+  <p>Powered by leading AI providers</p>
+  <div class="trust-logos">
+    <span>OpenClaw</span>
+    <span>OpenAI</span>
+    <span>Anthropic</span>
+    <span>Google</span>
+    <span>xAI</span>
+    <span>Mistral</span>
+  </div>
+</div>
+
+<section class="preview-section">
+  <div class="container">
+    <span class="section-label">Mission Control</span>
+    <h2 class="section-title">Your AI org chart. <span class="gradient-text">Fully staffed.</span></h2>
+    <p class="section-desc" style="margin: 0 auto; text-align: center;">
+      Every ClawForge deployment gives you a complete command structure — a CEO orchestrator at the top, executive agents managing departments, and specialist sub-agents handling every task.
+    </p>
+    <div class="preview-img-wrap">
+      <img src="mission_control_preview.png" alt="ClawForge Mission Control — AI Org Chart Preview">
+    </div>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<section>
+  <div class="container">
+    <span class="section-label">The Reality</span>
+    <h2 class="section-title">AI is powerful. Setting it up alone is a nightmare.</h2>
+    <p class="section-desc">Most people know AI can transform their business. The problem is doing it right — without wasting months, leaking data, or ending up with a mess of disconnected tools.</p>
+    <div class="problem-grid">
+      <div class="problem-col">
+        <h3 style="color: var(--molten);">✕ Without ClawForge</h3>
+        <ul class="problems-list">
+          <li>Juggling 10+ AI tools that don't talk to each other</li>
+          <li>No idea if your data is actually secure</li>
+          <li>Spending weeks watching tutorials and still confused</li>
+          <li>Agents that break, hallucinate, or go off-script</li>
+          <li>No one to call when something stops working</li>
+        </ul>
+      </div>
+      <div class="problem-col">
+        <h3 style="color: var(--accent);">✓ With ClawForge</h3>
+        <ul class="solutions-list">
+          <li>One orchestrator controls your entire agent army</li>
+          <li>Security-hardened from day one with encrypted backups</li>
+          <li>Built for you in a live session — you're never alone</li>
+          <li>Tested, tuned workflows with guardrails and oversight</li>
+          <li>Ongoing support, updates, and weekly community calls</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<section id="how" style="background: var(--bg-secondary); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="container">
+    <span class="section-label">The Process</span>
+    <h2 class="section-title">Built with you. Not shipped to you.</h2>
+    <p class="section-desc">Every ClawForge deployment starts with a real conversation — on Zoom or in person. Here's how we take you from zero to fully operational AI mission control.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">01</div>
+        <h3>Discovery Call</h3>
+        <p>We hop on a Zoom call or meet in person to understand your business, your workflows, and where AI agents will create the most impact. No sales pitch — just honest strategy.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">02</div>
+        <h3>Architecture & Build</h3>
+        <p>We design your agent hierarchy: your central orchestrator, your specialized CEO-level agents, and all the sub-agents beneath them. Every workflow is mapped to your real operations.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">03</div>
+        <h3>Live Setup Session</h3>
+        <p>During your dedicated Zoom call (or in-person session), we walk you through every agent, every automation, and every security measure — together. You'll know exactly what you have.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">04</div>
+        <h3>Launch & Maintain</h3>
+        <p>After launch, we don't disappear. You get private support, agent updates, workflow optimization, and access to our weekly community Zoom calls — for as long as you're a member.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="agents" class="agent-section">
+  <div class="container">
+    <span class="section-label">Your Agent Army</span>
+    <h2 class="section-title">Speak to one. <span class="gradient-text">Command them all.</span></h2>
+    <p class="section-desc">Your orchestrator is the single point of contact. Behind it, specialized AI agents handle entire business functions — like having a full executive team that never sleeps.</p>
+    <div class="agent-grid">
+      <div class="agent-card">
+        <span class="agent-tag">Command Center</span>
+        <div class="agent-icon">⚡</div>
+        <h4>The Orchestrator</h4>
+        <p>Your command center. Speak naturally and it routes tasks to the right agents, tracks progress, and reports back. One conversation runs everything.</p>
+      </div>
+      <div class="agent-card">
+        <span class="agent-tag">Executive Agent</span>
+        <div class="agent-icon">📊</div>
+        <h4>Operations CEO</h4>
+        <p>Manages task boards, project timelines, team coordination, and daily operational workflows across your business.</p>
+      </div>
+      <div class="agent-card">
+        <span class="agent-tag">Executive Agent</span>
+        <div class="agent-icon">💰</div>
+        <h4>Finance CEO</h4>
+        <p>Tracks invoicing, expense categorization, revenue reporting, and financial dashboards — always up to date.</p>
+      </div>
+      <div class="agent-card">
+        <span class="agent-tag">Executive Agent</span>
+        <div class="agent-icon">📣</div>
+        <h4>Marketing CEO</h4>
+        <p>Handles content creation, social scheduling, campaign management, and audience engagement across platforms.</p>
+      </div>
+      <div class="agent-card">
+        <span class="agent-tag">Executive Agent</span>
+        <div class="agent-icon">🤝</div>
+        <h4>Sales CEO</h4>
+        <p>Manages leads, follow-ups, pipeline tracking, outreach sequences, and CRM updates automatically.</p>
+      </div>
+      <div class="agent-card">
+        <span class="agent-tag">Personal Agent</span>
+        <div class="agent-icon">🧠</div>
+        <h4>Thought Assistant</h4>
+        <p>Your personal strategist. Brainstorms ideas, drafts documents, researches competitors, and helps you think through big decisions.</p>
+      </div>
+      <div class="agent-card">
+        <span class="agent-tag">Security Agent</span>
+        <div class="agent-icon">🛡️</div>
+        <h4>Security Sentinel</h4>
+        <p>Monitors system integrity, manages access controls, runs backup routines, and alerts you to any anomalies.</p>
+      </div>
+      <div class="agent-card">
+        <span class="agent-tag">Executive Agent</span>
+        <div class="agent-icon">📞</div>
+        <h4>Customer Success CEO</h4>
+        <p>Handles support tickets, client communication, satisfaction tracking, and onboarding sequences for your customers.</p>
+      </div>
+    </div>
+    <p style="margin-top: 2rem; font-size: 0.82rem; color: var(--text-secondary); font-style: italic; font-weight: 300;">
+      Every deployment is customized. Your agent army is built around your business — not a template.
+    </p>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<section id="security">
+  <div class="container">
+    <span class="section-label">Security First</span>
+    <h2 class="section-title">Your AI army is only as good as its defenses.</h2>
+    <p class="section-desc">We don't treat security as an afterthought. It's the foundation of every ClawForge deployment. Your data, your agents, and your business logic are locked down from the start.</p>
+    <div class="security-grid">
+      <div class="security-item">
+        <h4>🔒 Encrypted by Default</h4>
+        <p>All data in transit and at rest is encrypted. Your business information never sits exposed — period.</p>
+      </div>
+      <div class="security-item">
+        <h4>🧱 Isolated Environments</h4>
+        <p>Your agent army runs in a private, sandboxed environment. No cross-contamination with other clients' systems.</p>
+      </div>
+      <div class="security-item">
+        <h4>🔑 Access Controls</h4>
+        <p>Granular permissions ensure only authorized users can interact with, modify, or view your agents and their data.</p>
+      </div>
+      <div class="security-item">
+        <h4>💾 Automated Backups</h4>
+        <p>Your entire agent configuration, workflows, and data are backed up automatically — so nothing is ever lost.</p>
+      </div>
+      <div class="security-item">
+        <h4>👤 Human-Verified Setup</h4>
+        <p>Every system is configured by a real person during a live session. You see and approve everything before it goes live.</p>
+      </div>
+      <div class="security-item">
+        <h4>🔍 Ongoing Monitoring</h4>
+        <p>We continuously monitor for vulnerabilities, update agent behaviors, and patch any issues — so your system stays bulletproof.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="packages" class="packages-section">
+  <div class="container">
+    <span class="section-label">Packages</span>
+    <h2 class="section-title">Choose the setup that fits your pace.</h2>
+    <p class="section-desc">Both packages include a fully built agent army, security hardening, and ongoing membership access. The difference is how deep we go together.</p>
+    <div class="packages-grid">
+      <div class="package">
+        <div class="package-name">Core Setup</div>
+        <h3>Mission Launch</h3>
+        <div class="package-price">$499</div>
+        <div class="package-price-note">One-time investment</div>
+        <p class="package-desc">Perfect for operators who want a fully functional AI command center with hands-on guidance. One focused session gets you operational fast.</p>
+        <ul class="package-features">
+          <li>Full orchestrator + agent army build</li>
+          <li>Kanban board + Telegram command integration</li>
+          <li>3 custom automation workflows</li>
+          <li>1× 60-min live session (Zoom or in-person — Waldorf / Bryans Road, MD)</li>
+          <li>Private support channel access</li>
+          <li>Launch documentation & walkthrough guide</li>
+          <li>Weekly community Zoom call access</li>
+        </ul>
+        <a href="/checkout.html?package=standard" class="btn-secondary">Buy Mission Launch — $499 →</a>
+      </div>
+      <div class="package featured">
+        <div class="package-name">Executive Build</div>
+        <h3>Full Command</h3>
+        <div class="package-price">$899</div>
+        <div class="package-price-note">One-time investment</div>
+        <p class="package-desc">For business owners who want the most thorough, secure, and personalized setup. Two dedicated sessions ensure everything is dialed in exactly right.</p>
+        <ul class="package-features">
+          <li>Everything in Core Setup</li>
+          <li>Advanced security hardening & backup systems</li>
+          <li>Complex multi-agent workflow orchestration</li>
+          <li>2× 60-min live sessions (Zoom or in-person)</li>
+          <li>Priority private support channel</li>
+          <li>7-day post-launch optimization window</li>
+          <li>Custom agent tuning & personality calibration</li>
+          <li>Weekly community Zoom call access</li>
+        </ul>
+        <a href="/checkout.html?package=premium" class="btn-primary">Buy Full Command — $899 →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<section id="community">
+  <div class="container">
+    <span class="section-label">Ongoing Relationship</span>
+    <h2 class="section-title">We don't build and disappear.</h2>
+    <p class="section-desc">Every ClawForge client becomes a member. That means continuous access to support, updates, and a growing community of operators running their businesses with AI.</p>
+    <div class="membership-box">
+      <div>
+        <h3>Weekly Community Zoom Calls</h3>
+        <p>Every week, we host a live video call open to all ClawForge members. Get your questions answered, see new agent capabilities in action, share wins, and learn from other operators building with the same tools.</p>
+        <p>This isn't a webinar. It's a working session where real people get real help — and where the ClawForge ecosystem gets better for everyone.</p>
+      </div>
+      <div>
+        <ul class="membership-perks">
+          <li>Live weekly Zoom sessions — open to all members</li>
+          <li>Agent updates & new workflow rollouts</li>
+          <li>Private support channel for async questions</li>
+          <li>Ongoing maintenance of your orchestrator & agents</li>
+          <li>Priority access to new features & agent types</li>
+          <li>Direct line to the person who built your system</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="why-section">
+  <div class="container">
+    <span class="section-label">Why ClawForge</span>
+    <h2 class="section-title">This isn't another AI tool. <span class="gradient-text">It's a partnership.</span></h2>
+    <div class="steps" style="margin-top: 3rem;">
+      <div class="step">
+        <h3>Human-First</h3>
+        <p>Every setup happens face-to-face. You meet the person building your system. You understand what's being built and why. No black boxes.</p>
+      </div>
+      <div class="step">
+        <h3>Security-Obsessed</h3>
+        <p>Your agents handle real business data. We treat that with the seriousness it deserves — encrypted, isolated, backed up, and monitored.</p>
+      </div>
+      <div class="step">
+        <h3>Actually Personal</h3>
+        <p>This isn't a SaaS dashboard you're left to figure out. It's a one-on-one experience where we build, teach, and support — directly.</p>
+      </div>
+      <div class="step">
+        <h3>Model Agnostic</h3>
+        <p>We pull from OpenAI, Anthropic, Google, xAI, and Mistral — routing each task to the best model for the job. No vendor lock-in.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<section id="faq">
+  <div class="container">
+    <span class="section-label">FAQ</span>
+    <h2 class="section-title">Questions we get asked a lot.</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What exactly is an "AI agent army"?<span class="arrow">▾</span></button>
+        <div class="faq-a">It's a system of specialized AI agents — each responsible for a different area of your business (operations, marketing, sales, finance, etc.) — all coordinated by a single orchestrator that you talk to in plain language. Think of it as a full executive team powered by AI, where you're the CEO giving orders to one person, and they delegate to everyone else.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Do I need to be technical to use this?<span class="arrow">▾</span></button>
+        <div class="faq-a">Not at all. That's the whole point of the live setup sessions — we build everything with you and walk you through how to use it in plain language. Your orchestrator understands natural conversation. If you can describe what you want done, it can route it to the right agent.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How is my data protected?<span class="arrow">▾</span></button>
+        <div class="faq-a">Security is our foundation, not an add-on. Your data is encrypted in transit and at rest, your agent environment is fully isolated, backups run automatically, and access is controlled through permissions. Every system is configured and verified by a human during your live session — nothing is auto-generated without your review.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Can I meet in person instead of Zoom?<span class="arrow">▾</span></button>
+        <div class="faq-a">Yes. If you're in or near the Waldorf / Bryans Road, Maryland area, we offer in-person setup sessions. It's the same full experience — just at a table instead of a screen. Most clients do Zoom, but the option is always there.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What happens after setup?<span class="arrow">▾</span></button>
+        <div class="faq-a">We never disappear. Every client gets ongoing access to our private support channel, weekly community Zoom calls, agent updates, and workflow maintenance. We maintain the relationship between you, your orchestrator, and your sub-agents — updating them as your business evolves. The Executive Build also includes a dedicated 7-day optimization window post-launch.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What's the difference between Core and Executive?<span class="arrow">▾</span></button>
+        <div class="faq-a">Core Setup gives you a fully operational agent army with one 60-minute live session. Executive Build doubles your face time (two sessions), adds advanced security hardening, more complex workflow orchestration, custom agent tuning, and a full week of post-launch optimization. If your business has nuance, compliance needs, or lots of moving parts — Executive is built for you.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Can my agents be updated or expanded later?<span class="arrow">▾</span></button>
+        <div class="faq-a">Absolutely. Your agent army is designed to grow with your business. As part of ongoing membership, we roll out updates, add new agent capabilities, and can expand your system with additional specialized agents as your needs change.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="final-cta">
+  <h2>Ready to meet your <span class="gradient-text">AI army?</span></h2>
+  <p>Book a call and let's talk about what ClawForge can build for your business. No pressure, no upsells — just a real conversation about what's possible.</p>
+  <div class="hero-buttons">
+    <a href="/checkout.html" class="btn-primary">Get Started →</a>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <a href="/">ClawForge</a> — Secure AI Agent Deployment, Built Face-to-Face</p>
+</footer>
+
+<script>
+function toggleFaq(btn) {
+  const answer = btn.nextElementSibling;
+  const isOpen = answer.classList.contains('open');
+  document.querySelectorAll('.faq-a').forEach(a => a.classList.remove('open'));
+  document.querySelectorAll('.faq-q').forEach(q => q.classList.remove('open'));
+  if (!isOpen) {
+    answer.classList.add('open');
+    btn.classList.add('open');
+  }
+}
+</script>
+
+</body>
+</html>

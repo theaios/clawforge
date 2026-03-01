@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — ClawForge</title>
+<meta name="description" content="Complete your ClawForge setup. Fill in your details and proceed to secure payment.">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg-primary:#050507;--bg-secondary:#0a0a0e;--bg-card:#0f0f15;--bg-card-hover:#141420;--text-primary:#e8e6ef;--text-secondary:#8a8899;--chrome:#c0c0cc;--chrome-bright:#e0dfe8;--accent:#ff6a1a;--accent-bright:#ff8c42;--accent-dim:#4a2208;--accent-glow:rgba(255,106,26,.15);--accent-glow-strong:rgba(255,106,26,.3);--molten:#ff3d00;--ember:#ff9100;--border:#1e1e2a;--border-light:#2a2a3a;--blue-steel:#4a8ecc;--blue-dim:rgba(74,142,204,.15);--font-body:'Exo 2',sans-serif;--font-mono:'JetBrains Mono',monospace;--font-display:'Rajdhani',sans-serif}
+  *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:var(--font-body);background:var(--bg-primary);color:var(--text-primary);line-height:1.7;overflow-x:hidden}
+  nav{position:fixed;top:0;width:100%;z-index:100;background:rgba(5,5,7,.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:.8rem 2rem;display:flex;justify-content:space-between;align-items:center}
+  .nav-logo{display:flex;align-items:center;text-decoration:none}.nav-logo img{height:28px;width:auto;filter:drop-shadow(0 0 8px rgba(255,106,26,.3))}
+  .nav-links{display:flex;gap:2rem;align-items:center}.nav-links a{color:var(--text-secondary);text-decoration:none;font-size:.82rem;font-weight:500;letter-spacing:.5px;text-transform:uppercase;transition:color .3s}.nav-links a:hover{color:var(--text-primary)}
+  .nav-cta{background:var(--accent)!important;color:#000!important;padding:.5rem 1.2rem!important;border-radius:6px;font-weight:700!important;text-transform:uppercase!important}
+
+  .checkout-wrapper{max-width:680px;margin:0 auto;padding:8rem 2rem 4rem}
+  .section-label{font-family:var(--font-mono);font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem;text-align:center;display:block}
+  .checkout-title{font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.5rem);font-weight:700;text-align:center;margin-bottom:.5rem;text-transform:uppercase}
+  .checkout-sub{text-align:center;color:var(--text-secondary);font-size:.95rem;font-weight:300;margin-bottom:2.5rem;line-height:1.7}
+  .gradient-text{font-style:normal;background:linear-gradient(135deg,var(--accent),var(--ember));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+  /* Package selector */
+  .package-selector{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem}
+  .pkg-option{background:var(--bg-card);border:2px solid var(--border);border-radius:12px;padding:1.5rem;cursor:pointer;transition:border-color .3s,background .3s;text-align:center;position:relative}
+  .pkg-option:hover{border-color:var(--border-light)}
+  .pkg-option.selected{border-color:var(--accent);background:rgba(255,106,26,.04)}
+  .pkg-option.selected::after{content:'✓';position:absolute;top:10px;right:12px;background:var(--accent);color:#000;width:22px;height:22px;border-radius:50%;font-size:.7rem;display:flex;align-items:center;justify-content:center;font-weight:700}
+  .pkg-name{font-family:var(--font-display);font-size:1rem;font-weight:700;text-transform:uppercase;margin-bottom:.25rem}
+  .pkg-price{font-family:var(--font-display);font-size:1.8rem;font-weight:700;margin-bottom:.25rem}
+  .pkg-option.standard .pkg-price{color:var(--blue-steel)}
+  .pkg-option.premium .pkg-price{background:linear-gradient(135deg,var(--accent),var(--ember));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .pkg-desc{font-size:.75rem;color:var(--text-secondary);font-weight:300}
+  .pkg-option.premium{position:relative}
+  .pkg-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--accent),var(--molten));color:#000;font-family:var(--font-mono);font-size:.55rem;font-weight:700;padding:.2rem .8rem;border-radius:20px;text-transform:uppercase;letter-spacing:1px}
+
+  /* Form */
+  .form-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:2.5rem}
+  .form-group{margin-bottom:1.25rem}
+  .form-group label{display:block;font-family:var(--font-display);font-size:.82rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--chrome);margin-bottom:.4rem}
+  .form-group input,.form-group select,.form-group textarea{width:100%;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;font-family:var(--font-body);font-size:.88rem;color:var(--text-primary);transition:border-color .3s;outline:none}
+  .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent-dim)}
+  .form-group input::placeholder,.form-group textarea::placeholder{color:var(--text-secondary);opacity:.5}
+  .form-group select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ff6a1a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;cursor:pointer}
+  .form-group select option{background:var(--bg-card);color:var(--text-primary)}
+  .form-group textarea{resize:vertical;min-height:100px}
+
+  .molten-divider{height:1px;background:linear-gradient(90deg,transparent,var(--accent-dim) 30%,var(--accent) 50%,var(--accent-dim) 70%,transparent);opacity:.5;margin:2rem 0}
+
+  .btn-primary{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--accent),var(--molten));color:#000;padding:1rem 2.2rem;border-radius:8px;font-weight:700;font-size:.95rem;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;transition:transform .2s,box-shadow .3s;border:none;cursor:pointer;width:100%;justify-content:center}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 36px var(--accent-glow-strong)}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+  .order-summary{background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;padding:1.2rem;margin:1.5rem 0;display:flex;justify-content:space-between;align-items:center}
+  .order-summary .label{font-family:var(--font-display);font-size:.9rem;font-weight:600;text-transform:uppercase;color:var(--chrome)}
+  .order-summary .price{font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:var(--accent)}
+
+  .secure-note{display:flex;align-items:center;gap:.5rem;justify-content:center;margin-top:1rem;font-size:.75rem;color:var(--text-secondary);font-weight:300}
+
+  footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center;color:var(--text-secondary);font-size:.8rem}
+  footer a{color:var(--accent);text-decoration:none}
+
+  @media(max-width:980px){.nav-links{display:none}.package-selector{grid-template-columns:1fr}.checkout-wrapper{padding:6rem 1rem 3rem}.form-card{padding:1.5rem}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><img src="logo.jpg" alt="ClawForge"></a>
+  <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/how-it-works.html">How It Works</a>
+      <a href="/agent-army.html">Agent Army</a>
+      <a href="/security.html">Security</a>
+      <a href="/services.html">Packages</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/contact.html" class="nav-cta">Book Call</a>
+    </div>
+</nav>
+
+<div class="checkout-wrapper">
+  <span class="section-label">Secure Checkout</span>
+  <h1 class="checkout-title">Complete Your <span class="gradient-text">Setup</span></h1>
+  <p class="checkout-sub">Fill in your details below, select your package, and proceed to secure payment powered by Stripe.</p>
+
+  <!-- PACKAGE SELECTOR -->
+  <div class="package-selector">
+    <div class="pkg-option standard" id="pkgStandard" onclick="selectPkg('standard')">
+      <div class="pkg-name">Mission Launch</div>
+      <div class="pkg-price">$499</div>
+      <div class="pkg-desc">Core Setup — one-time</div>
+    </div>
+    <div class="pkg-option premium" id="pkgPremium" onclick="selectPkg('premium')">
+      <span class="pkg-badge">Most Popular</span>
+      <div class="pkg-name">Full Command</div>
+      <div class="pkg-price">$899</div>
+      <div class="pkg-desc">Executive Build — one-time</div>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div class="form-card">
+    <form id="checkoutForm">
+      <div class="form-group">
+        <label>Your Name *</label>
+        <input type="text" id="fname" name="name" placeholder="Full name" required>
+      </div>
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" id="femail" name="email" placeholder="you@company.com" required>
+      </div>
+      <div class="form-group">
+        <label>Phone (optional)</label>
+        <input type="tel" name="phone" placeholder="(555) 000-0000">
+      </div>
+      <div class="form-group">
+        <label>How would you like to meet?</label>
+        <select name="meeting">
+          <option value="zoom">Zoom video call</option>
+          <option value="in-person">In person (Waldorf / Bryans Road, MD)</option>
+          <option value="either">Either works for me</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tell us about your business</label>
+        <textarea name="message" placeholder="What does your business do? What are you hoping AI agents can help with?"></textarea>
+      </div>
+
+      <div class="molten-divider"></div>
+
+      <div class="order-summary">
+        <span class="label" id="orderLabel">Select a package above</span>
+        <span class="price" id="orderPrice"></span>
+      </div>
+
+      <button type="submit" id="payBtn" class="btn-primary" disabled>Select a Package to Continue</button>
+
+      <div class="secure-note" style="display:block;text-align:center;line-height:1.6;">
+        🔒 Secure payment powered by Stripe. Your card details never touch our servers.<br>
+        Have a discount code? Enter it on the Stripe checkout page under <strong>"Add promotion code"</strong>.
+      </div>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <p>&copy; 2025 ClawForge. All rights reserved. | <a href="security.html">Security</a> | <a href="faq.html">FAQ</a> | <a href="contact.html">Contact</a></p>
+</footer>
+
+<script>
+var selectedPkg = null;
+var links = {
+  standard: 'https://buy.stripe.com/aFa14gaEwfQWcO7apc9IQ00',
+  premium: 'https://buy.stripe.com/28EbIU4g8bAG9BVgNA9IQ01'
+};
+var names = {
+  standard: 'Mission Launch (Core)',
+  premium: 'Full Command (Executive)'
+};
+var prices = {
+  standard: '$499',
+  premium: '$899'
+};
+
+// Check URL param for pre-selection
+var params = new URLSearchParams(window.location.search);
+var preselect = params.get('package');
+if (preselect === 'standard' || preselect === 'core') selectPkg('standard');
+else if (preselect === 'premium' || preselect === 'executive') selectPkg('premium');
+
+function selectPkg(pkg) {
+  selectedPkg = pkg;
+  document.getElementById('pkgStandard').classList.toggle('selected', pkg === 'standard');
+  document.getElementById('pkgPremium').classList.toggle('selected', pkg === 'premium');
+  document.getElementById('orderLabel').textContent = names[pkg];
+  document.getElementById('orderPrice').textContent = prices[pkg];
+  var btn = document.getElementById('payBtn');
+  btn.disabled = false;
+  btn.textContent = 'Proceed to Payment — ' + prices[pkg] + ' →';
+}
+
+document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (!selectedPkg) return;
+  var name = document.getElementById('fname').value;
+  var email = document.getElementById('femail').value;
+  if (!name || !email) { alert('Please fill in your name and email.'); return; }
+  // Append client info to Stripe link
+  var url = links[selectedPkg];
+  url += (url.includes('?') ? '&' : '?') + 'prefilled_email=' + encodeURIComponent(email);
+  window.location.href = url;
+});
+</script>
+
+</body>
+</html>

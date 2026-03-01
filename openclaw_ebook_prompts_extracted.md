@@ -1,0 +1,113 @@
+# OpenClaw Ebook – Extracted Prompt Commands (verbatim from text extract)
+
+- L52: `Help me set up Gmail integration. I want to connect my email account your-email@gmail.com`
+- L59: `Create a cron job that runs every weekday at 7am. It should check my email, pull my calendar events for today, and send me a morning briefing via Telegram`
+- L64: `Add my Asana Personal Access Token to the .env file`
+- L67: `Install the HubSpot skill for CRM`
+- L69: `Add my Asana workspace and project IDs to TOOLS.md so you can reference them`
+- L84: `Check if I have the Asana skill installed. If not, install it`
+- L93: `Show me all high-priority tasks across my Strategy and Operations projects`
+- L99: `Every Monday at 9am, generate a weekly summary of completed tasks from Asana and send it to our Slack channel`
+- L115: `Spawn a sub-agent to research our top 5 competitors and compile detailed findings into a report`
+- L120: `Add to TOOLS.md that my business goal is $20K MRR within 6 months. Break this down into quarterly milestones`
+- L124: `Create a weekly review where you check progress on all my business goals, identify blockers, and suggest next steps`
+- L146: `Help me set up Telegram so I can message you from my phone`
+- L155: `Build a login form component with email and password validation. Use React and Tailwind CSS`
+- L160: `Show me the code you wrote`
+- L160: `Run the tests`
+- L177: `Install the GitHub skill`
+- L178: `Install the Sentry skill if available`
+- L182: `Every hour, check the metrics at example.com/metrics. If the bounce rate is over 50%, create a GitHub issue labeled ‘auto-fix'`
+- L192: `When I say ‘deploy to production', run these commands: [your deployment steps]`
+- L208: `Write a script that checks if the Oracle server at oracle.example.com is available and responding`
+- L212: `Create a cron job that runs this Oracle check script every 5 minutes`
+- L215: `When the Oracle server becomes available, send me a Telegram message saying ‘Server migration complete!'`
+- L219: `Show me all my active background jobs`
+- L219: `What's the status of the Oracle migration checker?`
+- L237: `Install the Slack skill and help me connect my workspace`
+- L247: `Add my xAI API key to .env so you can search X/Twitter`
+- L255: `potential video idea: how to automate video production with AI`
+- L275: `Create a database to track my YouTube videos. Store video ID, title, published date, and daily stats for views, likes, and comments`
+- L279: `Write a Python script that fetches analytics data for all my videos and stores it in the database`
+- L283: `Every day at 6am, update my YouTube analytics data`
+- L286: `Show me my top 10 performing videos this month`
+- L286: `What's my total view count for the past week?`
+- L300: `Search my X/Twitter profile and export my last 100 tweets`
+- L300: `Here are 50 of my blog posts and tweets [paste content]`
+- L304: `Analyze these writing samples and extract my writing style. Create a style guide covering tone, vocabulary, sentence structure, and common phrases`
+- L308: `Save this style guide to ~/clawd/reference/brand-voice.md`
+- L311: `Review this draft tweet for brand voice consistency: [paste draft]`
+- L311: `Rewrite this paragraph to match my writing style: [paste paragraph]`
+- L324: `Install the weather skill`
+- L334: `Create a cron job that runs my morning briefing every weekday at 7am and sends it to me via Telegram`
+- L354: `Connect to my Google Calendar with read and write permissions`
+- L357: `Help me tag my Todoist tasks with priority levels: high, medium, low`
+- L366: `If you detect a calendar conflict, automatically move the lower priority task to a different time slot and notify me`
+- L377: `Every Friday at 5pm, create my weekly review`
+- L381: `For the weekly review, pull from: my Notion pages tagged ‘meeting notes', Slack threads I participated in, and GitHub PRs I merged this week`
+- L390: `For my weekly 1-on-1s, also include: what we discussed last week and follow-up items`
+- L403: `Help me connect three email accounts: personal@gmail.com, work@company.com, and youtube@gmail.com`
+- L407: `Add these to TOOLS.md: personal@gmail.com is for personal stuff, work@company.com is for work, youtube@gmail.com is for YouTube`
+- L411: `Search all my email accounts for messages about ‘blinds installer' from the last 3 months`
+- L442: `Search for Home Assistant skills and install one if available`
+- L446: `Add my device names to TOOLS.md: living room lights, coffee maker, thermostat`
+- L450: `When I say ‘goodnight', turn off all my lights`
+- L450: `Every morning at 7am, turn on the coffee maker`
+- L454: `Turn on living room lights`
+- L454: `Set thermostat to 72 degrees`
+- L463: `Search for Tesla skills and install one if available`
+- L466: `Add my Tesla API token to .env`
+- L468: `What's my Tesla's current charge level?`
+- L468: `Set the cabin temperature to 70 degrees and start preconditioning`
+- L472: `Every weekday at 6:30am, precondition my car and send me the charge level via Telegram`
+- L484: `Add my energy monitor API key to .env`
+- L488: `If my energy usage goes over 5kW, send me a Telegram alert immediately`
+- L502: `Add my AdGuard Home URL and credentials to .env`
+- L505: `Block all TikTok domains on the kids' devices`
+- L505: `Show me the top 10 most blocked domains this week`
+- L516: `Search for Roborock vacuum skills`
+- L520: `Vacuum the kitchen`
+- L520: `Send the robot back to its dock`
+- L547: `What type of recycling week is this Saturday?`
+- L558: `Add my Brave Search API key to .env`
+- L567: `Save the research report to ~/clawd/research/ai-automation-market.md`
+- L567: `Create an Asana task with the key findings`
+- L579: `Add these YouTube competitors to TOOLS.md: @channel1, @channel2, @channel3`
+- L583: `Write a Python script that fetches recent upload data for my competitor channels: titles, view counts, like counts, and publish dates`
+- L600: `Add my Oura Ring API token to .env`
+- L609: `If my readiness score is below 70, reschedule my gym session to tomorrow and block the slot for recovery`
+- L626: `Install the desktop-control skill so you can use my browser`
+- L635: `Every Sunday at 9am, place my regular grocery order and send me a confirmation via Telegram`
+- L644: `Install the price-tracker skill`
+- L648: `Track the price of this Sony WH-1000XM5 on Amazon and alert me if it drops below $250`
+- L662: `Every week, scan my email for invoices and receipts. Download the PDFs and save them to ~/accounting/incoming/`
+- L666: `Extract the vendor name, amount, date, and category from each invoice. Create a monthly summary spreadsheet`
+- L671: `On the 1st of every month, compile last month's invoices into a package and email the summary to my accountant`
+- L681: `What's the current price of AAPL, TSLA, and NVDA?`
+- L685: `Log into TradingView, pull up the daily chart for TSLA, screenshot it, and give me a technical analysis`
+- L689: `Every trading day at 4:30pm, send me a market summary: how my watchlist performed, any big movers, and notable news`
+- L702: `Install the travel-manager skill`
+- L711: `When's the next train from Shibuya to Shinjuku?`
+- L779: `Help me deploy OpenClaw to a DigitalOcean VPS. I want a $6/month droplet with 2GB RAM`
+- L783: `Help me set up a Cloudflare Tunnel so I can access OpenClaw remotely without exposing it to the internet`
+- L806: `For notifications: critical issues send to Telegram immediately, important stuff goes in a daily summary, general info goes in a weekly digest`
+- L810: `Monitor that OpenClaw is running. If it crashes, automatically restart it and alert me if it's been down for more than 5 minutes`
+- L823: `Check my config file. Make sure OpenClaw is only listening on localhost (127.0.0.1), not exposed to the internet`
+- L827: `Help me set up a Cloudflare Tunnel for secure remote access`
+- L830: `Enable authentication on the gateway. Generate a secure random token and add it to the config`
+- L834: `Check the permissions on my .env file. It should only be readable by me (600)`
+- L856: `Create a cron job that runs every weekday at 7am. It should get the weather for San Francisco and send it to me via Telegram`
+- L860: `Run that cron job now so I can see what it looks like`
+- L153: `Install the cursor-agent skill so you can write code for me`
+- L163: `If everything looks good, commit this to GitHub and deploy to production`
+- L253: `My Video Pipeline project ID is [ID]. Save this to TOOLS.md`
+- L289: `Which videos have the highest engagement rate?`
+- L414: `Find any unread emails across all accounts from today`
+- L471: `Open the trunk`
+- L508: `Temporarily disable filtering for my laptop for the next hour`
+- L523: `Every Tuesday and Friday at 10am, vacuum the whole house`
+- L750: `What did I discuss with Sarah about the product launch last month?`
+- L764: `Save this as my resume: [paste CV]. Add my JSearch API key to .env`
+- L866: `Add my calendar events to the morning briefing`
+- L867: `Also check for urgent emails`
+- L868: `Include trending topics in AI and tech`

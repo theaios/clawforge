@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ — ClawForge | Everything You Want to Know</title>
+<meta name="description" content="Frequently asked questions about ClawForge AI agent army deployments — setup process, security, pricing, ongoing support, and what to expect.">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg-primary:#050507;--bg-secondary:#0a0a0e;--bg-card:#0f0f15;--bg-card-hover:#141420;--text-primary:#e8e6ef;--text-secondary:#8a8899;--chrome:#c0c0cc;--chrome-bright:#e0dfe8;--accent:#ff6a1a;--accent-bright:#ff8c42;--accent-dim:#4a2208;--accent-glow:rgba(255,106,26,.15);--accent-glow-strong:rgba(255,106,26,.3);--molten:#ff3d00;--ember:#ff9100;--border:#1e1e2a;--border-light:#2a2a3a;--font-body:'Exo 2',sans-serif;--font-mono:'JetBrains Mono',monospace;--font-display:'Rajdhani',sans-serif}
+  *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:var(--font-body);background:var(--bg-primary);color:var(--text-primary);line-height:1.7;overflow-x:hidden}
+  ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg-primary)}::-webkit-scrollbar-thumb{background:var(--accent-dim);border-radius:4px}
+  nav{position:fixed;top:0;width:100%;z-index:100;background:rgba(5,5,7,.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:.8rem 2rem;display:flex;justify-content:space-between;align-items:center}
+  .nav-logo{display:flex;align-items:center;text-decoration:none}.nav-logo img{height:28px;width:auto;filter:drop-shadow(0 0 8px rgba(255,106,26,.3))}
+  .nav-links{display:flex;gap:2rem;align-items:center}.nav-links a{color:var(--text-secondary);text-decoration:none;font-size:.82rem;font-weight:500;letter-spacing:.5px;text-transform:uppercase;transition:color .3s}.nav-links a:hover{color:var(--text-primary)}.nav-links a.active{color:var(--accent)}
+  .nav-cta{background:var(--accent)!important;color:#000!important;padding:.5rem 1.2rem!important;border-radius:6px;font-weight:700!important;text-transform:uppercase!important;transition:transform .2s,box-shadow .3s!important}.nav-cta:hover{transform:translateY(-1px);box-shadow:0 4px 24px var(--accent-glow-strong)}
+  .page-hero{min-height:60vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 2rem 4rem;position:relative;overflow:hidden}
+  .page-hero-bg{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:.85;pointer-events:none}
+  .page-hero::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:50%;background:linear-gradient(to top,var(--bg-primary),transparent);pointer-events:none}
+  .page-hero-content{position:relative;z-index:2;max-width:750px}
+  .gradient-text{font-style:normal;background:linear-gradient(135deg,var(--accent),var(--ember));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  section{padding:5rem 2rem}.container{max-width:850px;margin:0 auto}
+  .section-label{font-family:var(--font-mono);font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:1rem}
+  .section-title{font-family:var(--font-display);font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:700;line-height:1.15;margin-bottom:1.5rem;text-transform:uppercase}
+  .molten-divider{height:1px;background:linear-gradient(90deg,transparent,var(--accent-dim) 30%,var(--accent) 50%,var(--accent-dim) 70%,transparent);opacity:.5}
+  .btn-primary{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--accent),var(--molten));color:#000;padding:.9rem 2.2rem;border-radius:8px;font-weight:700;font-size:.9rem;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;transition:transform .2s,box-shadow .3s;border:none}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 36px var(--accent-glow-strong)}
+  .btn-secondary{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.04);color:var(--chrome-bright);padding:.9rem 2.2rem;border-radius:8px;border:1px solid var(--border-light);font-weight:500;font-size:.9rem;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;transition:border-color .3s,background .3s}.btn-secondary:hover{border-color:var(--accent-dim);background:rgba(255,106,26,.05)}
+
+  /* FAQ */
+  .faq-category{margin-bottom:3rem}
+  .faq-cat-label{font-family:var(--font-mono);font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);display:block}
+  .faq-list{display:flex;flex-direction:column;gap:.6rem}
+  .faq-item{border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .3s}
+  .faq-item:hover{border-color:var(--accent-dim)}
+  .faq-q{width:100%;text-align:left;background:var(--bg-card);color:var(--text-primary);border:none;padding:1.1rem 1.5rem;font-family:var(--font-display);font-size:.92rem;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .2s;text-transform:uppercase;letter-spacing:.3px;gap:1rem}
+  .faq-q:hover{background:var(--bg-card-hover)}
+  .faq-q .arrow{transition:transform .3s;color:var(--accent);flex-shrink:0;font-size:.8rem}
+  .faq-q.open .arrow{transform:rotate(180deg)}
+  .faq-a{padding:0 1.5rem;max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;font-size:.88rem;color:var(--text-secondary);line-height:1.8;background:var(--bg-card);font-weight:300}
+  .faq-a.open{max-height:500px;padding:0 1.5rem 1.5rem}
+  .faq-a a{color:var(--accent);text-decoration:none}.faq-a a:hover{text-decoration:underline}
+
+  /* STILL HAVE QUESTIONS */
+  .still-box{background:var(--bg-card);border:1px solid var(--accent-dim);border-radius:14px;padding:3rem;text-align:center;position:relative;overflow:hidden;margin-top:2rem}
+  .still-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+  .still-box h3{font-family:var(--font-display);font-size:1.4rem;font-weight:700;text-transform:uppercase;margin-bottom:.75rem}
+  .still-box p{font-size:.92rem;color:var(--text-secondary);line-height:1.8;font-weight:300;max-width:500px;margin:0 auto 1.5rem}
+  .hero-buttons{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+
+  footer{border-top:1px solid var(--border);padding:3rem 2rem;text-align:center}footer p{font-size:.78rem;color:var(--text-secondary);font-weight:300}footer a{color:var(--accent);text-decoration:none}
+  @media(max-width:768px){.page-hero-bg{opacity:.4!important}.nav-links{display:none}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo"><img src="logo.jpg" alt="ClawForge"></a>
+  <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/how-it-works.html">How It Works</a>
+      <a href="/agent-army.html">Agent Army</a>
+      <a href="/security.html">Security</a>
+      <a href="/services.html">Packages</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/contact.html" class="nav-cta">Book Call</a>
+    </div>
+</nav>
+
+<section class="page-hero">
+  <img src="faq.png" alt="" class="page-hero-bg">
+  <div class="page-hero-content">
+    <span class="section-label">Frequently Asked Questions</span>
+    <h1 style="font-family:var(--font-display);font-size:clamp(2.4rem,5.5vw,4rem);font-weight:700;line-height:1.1;text-transform:uppercase;margin-bottom:1.5rem;">Got questions? <span class="gradient-text">We've got answers.</span></h1>
+    <p style="font-size:1.1rem;color:var(--chrome);max-width:600px;margin:0 auto;line-height:1.8;font-weight:300;">Everything you need to know about ClawForge — from what you're actually getting, to how we protect your data, to what happens after you launch.</p>
+  </div>
+</section>
+
+<div class="molten-divider"></div>
+
+<section>
+  <div class="container">
+
+    <!-- THE BASICS -->
+    <div class="faq-category">
+      <span class="faq-cat-label">The Basics</span>
+      <div class="faq-list">
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">What is ClawForge?<span class="arrow">▾</span></button><div class="faq-a">ClawForge is a done-for-you AI agent deployment service. We build you a complete army of AI agents — led by a central orchestrator you talk to in plain language — that can run entire business functions: operations, marketing, sales, finance, customer success, and more. Every system is built face-to-face during a live Zoom call or in-person session, security-hardened from day one, and maintained through ongoing membership.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">What is an "AI agent army"?<span class="arrow">▾</span></button><div class="faq-a">It's a system of specialized AI agents organized like a company. At the top is your Orchestrator — the single interface you talk to. Below it are CEO-level agents that each manage a business function (Operations CEO, Marketing CEO, Sales CEO, Finance CEO, etc.). Each CEO has sub-agents beneath it that handle execution. You give one command, and the right agents coordinate to get it done. It's like having a full executive team that never sleeps.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">Do I need to be technical to use this?<span class="arrow">▾</span></button><div class="faq-a">Not at all. Your orchestrator understands plain, conversational language. If you can describe what you need done, it routes the work to the right agents. The whole point of our live setup sessions is that we build everything with you and teach you how to use it — in language you actually understand. No coding. No terminal commands. No jargon.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">What AI models do you use?<span class="arrow">▾</span></button><div class="faq-a">ClawForge is model-agnostic. We route tasks across leading AI providers — including OpenAI, Anthropic, Google, xAI, and Mistral — selecting the best model for each specific job. This means you're not locked into one provider, and your system can take advantage of improvements across the entire AI ecosystem as they happen.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">What is OpenClaw?<span class="arrow">▾</span></button><div class="faq-a">OpenClaw is the underlying platform that ClawForge refines into a professional command center. Think of OpenClaw as the engine and ClawForge as the fully built, tuned, and secured vehicle we hand you the keys to. We handle all the configuration, security hardening, and customization so you don't have to.</div></div>
+      </div>
+    </div>
+
+    <!-- SETUP & PROCESS -->
+    <div class="faq-category">
+      <span class="faq-cat-label">Setup & Process</span>
+      <div class="faq-list">
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">How does the setup process work?<span class="arrow">▾</span></button><div class="faq-a">It's a four-phase process: (1) Discovery — we learn your business on a call. (2) Architecture — we design your agent hierarchy. (3) Live Build — we build your system together during a dedicated Zoom or in-person session. (4) Launch & Maintain — you go live and we provide ongoing support. Every step is hands-on and face-to-face. <a href="how-it-works.html">See the full process →</a></div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">Can I meet in person instead of Zoom?<span class="arrow">▾</span></button><div class="faq-a">Yes. If you're in or near the Waldorf / Bryans Road, Maryland area, we offer in-person setup sessions. It's the exact same experience — build, walkthrough, security configuration — just at a table instead of a screen. Most clients do Zoom, but the option is always there.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">How long does the full setup take?<span class="arrow">▾</span></button><div class="faq-a">The live session itself is 60 minutes per session (1 session for Core Setup, 2 for Executive Build). Behind the scenes, we do architecture and preparation work before your session so we maximize every minute of face time. Most clients are fully operational within a few days of their session. Executive Build clients have an additional 7-day optimization window post-launch.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">What do I need to prepare before my session?<span class="arrow">▾</span></button><div class="faq-a">Just an understanding of your business. We'll ask about your workflows, the tools you currently use, your team structure, and what outcomes you care about. You don't need to prepare documents or technical specs. Come as you are — we'll handle the rest during our discovery conversation.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">Is the system customized to my business?<span class="arrow">▾</span></button><div class="faq-a">100%. Every agent army is configured to match your specific business — your workflows, your terminology, your priorities, your brand voice. We don't hand you a template. During your live session, each agent is tailored to how you actually operate. Premium clients get even deeper customization including agent personality tuning and guardrail calibration.</div></div>
+      </div>
+    </div>
+
+    <!-- PACKAGES & PRICING -->
+    <div class="faq-category">
+      <span class="faq-cat-label">Packages & Pricing</span>
+      <div class="faq-list">
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">What's the difference between Standard and Premium?<span class="arrow">▾</span></button><div class="faq-a">Both packages include a complete agent army, orchestrator, security foundation, and ongoing membership. Standard ($499) gives you 1 live session, 3 automation workflows, and baseline security. Premium ($899) doubles your face time to 2 sessions, adds advanced security hardening, unlimited workflows, custom agent personality tuning, guardrail configuration, workflow stress-testing, and a 7-day post-launch optimization window. <a href="services.html">Full comparison →</a></div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">Is it a one-time payment or subscription?<span class="arrow">▾</span></button><div class="faq-a">The package price is a one-time investment — $499 for Standard or $899 for Premium. This covers your full build, live session(s), and entry into our ongoing membership ecosystem (weekly Zoom calls, support channel, agent updates, and maintenance). There are no hidden monthly fees for the base service.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">Can I upgrade from Standard to Premium later?<span class="arrow">▾</span></button><div class="faq-a">Yes. If you start with Standard and later want the deeper security hardening, additional session, and advanced features of Premium, we can work out an upgrade path. Just reach out through your support channel and we'll take care of it.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">Are there any additional costs I should know about?<span class="arrow">▾</span></button><div class="faq-a">The underlying AI providers (OpenAI, Anthropic, etc.) have their own usage costs for API calls, which are separate from ClawForge's setup fee. We'll walk you through what to expect during your session so there are no surprises. Custom API integrations are available at a custom quote if you need them.</div></div>
+      </div>
+    </div>
+
+    <!-- SECURITY -->
+    <div class="faq-category">
+      <span class="faq-cat-label">Security & Data</span>
+      <div class="faq-list">
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">How is my data protected?<span class="arrow">▾</span></button><div class="faq-a">Security is our foundation. All data is encrypted in transit and at rest. Your agent environment is fully isolated — no cross-contamination with other clients. Backups run automatically. Access is controlled through granular permissions. Everything is configured and verified by a human during your live session. <a href="security.html">Full security details →</a></div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">Do you have access to my business data?<span class="arrow">▾</span></button><div class="faq-a">We configure your system and have access during setup and maintenance. All access is transparent — you see exactly what we can touch during your live session, and permissions are set with your explicit approval. We treat your data with the same gravity we'd treat our own.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">What about AI hallucination risks?<span class="arrow">▾</span></button><div class="faq-a">We build guardrails and oversight mechanisms into every deployment. Agents are configured to flag uncertain outputs rather than presenting them as fact. For critical business functions (financial data, legal matters), agents are set to surface information for your review rather than acting autonomously. Premium clients get advanced guardrail calibration tailored to their specific risk tolerance.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">Is my agent environment shared with other clients?<span class="arrow">▾</span></button><div class="faq-a">No. Every ClawForge deployment runs in a completely isolated, single-tenant environment. Your data, your agent configurations, and your workflows are entirely separate from every other client's system. There is zero cross-contamination.</div></div>
+      </div>
+    </div>
+
+    <!-- ONGOING SUPPORT -->
+    <div class="faq-category">
+      <span class="faq-cat-label">Ongoing Support</span>
+      <div class="faq-list">
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">What happens after my system goes live?<span class="arrow">▾</span></button><div class="faq-a">You become a ClawForge member. That includes: weekly community Zoom calls where you can ask questions and see new features, a private support channel for async help, ongoing agent updates as AI models improve, workflow maintenance as your business evolves, and direct access to the person who built your system. We don't build and disappear.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">What are the weekly Zoom calls?<span class="arrow">▾</span></button><div class="faq-a">Every week, we host a live video call on Zoom open to all ClawForge members. It's a working session — not a webinar. You can ask questions, troubleshoot issues, see new agent capabilities demonstrated, share wins, and learn from other operators building with the same tools. Anyone who purchases a package or uses the software is welcome to join.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">Can my agents be updated or expanded later?<span class="arrow">▾</span></button><div class="faq-a">Absolutely. Your agent army is designed to grow with your business. We regularly roll out updates to agent behaviors as AI models improve. As we develop new specialized agent types, members get priority access. And we can expand your system with additional agents or workflows as your needs change.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">Who do I contact if something goes wrong?<span class="arrow">▾</span></button><div class="faq-a">You have a direct line to the person who built your system — through your private support channel. No ticket queues. No chatbots. No escalation ladders. You reach a human who knows your setup inside and out. For urgent issues, Premium clients get priority response.</div></div>
+
+        <div class="faq-item"><button class="faq-q" onclick="toggle(this)">Do you maintain and update my agents over time?<span class="arrow">▾</span></button><div class="faq-a">Yes. Ongoing maintenance is part of the membership. We update agent behaviors when AI models release improvements, adjust workflows as your business evolves, verify backup integrity, and monitor for any issues. The relationship between you, your orchestrator, and your sub-agents is something we actively maintain — it's not a set-it-and-forget-it situation.</div></div>
+      </div>
+    </div>
+
+    <!-- STILL HAVE QUESTIONS -->
+    <div class="still-box">
+      <h3>Still have questions?</h3>
+      <p>We'd rather answer them on a call than leave you guessing. Book a free conversation — no commitment, no pressure — and ask us anything.</p>
+      <div class="hero-buttons">
+        <a href="/checkout.html" class="btn-primary">Get Started →</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <a href="/">ClawForge</a> — Secure AI Agent Deployment, Built Face-to-Face</p>
+</footer>
+
+<script>
+function toggle(btn){
+  const a=btn.nextElementSibling,open=a.classList.contains('open');
+  document.querySelectorAll('.faq-a').forEach(x=>x.classList.remove('open'));
+  document.querySelectorAll('.faq-q').forEach(x=>x.classList.remove('open'));
+  if(!open){a.classList.add('open');btn.classList.add('open')}
+}
+</script>
+</body>
+</html>
