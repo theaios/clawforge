@@ -7,6 +7,7 @@ import { useMapEditor } from "./brainstorming/useMapEditor";
 const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 1.8;
 const ZOOM_STEP = 0.1;
+const WHEEL_ZOOM_SENSITIVITY = 0.0015;
 const ROOT_W = 192;
 const ROOT_H = 96;
 const BRANCH_W = 216;
@@ -264,6 +265,8 @@ export default function Brainstorming() {
   const canvasRef = useRef(null);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const zoomRef = useRef(1);
+  const panRef = useRef({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [contextTab, setContextTab] = useState("convert");
   const [showThemes, setShowThemes] = useState(false);
@@ -296,6 +299,8 @@ export default function Brainstorming() {
   }, []);
 
   useEffect(() => {
+    zoomRef.current = zoom;
+    panRef.current = pan;
     sessionStorage.setItem(VIEW_STATE_KEY, JSON.stringify({ zoom, pan }));
   }, [zoom, pan]);
 
@@ -489,13 +494,52 @@ export default function Brainstorming() {
     });
   });
 
-  const zoomBy = (delta) => setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z + delta)));
+  const clampZoom = (value) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, value));
+
+  const zoomAt = (nextZoom, clientX, clientY) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const clampedZoom = clampZoom(nextZoom);
+    const currentZoom = zoomRef.current;
+    const currentPan = panRef.current;
+    const cursorX = clientX - rect.left;
+    const cursorY = clientY - rect.top;
+    const worldX = (cursorX - currentPan.x) / currentZoom;
+    const worldY = (cursorY - currentPan.y) / currentZoom;
+
+    setZoom(clampedZoom);
+    setPan({
+      x: cursorX - worldX * clampedZoom,
+      y: cursorY - worldY * clampedZoom,
+    });
+  };
+
+  const zoomBy = (delta) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    zoomAt(zoomRef.current + delta, rect.left + rect.width / 2, rect.top + rect.height / 2);
+  };
+
+  const onWheelZoom = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const delta = -e.deltaY * WHEEL_ZOOM_SENSITIVITY;
+    if (delta === 0) return;
+    zoomAt(zoomRef.current + delta, e.clientX, e.clientY);
+  };
+
   const recenter = () => {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     setPan({ x: rect.width / 2 - centerX * zoom, y: rect.height / 2 - centerY * zoom });
   };
-  const fitToView = () => setZoom(0.88);
+  const fitToView = () => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    zoomAt(0.88, rect.left + rect.width / 2, rect.top + rect.height / 2);
+  };
 
   const startPanning = (e) => {
     if (e.button !== 0) return;
@@ -559,7 +603,7 @@ export default function Brainstorming() {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <div style={{ height: 52, borderBottom: `1px solid ${C.border}`, background: C.surface, display: "flex", alignItems: "center", padding: "0 16px", color: C.textMuted, fontSize: 12 }}>Command / Brainstorming</div>
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-          <div ref={canvasRef} onMouseDown={startPanning} onMouseMove={onMove} onMouseUp={() => { setIsPanning(false); setDragNodeId(null); }} onMouseLeave={() => { setIsPanning(false); setDragNodeId(null); }} style={{ position: "relative", flex: 1, overflow: "hidden", background: `radial-gradient(circle at 50% 42%, ${C.elevated}, ${C.bg} 72%)`, cursor: isPanning ? "grabbing" : "grab" }}>
+          <div ref={canvasRef} onMouseDown={startPanning} onMouseMove={onMove} onMouseUp={() => { setIsPanning(false); setDragNodeId(null); }} onMouseLeave={() => { setIsPanning(false); setDragNodeId(null); }} onWheel={onWheelZoom} style={{ position: "relative", flex: 1, overflow: "hidden", background: `radial-gradient(circle at 50% 42%, ${C.elevated}, ${C.bg} 72%)`, cursor: isPanning ? "grabbing" : "grab" }}>
             <div style={{ position: "absolute", inset: 0, opacity: 0.04, backgroundImage: `radial-gradient(${C.textMuted} 1px, transparent 1px)`, backgroundSize: "24px 24px" }} />
             <div style={{ position: "absolute", inset: 0, transform: `translate(${pan.x}px,${pan.y}px) scale(${zoom})`, transformOrigin: "top left", transition: "transform 180ms" }}>
               <svg style={{ position: "absolute", inset: 0, width: "3200px", height: "2000px", pointerEvents: "none" }}>
