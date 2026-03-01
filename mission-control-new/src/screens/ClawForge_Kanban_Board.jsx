@@ -1336,6 +1336,7 @@ export default function ClawForgeKanban() {
   const [opMessage, setOpMessage] = useState('');
   const [connectionInfo, setConnectionInfo] = useState(() => client.getConnectionState());
   const [collapsedSections, setCollapsedSections] = useState({ SYSTEM: true });
+  const [celebration, setCelebration] = useState(null);
 
   useEffect(() => {
     let t;
@@ -1418,6 +1419,19 @@ export default function ClawForgeKanban() {
     return null;
   }, [tasks]);
 
+  const triggerCelebration = useCallback((taskTitle = 'Task complete') => {
+    const burst = Array.from({ length: 28 }).map((_, i) => ({
+      id: `${Date.now()}-${i}`,
+      left: Math.random() * 100,
+      delay: Math.random() * 240,
+      size: 6 + Math.floor(Math.random() * 8),
+      color: [C.green, C.blue, C.purple, C.amber, C.teal][i % 5],
+      rotate: Math.floor(Math.random() * 360),
+    }));
+    setCelebration({ title: taskTitle, burst });
+    setTimeout(() => setCelebration(null), 1700);
+  }, [C.green, C.blue, C.purple, C.amber, C.teal]);
+
   // Drag and drop
   const handleColumnDragStart = (e, columnId) => {
     e.dataTransfer.effectAllowed = "move";
@@ -1469,13 +1483,16 @@ export default function ClawForgeKanban() {
   const handleDropTask = useCallback((taskId, targetColId, dropIndex) => {
     const sourceColId = findTaskColumn(taskId);
     if (!sourceColId) return;
+    const movedToDone = sourceColId !== 'done' && targetColId === 'done';
 
     let rollbackState = null;
+    let movedTaskTitle = 'Task complete';
     setTasks(prev => {
       rollbackState = prev;
       const next = { ...prev };
       const task = next[sourceColId].find(t => t.id === taskId);
       if (!task) return prev;
+      movedTaskTitle = task.title || movedTaskTitle;
       next[sourceColId] = next[sourceColId].filter(t => t.id !== taskId);
       const targetList = [...(next[targetColId] || [])];
       const normalizedDropIndex = Number.isFinite(dropIndex) ? dropIndex : targetList.length;
@@ -1497,12 +1514,13 @@ export default function ClawForgeKanban() {
         setOpMessage(formatOpError(resp?.error, 'Move failed'));
       } else {
         setOpMessage(formatOpSuccess('Card moved', resp));
+        if (movedToDone) triggerCelebration(movedTaskTitle);
       }
     }).catch((e) => {
       if (rollbackState) setTasks(rollbackState);
       setOpMessage(`Move failed (${e?.message || 'unknown error'})`);
     });
-  }, [findTaskColumn, client, activeBoardId, applyColumnSemantics]);
+  }, [findTaskColumn, client, activeBoardId, applyColumnSemantics, triggerCelebration]);
 
   // Toggle card expand
   const toggleExpand = (taskId) => {
@@ -1580,7 +1598,10 @@ export default function ClawForgeKanban() {
   };
 
   const completeRun = (taskId) => {
+    const sourceColId = findTaskColumn(taskId);
+    const task = sourceColId ? (tasks[sourceColId] || []).find((t) => t.id === taskId) : null;
     moveTaskToColumn(taskId, "done", { approval: false, blocked: null });
+    if (sourceColId !== 'done') triggerCelebration(task?.title || 'Task complete');
   };
 
   const archiveTask = async (taskId) => {
@@ -1833,6 +1854,54 @@ export default function ClawForgeKanban() {
           </div>
         )}
       </div>
+
+      {celebration && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          pointerEvents: 'none',
+          zIndex: 900,
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            position: 'absolute',
+            left: '50%',
+            top: '18%',
+            transform: 'translateX(-50%)',
+            background: 'linear-gradient(135deg, rgba(34,197,94,0.96), rgba(16,185,129,0.94))',
+            color: '#ecfdf5',
+            borderRadius: 16,
+            padding: '10px 16px',
+            fontSize: 13,
+            fontWeight: 800,
+            boxShadow: '0 16px 34px rgba(16,185,129,0.38)',
+            border: '1px solid rgba(255,255,255,0.18)',
+            animation: 'mcPopIn 220ms ease-out',
+          }}>
+            🎉 Task Complete — {celebration.title}
+          </div>
+
+          {celebration.burst.map((p) => (
+            <span
+              key={p.id}
+              style={{
+                position: 'absolute',
+                left: `${p.left}%`,
+                top: '-5%',
+                width: p.size,
+                height: p.size * 1.4,
+                borderRadius: 4,
+                background: p.color,
+                transform: `rotate(${p.rotate}deg)`,
+                animation: `mcConfettiDrop 1200ms ease-out ${p.delay}ms forwards`,
+                boxShadow: `0 0 10px ${p.color}99`,
+              }}
+            />
+          ))}
+
+          <style>{`@keyframes mcConfettiDrop { 0% { transform: translateY(-8vh) rotate(0deg); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(98vh) rotate(680deg); opacity: 0; } } @keyframes mcPopIn { 0% { transform: translateX(-50%) scale(.88); opacity: 0; } 100% { transform: translateX(-50%) scale(1); opacity: 1; } }`}</style>
+        </div>
+      )}
 
       {/* Modals */}
       {addCardCol && (
