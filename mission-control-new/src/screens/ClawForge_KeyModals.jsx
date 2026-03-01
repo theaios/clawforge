@@ -520,7 +520,7 @@ function ThemeToggle({ isDark, setIsDark }) {
 }
 
 export default function KeyModals() {
-  const [isDark, setIsDark] = useState(() => localStorage.getItem("cf-theme") === "dark");
+  const [isDark, setIsDark] = useState(() => getStoredThemeMode() !== "light");
   useEffect(() => { localStorage.setItem("cf-theme", isDark ? "dark" : "light"); }, [isDark]);
   const C = getTheme(isDark);
 

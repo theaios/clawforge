@@ -83,3 +83,50 @@ textarea:disabled {
 .kanban-drop-target[data-drag-over="true"] {
   box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.2);
 }
+
+.mc-app::before,
+.mc-app::after {
+  content: "";
+  position: fixed;
+  inset: -20vh -20vw;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.mc-app.mc-theme-trippy::before {
+  opacity: 1;
+  background:
+    radial-gradient(55% 45% at 15% 10%, rgba(124, 58, 237, 0.44), transparent 70%),
+    radial-gradient(45% 45% at 85% 18%, rgba(37, 99, 235, 0.34), transparent 72%),
+    radial-gradient(50% 45% at 30% 80%, rgba(16, 185, 129, 0.2), transparent 72%),
+    linear-gradient(135deg, #090D1D 0%, #111C38 42%, #24104A 100%);
+  animation: mcTrippyDrift 24s ease-in-out infinite alternate;
+}
+
+.mc-app.mc-theme-trippy::after {
+  opacity: 1;
+  mix-blend-mode: screen;
+  background:
+    conic-gradient(from 220deg at 70% 35%, rgba(99, 102, 241, 0.16), rgba(236, 72, 153, 0.14), rgba(34, 211, 238, 0.14), rgba(99, 102, 241, 0.16));
+  filter: blur(42px) saturate(112%);
+  animation: mcTrippyPulse 14s ease-in-out infinite;
+}
+
+@keyframes mcTrippyDrift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(2vw, -1.5vh, 0) scale(1.06); }
+}
+
+@keyframes mcTrippyPulse {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.86; }
+  50% { transform: scale(1.08) rotate(11deg); opacity: 0.68; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mc-app.mc-theme-trippy::before,
+  .mc-app.mc-theme-trippy::after {
+    animation: none !important;
+  }
+}

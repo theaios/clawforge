@@ -27,7 +27,8 @@ import WebDelivery from './screens/ClawForge_WebDelivery.jsx'
 import Files from './screens/ClawForge_Files.jsx'
 import StartHere from './screens/ClawForge_StartHere.jsx'
 import { MissionControlProvider, useMissionControl } from './lib/missionControlContext.jsx'
-import { getStoredThemeMode } from './lib/themeMode.js'
+import { getStoredThemeMode, persistThemeMode } from './lib/themeMode.js'
+import ThemeModeToggle from './components/ThemeModeToggle.jsx'
 
 function getRoute() {
   const hash = window.location.hash.replace('#', '') || '/overview'
@@ -341,17 +342,30 @@ function AppContent() {
     return found?.comp || (() => <Placeholder title='Not Found' />)
   }, [route])
 
+  useEffect(() => {
+    persistThemeMode(themeMode)
+    document.documentElement.setAttribute('data-theme-mode', themeMode)
+    return () => {
+      document.documentElement.removeAttribute('data-theme-mode')
+    }
+  }, [themeMode])
+
   const appThemeMap = {
     dark: { bg: '#0a0c10' },
     light: { bg: '#f4f5f8' },
-    trippy: { bg: '#140825' },
+    trippy: { bg: '#080B1A' },
   }
   const { bg } = appThemeMap[themeMode] || appThemeMap.dark
 
   return (
-    <div style={{ minHeight: '100vh', background: bg, fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div className={`mc-app mc-theme-${themeMode}`} style={{ minHeight: '100vh', background: bg, fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'fixed', top: 12, right: 12, zIndex: 9999 }}>
+        <ThemeModeToggle mode={themeMode} onChange={setThemeMode} compact />
+      </div>
       <OpenClawLiveBanner />
-      <Screen />
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <Screen />
+      </div>
     </div>
   )
 }
