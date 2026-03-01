@@ -466,7 +466,6 @@ function Sidebar({ activePage, themeMode, setThemeMode, C, collapsedSections, on
         })}
       </div>
       <div style={{ padding: "10px 12px", borderTop: `1px solid ${C.border}` }}>
-        <ThemeToggle themeMode={themeMode} setThemeMode={setThemeMode} C={C} />
       </div>
       <div style={{ padding: "12px 16px", borderTop: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg, ${C.blue}, ${C.purple})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>JC</div>

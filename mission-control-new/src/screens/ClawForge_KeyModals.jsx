@@ -528,7 +528,7 @@ export default function KeyModals() {
   const ModalComponent = activeModal ? MODALS[activeModal] : null;
 
   return (
-    <><ScrollbarStyle C={C} /><div style={{ position:"fixed",top:16,right:16,zIndex:9999 }}><ThemeToggle isDark={isDark} setIsDark={setIsDark} /></div><div style={{ width: "100%", height: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', 'Segoe UI', -apple-system, sans-serif" }}>
+    <><ScrollbarStyle C={C} /><div style={{ width: "100%", height: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', 'Segoe UI', -apple-system, sans-serif" }}>
       <div style={{ textAlign: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "center", marginBottom: 8 }}>
           <div style={{ width: 30, height: 30, borderRadius: 8, background: `linear-gradient(135deg, ${C.orange}, #c2410c)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff" }}>⚡</div>

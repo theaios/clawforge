@@ -348,7 +348,6 @@ function AppSidebar({ themeMode, setThemeMode, collapsedSections, onToggleSectio
       </div>
 
       <div style={{ padding: "10px 12px", borderTop: `1px solid ${C.border}` }}>
-        <ThemeToggle themeMode={themeMode} setThemeMode={setThemeMode} />
       </div>
     </div>
   );
