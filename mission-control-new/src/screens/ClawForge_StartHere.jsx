@@ -56,6 +56,76 @@ const DEFAULT_MEMORY_SETTINGS = {
   userFacing: false,
 };
 
+function sanitizeText(value, max = 2000) {
+  return String(value || "").replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+function sanitizeLines(value, max = 8000) {
+  return String(value || "").replace(/\r\n/g, "\n").trim().slice(0, max);
+}
+
+function normalizeDiscovery(input = {}) {
+  const goals = Array.isArray(input.goals) ? input.goals.filter((id) => GOALS.some((g) => g.id === id)) : [];
+  const capabilities = Array.isArray(input.capabilities) ? input.capabilities.filter((id) => CAPABILITIES.some((c) => c.id === id)) : [];
+  const industries = Array.isArray(input.industry)
+    ? input.industry.filter((ind) => INDUSTRIES.includes(ind))
+    : (input.industry && INDUSTRIES.includes(input.industry) ? [input.industry] : []);
+
+  return {
+    companyName: sanitizeText(input.companyName, 120),
+    founderName: sanitizeText(input.founderName, 120),
+    industry: Array.from(new Set(industries)),
+    description: sanitizeText(input.description, 300),
+    goals: Array.from(new Set(goals)),
+    capabilities: Array.from(new Set(capabilities)),
+  };
+}
+
+function normalizeKnowledgeFields(input = {}) {
+  return {
+    voice: sanitizeLines(input.voice, 1000),
+    audience: sanitizeLines(input.audience, 1000),
+    value: sanitizeLines(input.value, 1000),
+    offer: sanitizeLines(input.offer, 1000),
+    comp: sanitizeLines(input.comp, 1000),
+    links: sanitizeLines(input.links, 1200),
+  };
+}
+
+function composeKnowledgeMarkdown(discovery, fields) {
+  const d = normalizeDiscovery(discovery);
+  const f = normalizeKnowledgeFields(fields);
+  return [
+    '# Company Knowledge Base',
+    '',
+    '## Company Overview',
+    d.companyName ? `${d.companyName}${d.description ? ` — ${d.description}` : ''}` : '[Company name and description will appear here once you complete setup]',
+    '',
+    '## Brand Voice & Tone',
+    f.voice || '- Professional yet approachable\n- Clear and direct — no jargon\n- Empowering and action-oriented',
+    '',
+    '## Target Audience',
+    f.audience || '[Define your primary customer persona here]',
+    '',
+    '## Products & Services',
+    f.offer || '[List your core offerings here]',
+    '',
+    '## Pricing',
+    '[Your pricing structure]',
+    '',
+    '## Key Messaging',
+    `- Primary value proposition: ${f.value || '[TBD]'}`,
+    '- Tagline: [TBD]',
+    '- Elevator pitch: [TBD]',
+    '',
+    '## Competitors',
+    f.comp || '[Key competitors and how you differentiate]',
+    '',
+    '## Important Links',
+    f.links || '- Website: [TBD]\n- Social profiles: [TBD]\n- Analytics: [TBD]',
+  ].join('\n');
+}
+
 function readPersistedStartHere() {
   try {
     const raw = localStorage.getItem(START_HERE_STORAGE_KEY);
@@ -560,7 +630,7 @@ function ProtocolSection({ value, onChange }) {
                     <div style={{ fontSize: 13, color: C.text, fontWeight: 500 }}>{h.note}</div>
                     <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{h.date} · by {h.by}</div>
                   </div>
-                  <button style={{ fontSize: 11, padding: "4px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.textSec, cursor: "pointer" }}>Restore</button>
+                  <span style={{ fontSize: 11, padding: "4px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.textMuted }}>Snapshot only</span>
                 </div>
               ))}
             </div>
@@ -919,22 +989,53 @@ export default function StartHere() {
 
   const [activeTab, setActiveTab] = useState(persisted?.activeTab || "discovery");
 
-  const [discovery, setDiscovery] = useState(persisted?.discovery || {
+  const [discovery, setDiscovery] = useState(normalizeDiscovery(persisted?.discovery || {
     companyName: "", founderName: "", industry: [], description: "", goals: [], capabilities: [],
-  });
-  const [protocol, setProtocol] = useState(persisted?.protocol || DEFAULT_PROTOCOL);
-  const [knowledge, setKnowledge] = useState(persisted?.knowledge || DEFAULT_KNOWLEDGE);
-  const [knowledgeFields, setKnowledgeFields] = useState(persisted?.knowledgeFields || {
+  }));
+  const [protocol, setProtocol] = useState(sanitizeLines(persisted?.protocol || DEFAULT_PROTOCOL, 12000));
+  const [knowledgeFields, setKnowledgeFields] = useState(normalizeKnowledgeFields(persisted?.knowledgeFields || {
     voice: "", audience: "", value: "", offer: "", comp: "", links: "",
-  });
+  }));
+  const [knowledge, setKnowledge] = useState(sanitizeLines(persisted?.knowledge || DEFAULT_KNOWLEDGE, 12000));
   const [memorySettings, setMemorySettings] = useState(persisted?.memorySettings || DEFAULT_MEMORY_SETTINGS);
   const [savedAll, setSavedAll] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState(persisted?.lastSavedAt || null);
   const [missingKnowledgeLink, setMissingKnowledgeLink] = useState(false);
   const [knowledgePageId, setKnowledgePageId] = useState(() => getKnowledgeLinkInfo().pageId);
+  const [errorText, setErrorText] = useState("");
 
-  const updateDiscovery = (key, val) => setDiscovery((d) => ({ ...d, [key]: val }));
-  const updateKnowledgeField = (key, val) => setKnowledgeFields((prev) => ({ ...prev, [key]: val }));
+  const getDiscoveryErrors = () => {
+    const errors = [];
+    if (!discovery.companyName?.trim()) errors.push("Company name is required.");
+    if (!Array.isArray(discovery.industry) || discovery.industry.length === 0) errors.push("Select at least one industry.");
+    if (!Array.isArray(discovery.goals) || discovery.goals.length === 0) errors.push("Select at least one goal.");
+    if (!Array.isArray(discovery.capabilities) || discovery.capabilities.length === 0) errors.push("Select at least one capability.");
+    return errors;
+  };
+
+  const getTabErrors = (tabId) => {
+    if (tabId === "discovery") return getDiscoveryErrors();
+    if (tabId === "protocol") return protocol.trim().length < 40 ? ["Protocol must contain enough detail to guide agents."] : [];
+    if (tabId === "knowledge") return knowledge.trim().length < 40 ? ["Knowledge base cannot be empty."] : [];
+    return [];
+  };
+
+  const updateDiscovery = (key, val) => {
+    setErrorText("");
+    setDiscovery((d) => {
+      const next = normalizeDiscovery({ ...d, [key]: val });
+      setKnowledge((k) => (sanitizeLines(k) === sanitizeLines(DEFAULT_KNOWLEDGE) ? composeKnowledgeMarkdown(next, knowledgeFields) : k));
+      return next;
+    });
+  };
+  const updateKnowledgeField = (key, val) => {
+    setErrorText("");
+    setKnowledgeFields((prev) => {
+      const next = normalizeKnowledgeFields({ ...prev, [key]: val });
+      setKnowledge((k) => (sanitizeLines(k) === sanitizeLines(DEFAULT_KNOWLEDGE) ? composeKnowledgeMarkdown(discovery, next) : k));
+      return next;
+    });
+  };
 
   useEffect(() => {
     const store = readStore();
@@ -986,26 +1087,49 @@ export default function StartHere() {
       memorySettings,
       lastSavedAt,
     };
-    localStorage.setItem(START_HERE_STORAGE_KEY, JSON.stringify(payload));
+    try {
+      localStorage.setItem(START_HERE_STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      setErrorText("Unable to save Start Here state to browser storage.");
+    }
   }, [activeTab, discovery, protocol, knowledge, knowledgeFields, memorySettings, lastSavedAt]);
 
   useEffect(() => {
-    const store = readStore();
-    const existingPages = Array.isArray(store?.docs?.pages) && store.docs.pages.length ? store.docs.pages : [];
-    const synced = upsertKnowledgePageFromStartHere(existingPages, knowledge);
-    store.docs = {
-      ...(store.docs || {}),
-      pages: synced.pages,
-      knowledgeBasePageId: synced.pageId,
-      updatedAt: new Date().toISOString(),
-    };
-    writeStore(store);
-    setKnowledgePageId(synced.pageId);
-    setMissingKnowledgeLink(!!synced.missingLink);
+    try {
+      const store = readStore();
+      const existingPages = Array.isArray(store?.docs?.pages) && store.docs.pages.length ? store.docs.pages : [];
+      const synced = upsertKnowledgePageFromStartHere(existingPages, knowledge);
+      store.docs = {
+        ...(store.docs || {}),
+        pages: synced.pages,
+        knowledgeBasePageId: synced.pageId,
+        updatedAt: new Date().toISOString(),
+      };
+      writeStore(store);
+      setKnowledgePageId(synced.pageId);
+      setMissingKnowledgeLink(!!synced.missingLink);
+    } catch {
+      setErrorText("Failed to sync Knowledge Base with Files. Please retry Save All.");
+    }
   }, [knowledge]);
 
   const saveAll = () => {
+    const errors = [
+      ...getTabErrors("discovery"),
+      ...getTabErrors("protocol"),
+      ...getTabErrors("knowledge"),
+    ];
+    if (errors.length) {
+      setErrorText(errors[0]);
+      return;
+    }
+
+    setErrorText("");
     const now = new Date().toISOString();
+    setDiscovery((d) => normalizeDiscovery(d));
+    setKnowledgeFields((f) => normalizeKnowledgeFields(f));
+    setProtocol((p) => sanitizeLines(p, 12000));
+    setKnowledge((k) => sanitizeLines(k, 12000));
     setLastSavedAt(now);
     setSavedAll(true);
     setTimeout(() => setSavedAll(false), 2200);
@@ -1041,6 +1165,12 @@ export default function StartHere() {
             {savedAll ? "✓ Saved" : "Save All"}
           </button>
         </div>
+
+        {errorText && (
+          <div style={{ margin: "10px 24px 0", padding: "10px 12px", borderRadius: 8, border: `1px solid ${C.red}40`, background: C.redGlow, color: C.text, fontSize: 12 }}>
+            ⚠️ {errorText}
+          </div>
+        )}
 
         {/* Body */}
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
@@ -1104,6 +1234,12 @@ export default function StartHere() {
               {activeTab !== "summary" && (
                 <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8, paddingBottom: 40 }}>
                   <button onClick={() => {
+                    const tabErrors = getTabErrors(activeTab);
+                    if (tabErrors.length) {
+                      setErrorText(tabErrors[0]);
+                      return;
+                    }
+                    setErrorText("");
                     const idx = TABS.findIndex(t => t.id === activeTab);
                     if (idx < TABS.length - 1) setActiveTab(TABS[idx + 1].id);
                   }} style={{ padding: "11px 28px", borderRadius: 9, border: "none", background: C.blue, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
