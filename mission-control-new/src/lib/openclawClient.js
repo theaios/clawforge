@@ -47,6 +47,8 @@ const LIVE_ROUTES = {
     { method: 'PUT', path: '/api/mission-control/boards' },
   ],
   'oc.board.view.setFilters': [
+    { method: 'POST', path: '/api/v1/boards/{board_id}/filters' },
+    { method: 'PUT', path: '/api/v1/boards/{board_id}/filters' },
     { method: 'POST', path: '/api/boards/filters' },
     { method: 'POST', path: '/api/mission-control/boards/filters' },
   ],
@@ -163,6 +165,44 @@ function interpolateRoute(path, payload = {}) {
     .replace('{board_id}', encodeURIComponent(boardId || ''))
     .replace('{task_id}', encodeURIComponent(taskId || ''))
     .replace('{agent_id}', encodeURIComponent(agentId || ''));
+}
+
+function hasNonEmpty(value) {
+  return String(value ?? '').trim().length > 0;
+}
+
+function hasRequiredParams(path, payload = {}) {
+  const store = readStore();
+  const boardId = payload.boardId || payload.board_id || store.boards?.boardId;
+  const taskId = payload.cardId || payload.taskId || payload.task_id;
+  const agentId = payload.agentId || payload.agent_id;
+  if (path.includes('{board_id}') && !hasNonEmpty(boardId)) return false;
+  if (path.includes('{task_id}') && !hasNonEmpty(taskId)) return false;
+  if (path.includes('{agent_id}') && !hasNonEmpty(agentId)) return false;
+  return true;
+}
+
+function selectLiveRoutes(op, payload = {}) {
+  const baseRoutes = [...(LIVE_ROUTES[op] || [])];
+
+  if (op === 'oc.board.get') {
+    const hasBoardId = hasNonEmpty(payload.boardId || payload.board_id);
+    const boardList = baseRoutes.filter((r) => r.path === '/api/v1/boards');
+    const boardTasks = baseRoutes.filter((r) => r.path === '/api/v1/boards/{board_id}/tasks');
+    const legacy = baseRoutes.filter((r) => !r.path.startsWith('/api/v1/boards'));
+    return (hasBoardId
+      ? [...boardTasks, ...boardList, ...legacy]
+      : [...boardList, ...boardTasks, ...legacy]
+    ).filter((route) => hasRequiredParams(route.path, payload));
+  }
+
+  if (op === 'oc.board.view.setFilters') {
+    const canonical = baseRoutes.filter((r) => r.path.startsWith('/api/v1/boards/'));
+    const legacy = baseRoutes.filter((r) => !r.path.startsWith('/api/v1/boards/'));
+    return [...canonical, ...legacy].filter((route) => hasRequiredParams(route.path, payload));
+  }
+
+  return baseRoutes.filter((route) => hasRequiredParams(route.path, payload));
 }
 
 function toApiPriority(priority) {
@@ -472,7 +512,7 @@ export function createOpenClawClient() {
 
     const headers = buildHeaders();
     const hasAuthHeader = !!(headers.Authorization || headers['X-Agent-Token'] || headers['x-api-key']);
-    const routes = [...(LIVE_ROUTES[op] || []), ...GENERIC_RUN_ROUTES];
+    const routes = [...selectLiveRoutes(op, payload), ...GENERIC_RUN_ROUTES];
     let lastFailure = null;
 
     for (const route of routes) {

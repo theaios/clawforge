@@ -1482,47 +1482,75 @@ export default function ClawForgeKanban() {
     return { ...base, approval: false };
   }, []);
 
-  const handleDropTask = useCallback((taskId, targetColId, dropIndex) => {
+  const moveTaskWithRollback = useCallback(async (taskId, targetColId, {
+    dropIndex,
+    taskPatch = null,
+    successLabel = 'Card moved',
+    errorLabel = 'Move failed',
+    celebrateOnDone = false,
+  } = {}) => {
     const sourceColId = findTaskColumn(taskId);
     if (!sourceColId) return;
-    const movedToDone = sourceColId !== 'done' && targetColId === 'done';
 
     let rollbackState = null;
     let movedTaskTitle = 'Task complete';
-    setTasks(prev => {
+
+    setTasks((prev) => {
       rollbackState = prev;
-      const next = { ...prev };
-      const task = next[sourceColId].find(t => t.id === taskId);
-      if (!task) return prev;
-      movedTaskTitle = task.title || movedTaskTitle;
-      next[sourceColId] = next[sourceColId].filter(t => t.id !== taskId);
-      const targetList = [...(next[targetColId] || [])];
-      const normalizedDropIndex = Number.isFinite(dropIndex) ? dropIndex : targetList.length;
-      const idx = Math.max(0, Math.min(normalizedDropIndex, targetList.length));
-      targetList.splice(idx, 0, applyColumnSemantics(task, targetColId));
-      next[targetColId] = targetList;
-      return next;
+      const sourceList = [...(prev[sourceColId] || [])];
+      const sourceIdx = sourceList.findIndex((t) => t.id === taskId);
+      if (sourceIdx < 0) return prev;
+
+      const [task] = sourceList.splice(sourceIdx, 1);
+      movedTaskTitle = task?.title || movedTaskTitle;
+      const semTask = applyColumnSemantics(task, targetColId);
+      const updatedTask = taskPatch ? { ...semTask, ...taskPatch } : semTask;
+
+      const baseTarget = sourceColId === targetColId ? sourceList : [...(prev[targetColId] || [])];
+      const normalizedDropIndex = Number.isFinite(dropIndex)
+        ? Math.max(0, Math.min(dropIndex, baseTarget.length))
+        : baseTarget.length;
+      baseTarget.splice(normalizedDropIndex, 0, updatedTask);
+
+      return {
+        ...prev,
+        [sourceColId]: sourceColId === targetColId ? baseTarget : sourceList,
+        [targetColId]: baseTarget,
+      };
     });
 
-    client.run('oc.board.card.move', {
-      boardId: activeBoardId,
-      cardId: taskId,
-      fromColumnId: sourceColId,
-      toColumnId: targetColId,
-      toIndex: Math.max(0, Number.isFinite(dropIndex) ? dropIndex : 0),
-    }).then((resp) => {
+    try {
+      const resp = await client.run('oc.board.card.move', {
+        boardId: activeBoardId,
+        cardId: taskId,
+        fromColumnId: sourceColId,
+        toColumnId: targetColId,
+        toIndex: Number.isFinite(dropIndex) ? Math.max(0, dropIndex) : 0,
+      });
+
       if (!resp?.ok) {
         if (rollbackState) setTasks(rollbackState);
-        setOpMessage(formatOpError(resp?.error, 'Move failed'));
-      } else {
-        setOpMessage(formatOpSuccess('Card moved', resp));
-        if (movedToDone) triggerCelebration(movedTaskTitle);
+        setOpMessage(formatOpError(resp?.error, errorLabel));
+        return;
       }
-    }).catch((e) => {
+
+      setOpMessage(formatOpSuccess(successLabel, resp));
+      const movedToDone = sourceColId !== 'done' && targetColId === 'done';
+      if (celebrateOnDone && movedToDone) triggerCelebration(movedTaskTitle);
+    } catch (e) {
       if (rollbackState) setTasks(rollbackState);
-      setOpMessage(`Move failed (${e?.message || 'unknown error'})`);
-    });
+      setOpMessage(`${errorLabel} (${e?.message || 'unknown error'})`);
+    }
   }, [findTaskColumn, client, activeBoardId, applyColumnSemantics, triggerCelebration]);
+
+  const handleDropTask = useCallback((taskId, targetColId, dropIndex) => {
+    moveTaskWithRollback(taskId, targetColId, {
+      dropIndex,
+      successLabel: 'Card moved',
+      errorLabel: 'Move failed',
+      celebrateOnDone: true,
+    });
+  }, [moveTaskWithRollback]);
 
   // Toggle card expand
   const toggleExpand = (taskId) => {
@@ -1560,21 +1588,6 @@ export default function ClawForgeKanban() {
     });
   };
 
-  const moveTaskToColumn = useCallback((taskId, targetColId, patch = null) => {
-    setTasks(prev => {
-      const sourceColId = Object.keys(prev).find((colId) => (prev[colId] || []).some((t) => t.id === taskId));
-      if (!sourceColId) return prev;
-      const source = [...(prev[sourceColId] || [])];
-      const idx = source.findIndex((t) => t.id === taskId);
-      if (idx < 0) return prev;
-      const [task] = source.splice(idx, 1);
-      const updatedTask = patch ? { ...task, ...patch } : task;
-      const target = [...(sourceColId === targetColId ? source : (prev[targetColId] || [])), updatedTask];
-      const next = { ...prev, [sourceColId]: source, [targetColId]: target };
-      return next;
-    });
-  }, []);
-
   // Update task from drawer
   const updateTask = (updated) => {
     setTasks(prev => {
@@ -1588,22 +1601,36 @@ export default function ClawForgeKanban() {
   };
 
   const startRun = (taskId) => {
-    moveTaskToColumn(taskId, "progress", { blocked: null });
+    moveTaskWithRollback(taskId, 'progress', {
+      taskPatch: { blocked: null, approval: false },
+      successLabel: 'Run started',
+      errorLabel: 'Failed to start run',
+    });
   };
 
   const pauseRun = (taskId) => {
-    moveTaskToColumn(taskId, "ready", { approval: false });
+    moveTaskWithRollback(taskId, 'ready', {
+      taskPatch: { approval: false },
+      successLabel: 'Run paused',
+      errorLabel: 'Failed to pause run',
+    });
   };
 
   const requestApproval = (taskId) => {
-    moveTaskToColumn(taskId, "review", { approval: true });
+    moveTaskWithRollback(taskId, 'review', {
+      taskPatch: { approval: true },
+      successLabel: 'Approval requested',
+      errorLabel: 'Failed to request approval',
+    });
   };
 
   const completeRun = (taskId) => {
-    const sourceColId = findTaskColumn(taskId);
-    const task = sourceColId ? (tasks[sourceColId] || []).find((t) => t.id === taskId) : null;
-    moveTaskToColumn(taskId, "done", { approval: false, blocked: null });
-    if (sourceColId !== 'done') triggerCelebration(task?.title || 'Task complete');
+    moveTaskWithRollback(taskId, 'done', {
+      taskPatch: { approval: false, blocked: null },
+      successLabel: 'Run completed',
+      errorLabel: 'Failed to complete run',
+      celebrateOnDone: true,
+    });
   };
 
   const archiveTask = async (taskId) => {
@@ -1621,42 +1648,72 @@ export default function ClawForgeKanban() {
 
     if (!archivedTask || !sourceColId) return;
 
-    setTasks((prev) => ({
-      ...prev,
-      [sourceColId]: (prev[sourceColId] || []).filter((t) => t.id !== taskId),
-    }));
+    let rollbackState = null;
+    setTasks((prev) => {
+      rollbackState = prev;
+      return {
+        ...prev,
+        [sourceColId]: (prev[sourceColId] || []).filter((t) => t.id !== taskId),
+      };
+    });
 
-    const payload = { boardId: activeBoardId, taskId, task: archivedTask, sourceColId };
-    const resp = await client.run('oc.board.archive.task', payload);
-    if (resp.ok) {
-      const entry = { ...archivedTask, sourceColId, archivedAt: new Date().toISOString() };
-      setArchivedTasks((prev) => [entry, ...prev]);
-      setOpMessage(formatOpSuccess('Task archived', resp));
-      setSelectedTask(null);
-    } else {
-      setTasks((prev) => ({ ...prev, [sourceColId]: [archivedTask, ...(prev[sourceColId] || [])] }));
-      setOpMessage(formatOpError(resp.error, 'Archive failed'));
+    try {
+      const payload = { boardId: activeBoardId, taskId, task: archivedTask, sourceColId };
+      const resp = await client.run('oc.board.archive.task', payload);
+      if (resp.ok) {
+        const entry = { ...archivedTask, sourceColId, archivedAt: new Date().toISOString() };
+        setArchivedTasks((prev) => [entry, ...prev]);
+        setOpMessage(formatOpSuccess('Task archived', resp));
+        setSelectedTask(null);
+      } else {
+        if (rollbackState) setTasks(rollbackState);
+        setOpMessage(formatOpError(resp.error, 'Archive failed'));
+      }
+    } catch (e) {
+      if (rollbackState) setTasks(rollbackState);
+      setOpMessage(`Archive failed (${e?.message || 'unknown error'})`);
     }
   };
 
   const restoreArchivedTask = async (taskId, targetColId = 'ready') => {
     const archived = archivedTasks.find((t) => t.id === taskId);
     if (!archived) return;
-    const resp = await client.run('oc.board.restore.task', { boardId: activeBoardId, taskId, targetColId, task: archived });
 
-    if (!resp.ok) {
-      setOpMessage(formatOpError(resp.error, 'Restore failed'));
-      return;
-    }
-
-    setOpMessage(formatOpSuccess('Task restored', resp));
-    const restoredTask = resp.data?.task || archived;
-    const clean = { ...restoredTask };
-    delete clean.archivedAt;
-    delete clean.sourceColId;
+    const rollbackArchived = archivedTasks;
+    const rollbackTasks = tasks;
 
     setArchivedTasks((prev) => prev.filter((t) => t.id !== taskId));
-    setTasks((prev) => ({ ...prev, [targetColId]: [clean, ...(prev[targetColId] || [])] }));
+
+    const optimistic = { ...archived };
+    delete optimistic.archivedAt;
+    delete optimistic.sourceColId;
+    setTasks((prev) => ({ ...prev, [targetColId]: [optimistic, ...(prev[targetColId] || [])] }));
+
+    try {
+      const resp = await client.run('oc.board.restore.task', { boardId: activeBoardId, taskId, targetColId, task: archived });
+
+      if (!resp.ok) {
+        setArchivedTasks(rollbackArchived);
+        setTasks(rollbackTasks);
+        setOpMessage(formatOpError(resp.error, 'Restore failed'));
+        return;
+      }
+
+      setOpMessage(formatOpSuccess('Task restored', resp));
+      const restoredTask = resp.data?.task || optimistic;
+      const clean = { ...restoredTask };
+      delete clean.archivedAt;
+      delete clean.sourceColId;
+
+      setTasks((prev) => ({
+        ...prev,
+        [targetColId]: [clean, ...(prev[targetColId] || []).filter((t) => t.id !== taskId)],
+      }));
+    } catch (e) {
+      setArchivedTasks(rollbackArchived);
+      setTasks(rollbackTasks);
+      setOpMessage(`Restore failed (${e?.message || 'unknown error'})`);
+    }
   };
 
   // Add card
