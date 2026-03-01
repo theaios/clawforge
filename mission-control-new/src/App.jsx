@@ -146,35 +146,75 @@ function OpenClawLiveBanner() {
   const conn = store?.ui?.openclaw || { connected: false, lastRequestId: null }
   const isConnected = !!conn.connected
   const lastError = store?.ui?.lastError || null
+  const [expanded, setExpanded] = useState(false)
 
   return (
-    <div style={{
-      position: 'sticky',
-      top: 0,
-      zIndex: 999,
-      padding: '8px 14px',
-      borderBottom: `1px solid ${isConnected ? 'rgba(34,197,94,0.35)' : 'rgba(239,68,68,0.25)'}`,
-      background: isConnected ? 'rgba(16,185,129,0.10)' : 'rgba(239,68,68,0.08)',
-      color: isConnected ? '#34d399' : '#f87171',
-      fontSize: 12,
-      fontWeight: 600,
-      fontFamily: 'Inter, system-ui, sans-serif',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 8,
-      flexWrap: 'wrap',
-    }}>
-      <span style={{ fontSize: 8 }}>●</span>
-      {isConnected ? 'Connected to OpenClaw' : 'Disconnected from OpenClaw'}
-      {conn.lastRequestId && (
-        <span style={{ opacity: 0.9, fontWeight: 500, fontFamily: "'JetBrains Mono', 'SF Mono', monospace" }}>
-          requestId: {conn.lastRequestId}
-        </span>
-      )}
-      {!isConnected && lastError?.debugCode && (
-        <span style={{ opacity: 0.95, fontWeight: 500 }}>
-          debug: {lastError.debugCode}{lastError.status ? ` · HTTP ${lastError.status}` : ''}
-        </span>
+    <div
+      style={{
+        position: 'fixed',
+        top: 10,
+        right: 12,
+        zIndex: 9999,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        gap: 6,
+      }}
+    >
+      <button
+        type='button'
+        onClick={() => setExpanded((v) => !v)}
+        title={isConnected ? 'OpenClaw connected' : 'OpenClaw disconnected'}
+        style={{
+          border: `1px solid ${isConnected ? 'rgba(16,185,129,0.5)' : 'rgba(239,68,68,0.45)'}`,
+          background: isConnected ? 'rgba(16,185,129,0.16)' : 'rgba(239,68,68,0.14)',
+          color: isConnected ? '#34d399' : '#f87171',
+          borderRadius: 999,
+          padding: '6px 10px',
+          fontSize: 11,
+          fontWeight: 700,
+          fontFamily: 'Inter, system-ui, sans-serif',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          cursor: 'pointer',
+          backdropFilter: 'blur(3px)',
+          boxShadow: '0 4px 18px rgba(0,0,0,0.22)',
+        }}
+      >
+        <span style={{ fontSize: 9 }}>●</span>
+        {isConnected ? 'OpenClaw Online' : 'OpenClaw Offline'}
+      </button>
+
+      {expanded && (
+        <div
+          style={{
+            maxWidth: 420,
+            border: `1px solid ${isConnected ? 'rgba(16,185,129,0.38)' : 'rgba(239,68,68,0.35)'}`,
+            background: 'rgba(8,10,14,0.92)',
+            color: '#d1d5db',
+            borderRadius: 12,
+            padding: '8px 10px',
+            fontSize: 11,
+            lineHeight: 1.45,
+            fontFamily: 'Inter, system-ui, sans-serif',
+          }}
+        >
+          <div style={{ fontWeight: 700, color: isConnected ? '#34d399' : '#f87171' }}>
+            {isConnected ? 'Connected to OpenClaw' : 'Disconnected from OpenClaw'}
+          </div>
+          {conn.lastRequestId && (
+            <div style={{ fontFamily: "'JetBrains Mono', 'SF Mono', monospace", opacity: 0.92 }}>
+              requestId: {conn.lastRequestId}
+            </div>
+          )}
+          {!isConnected && lastError?.debugCode && (
+            <div style={{ opacity: 0.95 }}>
+              debug: {lastError.debugCode}
+              {lastError.status ? ` · HTTP ${lastError.status}` : ''}
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
