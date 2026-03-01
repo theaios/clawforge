@@ -304,7 +304,7 @@ function AppSidebar({ themeMode, setThemeMode, collapsedSections, onToggleSectio
     integrations: '/integrations',
     costusage: '/costs',
     settings: '/settings',
-    development: '/development',
+    development: '/development', activitylog: '/activity-log',
   };
 
   return (

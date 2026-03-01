@@ -4,6 +4,7 @@ export const SYSTEM_NAV_ITEMS = [
   { icon: "📊", label: "Cost & Usage", key: "costusage", path: "/costs" },
   { icon: "⚙️", label: "Settings", key: "settings", path: "/settings" },
   { icon: "🛠", label: "Under Development", key: "development", path: "/development" },
+  { icon: "🧾", label: "Activity Log", key: "activitylog", path: "/activity-log" },
 ];
 
 export const PRIMARY_NAV_ITEMS = [

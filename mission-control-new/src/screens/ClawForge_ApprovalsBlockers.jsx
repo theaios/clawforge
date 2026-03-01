@@ -54,13 +54,14 @@ function MainMenuSidebar({ activePage, collapsedSections, onToggleSection, C, is
       { icon: '📊', label: 'Cost & Usage', key: 'costusage' },
       { icon: '⚙️', label: 'Settings', key: 'settings' },
       { icon: '🛠', label: 'Under Development', key: 'development' },
+      { icon: '🧾', label: 'Activity Log', key: 'activitylog' },
     ]},
   ]
 
   const routeMap = {
     chat: '/chat', brainstorm: '/brainstorm', brainstorming: '/brainstorm', tasks: '/boards', boards: '/boards',
     agentarmy: '/army', configurator: '/configurator?step=1', approvals: '/approvals', files: '/files',
-    security: '/security', integrations: '/integrations', costusage: '/costs', settings: '/settings', development: '/development',
+    security: '/security', integrations: '/integrations', costusage: '/costs', settings: '/settings', development: '/development', activitylog: '/activity-log',
   }
 
   return (

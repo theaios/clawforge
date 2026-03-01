@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PRIMARY_NAV_ITEMS, SYSTEM_NAV_ITEMS } from "../lib/systemNav";
 
 const AGENTS = {
   orchestrator: { name: "Orchestrator", color: "#ff4a00", icon: "⚙️" },
@@ -126,7 +127,25 @@ export default function ClawForgeActivityRollback() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px 60px" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "18px 32px 60px" }}>
+        <div style={{ display: "grid", gap: 8, marginBottom: 16 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {PRIMARY_NAV_ITEMS.map((item) => (
+              <a key={item.key} href={`#${item.path}`} style={{ textDecoration: "none", fontSize: 12, fontWeight: 600, color: "#334155", border: "1px solid #e2e8f0", background: "#fff", borderRadius: 999, padding: "6px 10px", display: "inline-flex", gap: 6, alignItems: "center" }}>
+                <span>{item.icon}</span>
+                <span>{item.label}</span>
+              </a>
+            ))}
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {SYSTEM_NAV_ITEMS.map((item) => (
+              <a key={item.key} href={`#${item.path}`} style={{ textDecoration: "none", fontSize: 11, fontWeight: 600, color: "#475569", border: "1px solid #e2e8f0", background: "#f8fafc", borderRadius: 999, padding: "5px 9px", display: "inline-flex", gap: 6, alignItems: "center" }}>
+                <span>{item.icon}</span>
+                <span>{item.label}</span>
+              </a>
+            ))}
+          </div>
+        </div>
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 30, fontWeight: 700, marginBottom: 4 }}>Activity Log <span style={{ color: "#ff4a00" }}>&amp; Rollback</span></h1>
           <p style={{ fontSize: 14, color: "#64748b" }}>Every action logged. Anything can be undone. Full control, always.</p>

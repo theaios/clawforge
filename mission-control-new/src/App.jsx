@@ -76,6 +76,7 @@ const sections = [
       { path: '/costs', label: 'Cost & Usage', comp: CostUsage },
       { path: '/settings', label: 'Settings', comp: Settings },
       { path: '/development', label: 'Under Development', comp: InDevelopment },
+      { path: '/activity-log', label: 'Activity Log', comp: ActivityRollback },
     ],
   },
 ]
@@ -101,7 +102,7 @@ const hiddenRoutes = [
 ]
 
 const allRoutes = [...sections.flatMap((s) => s.items), ...hiddenRoutes]
-const SYSTEM_PATHS = new Set(['/security', '/integrations', '/costs', '/settings', '/development'])
+const SYSTEM_PATHS = new Set(['/security', '/integrations', '/costs', '/settings', '/development', '/activity-log'])
 
 // Makes existing in-screen text nav items clickable without changing their layout.
 const textNavMap = new Map([
@@ -138,6 +139,8 @@ const textNavMap = new Map([
   ['templates', '/templates'],
   ['settings', '/settings'],
   ['under development', '/development'],
+  ['activity log', '/activity-log'],
+  ['rollback', '/activity-log'],
   ['activity log', '/activity-log'],
   ['rollback', '/activity-log'],
   ['review now', '/approvals'],

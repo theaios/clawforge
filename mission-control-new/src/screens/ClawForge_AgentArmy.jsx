@@ -393,6 +393,7 @@ function Sidebar({ activePage, themeMode, setThemeMode, C, collapsedSections, on
       { icon: "📊", label: "Cost & Usage", key: "costusage" },
       { icon: "⚙️", label: "Settings", key: "settings" },
       { icon: "🛠", label: "Under Development", key: "development" },
+      { icon: "🧾", label: "Activity Log", key: "activitylog" },
     ]},
   ];
   return (
@@ -445,7 +446,7 @@ function Sidebar({ activePage, themeMode, setThemeMode, C, collapsedSections, on
               </button>
               {!collapsed && s.items.map((item, ii) => {
                 const active = item.key === activePage;
-                const m = { 'start-here': '/start-here',  chat: '/chat', brainstorm: '/brainstorm', brainstorming: '/brainstorm', tasks: '/boards', agentarmy: '/army', configurator: '/configurator?step=1', security: '/security', integrations: '/integrations', costusage: '/costs', settings: '/settings', development: '/development', approvals: '/approvals', files: '/files' };
+                const m = { 'start-here': '/start-here',  chat: '/chat', brainstorm: '/brainstorm', brainstorming: '/brainstorm', tasks: '/boards', agentarmy: '/army', configurator: '/configurator?step=1', security: '/security', integrations: '/integrations', costusage: '/costs', settings: '/settings', development: '/development', activitylog: '/activity-log', 'activity log': '/activity-log', approvals: '/approvals', files: '/files' };
                 const href = `#${m[item.key] || '/boards'}`;
                 return (
                   <a key={ii} href={href} style={{
