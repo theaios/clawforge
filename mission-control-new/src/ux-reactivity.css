@@ -90,28 +90,35 @@ textarea:disabled {
   position: fixed;
   inset: -20vh -20vw;
   pointer-events: none;
-  z-index: 0;
   opacity: 0;
   transition: opacity 220ms ease;
 }
 
+/* Base aurora layer (behind content) */
+.mc-app::before { z-index: 0; }
+
+/* Subtle cinematic wash above content so trippy is visible even on opaque page cards */
+.mc-app::after { z-index: 2; }
+
 .mc-app.mc-theme-trippy::before {
   opacity: 1;
   background:
-    radial-gradient(55% 45% at 15% 10%, rgba(124, 58, 237, 0.44), transparent 70%),
-    radial-gradient(45% 45% at 85% 18%, rgba(37, 99, 235, 0.34), transparent 72%),
-    radial-gradient(50% 45% at 30% 80%, rgba(16, 185, 129, 0.2), transparent 72%),
-    linear-gradient(135deg, #090D1D 0%, #111C38 42%, #24104A 100%);
+    radial-gradient(60% 48% at 8% 0%, rgba(88, 82, 236, 0.56), transparent 68%),
+    radial-gradient(46% 42% at 92% 12%, rgba(46, 139, 255, 0.46), transparent 70%),
+    radial-gradient(56% 44% at 18% 88%, rgba(70, 208, 255, 0.24), transparent 72%),
+    radial-gradient(46% 42% at 86% 82%, rgba(168, 85, 247, 0.22), transparent 70%),
+    linear-gradient(135deg, #0a1028 0%, #131d43 44%, #1f1650 100%);
   animation: mcTrippyDrift 24s ease-in-out infinite alternate;
 }
 
 .mc-app.mc-theme-trippy::after {
   opacity: 1;
-  mix-blend-mode: screen;
   background:
-    conic-gradient(from 220deg at 70% 35%, rgba(99, 102, 241, 0.16), rgba(236, 72, 153, 0.14), rgba(34, 211, 238, 0.14), rgba(99, 102, 241, 0.16));
-  filter: blur(42px) saturate(112%);
-  animation: mcTrippyPulse 14s ease-in-out infinite;
+    radial-gradient(120% 100% at 0% 0%, rgba(255,255,255,0.10), transparent 56%),
+    conic-gradient(from 210deg at 74% 34%, rgba(129, 140, 248, 0.16), rgba(244, 114, 182, 0.12), rgba(56, 189, 248, 0.14), rgba(129, 140, 248, 0.16));
+  mix-blend-mode: screen;
+  filter: blur(52px) saturate(130%);
+  animation: mcTrippyPulse 12s ease-in-out infinite;
 }
 
 @keyframes mcTrippyDrift {
