@@ -229,7 +229,7 @@ function ThemePanel({ C, activeThemeId, setThemeById, close, saveCustom, loadCus
   );
 }
 
-const LAYOUTS = [{ id: "mind", label: "Mind map" }, { id: "org", label: "Org chart" }, { id: "list", label: "List" }];
+const LAYOUTS = [{ id: "mind", label: "Mind map" }, { id: "org", label: "Org chart" }, { id: "list", label: "List" }, { id: "stack", label: "Stack" }];
 
 function LayoutPanel({ C, selected, setSelected, close }) {
   return (
@@ -351,6 +351,24 @@ export default function Brainstorming() {
     return () => window.removeEventListener("keydown", onKey);
   }, [selectedNode, addChild, addSibling, copySubtree, pasteSubtree, undo, redo, deleteNode]);
 
+  const layoutScopeId = selectedNode?.type === "branch" || selectedNode?.type === "root"
+    ? selectedNode.id
+    : (selectedNode?.parentId || "root");
+
+  const selectedLayout = useMemo(() => {
+    const scope = map.nodesById[layoutScopeId] || map.nodesById.root;
+    if (!scope) return "mind";
+    if (scope.type === "root") {
+      const firstBranch = (scope.childrenIds || []).map((id) => map.nodesById[id]).find(Boolean);
+      return firstBranch?.layoutMode || "mind";
+    }
+    return scope.layoutMode || "mind";
+  }, [layoutScopeId, map]);
+
+  const setLayoutForScope = (mode) => {
+    setLayoutMode(layoutScopeId, mode);
+  };
+
   const branchLayouts = useMemo(() => {
     const roots = (map.rootOrder || ["root"]).map((id) => map.nodesById[id]).filter(Boolean);
     const rootLayouts = roots.map((root, rootIndex) => {
@@ -382,7 +400,7 @@ export default function Brainstorming() {
         const placeChildren = (parent, depth = 1) => {
           const children = (parent.childrenIds || []).map((id) => map.nodesById[id]).filter(Boolean);
           if (!children.length) return;
-          const spread = (children.length - 1) * ((mode === "list" ? 110 : NODE_H + NODE_GAP_Y) / 2);
+          const spread = (children.length - 1) * ((mode === "list" || mode === "stack" ? 110 : NODE_H + NODE_GAP_Y) / 2);
 
           children.forEach((child, idx) => {
             let x;
@@ -397,6 +415,11 @@ export default function Brainstorming() {
             } else if (mode === "list") {
               x = (parent.id === branch.id ? baseX : (parent.x || baseX)) + (left ? -30 : 30);
               y = (parent.id === branch.id ? baseY : (parent.y || baseY)) + 72 + idx * 110;
+            } else if (mode === "stack") {
+              const anchorX = parent.id === branch.id ? baseX : (parent.x || baseX);
+              const anchorY = parent.id === branch.id ? baseY : (parent.y || baseY);
+              x = anchorX - NODE_W / 2 + 8 * idx;
+              y = anchorY + 72 + idx * 24;
             } else {
               const anchorX = parent.id === branch.id ? baseX : (parent.x || baseX);
               const anchorY = parent.id === branch.id ? baseY : (parent.y || baseY);
@@ -609,7 +632,34 @@ export default function Brainstorming() {
         onToggleSection={(section) => setCollapsedSections((prev) => ({ ...prev, [section]: !prev[section] }))}
       />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        <div style={{ height: 52, borderBottom: `1px solid ${C.border}`, background: C.surface, display: "flex", alignItems: "center", padding: "0 16px", color: C.textMuted, fontSize: 12 }}>Command / Brainstorming</div>
+        <div style={{ height: 52, borderBottom: `1px solid ${C.border}`, background: C.surface, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", color: C.textMuted, fontSize: 12 }}>
+          <span>Command / Brainstorming</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 11, color: C.textMuted, marginRight: 4 }}>Layout</span>
+            {LAYOUTS.map((layout) => {
+              const active = selectedLayout === layout.id;
+              return (
+                <button
+                  key={layout.id}
+                  onClick={() => setLayoutForScope(layout.id)}
+                  style={{
+                    borderRadius: 999,
+                    border: `1px solid ${active ? C.accent : C.border}`,
+                    background: active ? `${C.accent}14` : C.elevated,
+                    color: active ? C.accent : C.textSec,
+                    cursor: "pointer",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "4px 10px",
+                  }}
+                  title={`Set ${layout.label} layout`}
+                >
+                  {layout.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
           <div ref={canvasRef} onMouseDown={startPanning} onMouseMove={onMove} onMouseUp={() => { setIsPanning(false); setDragNodeId(null); }} onMouseLeave={() => { setIsPanning(false); setDragNodeId(null); }} onWheel={onWheelZoom} style={{ position: "relative", flex: 1, overflow: "hidden", background: `radial-gradient(circle at 50% 42%, ${C.elevated}, ${C.bg} 72%)`, cursor: isPanning ? "grabbing" : "grab" }}>
             <div style={{ position: "absolute", inset: 0, opacity: 0.04, backgroundImage: `radial-gradient(${C.textMuted} 1px, transparent 1px)`, backgroundSize: "24px 24px" }} />
@@ -672,7 +722,7 @@ export default function Brainstorming() {
 
               {selectedNode && nodePos[selectedNode.id] && (
                 <div style={{ position: "absolute", left: nodePos[selectedNode.id].x + (selectedNode.type === "idea" ? NODE_W / 2 : 0), top: nodePos[selectedNode.id].y - 16, transform: "translate(-50%,-100%)", display: "flex", alignItems: "center", gap: 4, padding: "7px 8px", borderRadius: 999, background: C.surface, border: `1px solid ${C.border}`, boxShadow: "0 8px 20px rgba(15,23,42,0.14)", transition: "all 170ms", zIndex: 60 }}>
-                  {["✓", "⟍", "💬", "📝", "🖼", "📎", "😊", "🔗"].map((ico, i) => <button key={i} style={{ border: "none", background: "transparent", fontSize: 13, cursor: "pointer", color: C.textSec, width: 24, height: 24 }}>{ico}</button>)}
+                  {["✓", "⟍", "💬", "📝", "🖼", "📎", "😊", "🔗"].map((ico, i) => <button key={i} disabled title="Coming soon — disabled" style={{ border: "none", background: "transparent", fontSize: 13, cursor: "not-allowed", color: C.textMuted, width: 24, height: 24, opacity: 0.5 }}>{ico}</button>)}
                   {selectedNode.type !== "root" && <button onClick={() => toggleAutoAlign(selectedNode.id)} style={{ border: `1px solid ${selectedNode.autoAlign ? C.accent : C.border}`, background: selectedNode.autoAlign ? `${C.accent}14` : C.elevated, borderRadius: 999, height: 24, padding: "0 8px", cursor: "pointer", color: selectedNode.autoAlign ? C.accent : C.textSec, fontSize: 11, fontWeight: 600 }}>Auto-align {selectedNode.autoAlign ? "On" : "Off"}</button>}
                   <button onClick={() => setDragMode((m) => (m === DRAG_MODE.NODE ? DRAG_MODE.SUBTREE : DRAG_MODE.NODE))} style={{ border: `1px solid ${dragMode === DRAG_MODE.SUBTREE ? C.accent : C.border}`, background: dragMode === DRAG_MODE.SUBTREE ? `${C.accent}14` : C.elevated, borderRadius: 999, height: 24, padding: "0 8px", cursor: "pointer", color: dragMode === DRAG_MODE.SUBTREE ? C.accent : C.textSec, fontSize: 11, fontWeight: 600 }}>Drag: {dragMode === DRAG_MODE.NODE ? "Node" : "Subtree"}</button>
                   <button onClick={() => requestDelete(selectedNode.id)} style={{ border: `1px solid ${C.red}`, background: `${C.red}14`, borderRadius: 999, height: 24, padding: "0 10px", cursor: "pointer", color: C.red, fontSize: 11, fontWeight: 700 }}>Delete</button>
@@ -695,19 +745,19 @@ export default function Brainstorming() {
 
             <div style={{ position: "absolute", right: 14, top: 96, display: "flex", flexDirection: "column", justifyContent: "space-between", height: 226 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 6, borderRadius: 14, border: `1px solid ${C.border}`, background: C.surface, boxShadow: "0 8px 20px rgba(15,23,42,0.08)" }}>
-                <button onClick={() => selectedNode && addChild(selectedNode.id)} style={{ width: 38, height: 38, borderRadius: 10, border: `1px solid ${C.border}`, background: C.elevated, cursor: "pointer" }} title="Add child / branch">＋</button>
+                <button disabled={!selectedNode} onClick={() => selectedNode && addChild(selectedNode.id)} style={{ width: 38, height: 38, borderRadius: 10, border: `1px solid ${C.border}`, background: C.elevated, cursor: selectedNode ? "pointer" : "not-allowed", opacity: selectedNode ? 1 : 0.5 }} title={selectedNode ? "Add child / branch" : "Select a node to add a child"}>＋</button>
                 <button onClick={addRootTopic} style={{ width: 38, height: 38, borderRadius: 10, border: `1px solid ${C.border}`, background: C.elevated, cursor: "pointer" }} title="Add new top-level topic">🧠</button>
                 <button onClick={() => { setShowLayout((s) => !s); setShowThemes(false); }} style={{ width: 38, height: 38, borderRadius: 10, border: `1.5px solid ${showLayout ? C.accent : C.border}`, background: showLayout ? `${C.accent}14` : C.elevated, cursor: "pointer" }}>☰</button>
                 <button onClick={() => { setShowThemes((s) => !s); setShowLayout(false); }} style={{ width: 38, height: 38, borderRadius: 10, border: `1.5px solid ${showThemes ? C.accent : C.border}`, background: showThemes ? `${C.accent}14` : C.elevated, cursor: "pointer" }}>🎨</button>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 6, borderRadius: 14, border: `1px solid ${C.border}`, background: C.surface, boxShadow: "0 8px 20px rgba(15,23,42,0.08)" }}>
-                <button onClick={redo} style={{ width: 38, height: 38, borderRadius: 10, border: `1px solid ${C.border}`, background: C.elevated, cursor: "pointer" }} title={`Redo (${redoStack.length})`}>↷</button>
-                <button onClick={undo} style={{ width: 38, height: 38, borderRadius: 10, border: `1px solid ${C.border}`, background: C.elevated, cursor: "pointer" }} title={`Undo (${undoStack.length})`}>↶</button>
+                <button disabled={!redoStack.length} onClick={redo} style={{ width: 38, height: 38, borderRadius: 10, border: `1px solid ${C.border}`, background: C.elevated, cursor: redoStack.length ? "pointer" : "not-allowed", opacity: redoStack.length ? 1 : 0.5 }} title={`Redo (${redoStack.length})`}>↷</button>
+                <button disabled={!undoStack.length} onClick={undo} style={{ width: 38, height: 38, borderRadius: 10, border: `1px solid ${C.border}`, background: C.elevated, cursor: undoStack.length ? "pointer" : "not-allowed", opacity: undoStack.length ? 1 : 0.5 }} title={`Undo (${undoStack.length})`}>↶</button>
               </div>
             </div>
 
             {showThemes && <ThemePanel C={C} activeThemeId={activeThemeId} setThemeById={setThemeById} close={() => setShowThemes(false)} saveCustom={() => localStorage.setItem(CUSTOM_THEME_SLOT_KEY, JSON.stringify(theme))} loadCustom={() => { const raw = localStorage.getItem(CUSTOM_THEME_SLOT_KEY); if (!raw) return; try { const custom = JSON.parse(raw); setTheme(custom); setActiveThemeId("custom-slot"); } catch {} }} />}
-            {showLayout && <LayoutPanel C={C} selected={(selectedNode?.layoutMode || "mind")} setSelected={(mode) => setLayoutMode(selectedNode?.type === "branch" || selectedNode?.type === "root" ? selectedNode.id : (selectedNode?.parentId || "root"), mode)} close={() => setShowLayout(false)} />}
+            {showLayout && <LayoutPanel C={C} selected={selectedLayout} setSelected={setLayoutForScope} close={() => setShowLayout(false)} />}
           </div>
 
           <div style={{ width: 300, borderLeft: `1px solid ${C.border}`, background: C.surface, display: "flex", flexDirection: "column" }}>
