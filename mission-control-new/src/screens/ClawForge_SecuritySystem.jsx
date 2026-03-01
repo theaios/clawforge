@@ -1,7 +1,8 @@
 import {useState, useEffect} from "react";
 import { useMissionControl } from "../lib/missionControlContext";
 import { formatOpError, formatOpSuccess } from "../lib/openclawDiagnostics";
-import { PRIMARY_NAV_ITEMS, SYSTEM_NAV_ITEMS } from "../lib/systemNav";
+import { PRIMARY_NAV_ITEMS, SYSTEM_NAV_ITEMS, buildMainMenuSections } from "../lib/systemNav";
+import { getStoredThemeMode } from "../lib/themeMode";
 
 function getTheme(dark) {
   if (dark) return {
@@ -128,10 +129,7 @@ function ThemeToggle({ isDark, setIsDark }) {
 }
 
 function Sidebar({ activePage, isDark, setIsDark, C }) {
-  const NAV = [
-    { section: "MAIN", items: PRIMARY_NAV_ITEMS },
-    { section: "SYSTEM", items: SYSTEM_NAV_ITEMS },
-  ];
+  const NAV = buildMainMenuSections({ mainItems: PRIMARY_NAV_ITEMS, systemItems: SYSTEM_NAV_ITEMS });
   return (
     <div style={{ width: 220, flexShrink: 0, background: C.surface, borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "18px 18px 14px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${C.border}` }}>

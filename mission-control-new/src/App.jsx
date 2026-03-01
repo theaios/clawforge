@@ -277,7 +277,7 @@ function AppContent() {
   useEffect(() => {
     const navEntries = [...textNavMap.entries()].sort((a, b) => b[0].length - a[0].length)
 
-    const normalize = (value = '') => value.toLowerCase().replace(/\s+/g, ' ').trim()
+    const normalize = (value = '') => String(value ?? '').toLowerCase().replace(/\s+/g, ' ').trim()
     const matchRoute = (text = '') => {
       const normalized = normalize(text)
       if (!normalized) return null
